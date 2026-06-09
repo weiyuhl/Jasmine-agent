@@ -19,7 +19,18 @@ package com.lhzkml.jasmineagent.core.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [Agent::class], version = 1)
+@Database(
+    entities = [Agent::class],
+    version = 1,
+    // TODO: When sensitive data is stored, enable SQLCipher encryption:
+    // 1. Add dependency: implementation("net.zetetic:android-database-sqlcipher:4.6.0")
+    // 2. Add import: import net.zetetic.database.sqlcipher.SupportFactory 
+    // 3. In DatabaseModule, use SupportFactory with a secure passphrase:
+    //    val passphrase = /* get from EncryptedSharedPreferences or KeyStore */
+    //    Room.databaseBuilder(context, AppDatabase::class.java, "Agent")
+    //        .openHelperFactory(SupportFactory(passphrase.toByteArray()))
+    //        .build()
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun agentDao(): AgentDao
 }
