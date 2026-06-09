@@ -17,29 +17,50 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
 import com.lhzkml.jasmineagent.core.data.di.FakeAgentRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 /** Unit tests for [AgentViewModel]. */
-@OptIn(ExperimentalCoroutinesApi::class) // TODO: Remove when stable
+@OptIn(ExperimentalCoroutinesApi::class)
 class AgentViewModelTest {
-  @Test
-  fun uiState_initiallyLoading() = runTest {
-    val viewModel = AgentViewModel(FakeAgentRepository())
-    assertEquals(AgentUiState.Loading, viewModel.uiState.first())
+
+  private val testDispatcher = StandardTestDispatcher()
+
+  @Before
+  fun setup() {
+    Dispatchers.setMain(testDispatcher)
+  }
+
+  @After
+  fun tearDown() {
+    Dispatchers.resetMain()
   }
 
   @Test
-  fun uiState_onItemSaved_isDisplayed() = runTest {
-    val repository = FakeAgentRepository()
-    val viewModel = AgentViewModel(repository)
-    viewModel.addAgent("Test Agent")
-    val state = viewModel.uiState.first()
-    assertTrue(state is AgentUiState.Success)
-    assertTrue((state as AgentUiState.Success).data.contains("Test Agent"))
-  }
+  fun uiState_initiallyLoading() =
+    runTest(testDispatcher) {
+      val viewModel = AgentViewModel(FakeAgentRepository())
+      assertEquals(AgentUiState.Loading, viewModel.uiState.first())
+    }
+
+  @Test
+  fun uiState_onItemSaved_isDisplayed() =
+    runTest(testDispatcher) {
+      val repository = FakeAgentRepository()
+      val viewModel = AgentViewModel(repository)
+      viewModel.addAgent("Test Agent")
+      val state = viewModel.uiState.first()
+      assertTrue(state is AgentUiState.Success)
+      assertTrue((state as AgentUiState.Success).data.contains("Test Agent"))
+    }
 }
