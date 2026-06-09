@@ -16,14 +16,12 @@
 
 package com.lhzkml.jasmineagent.core.data.di
 
-import androidx.annotation.VisibleForTesting
 import com.lhzkml.jasmineagent.core.data.AgentRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-@VisibleForTesting
 @Singleton
 class FakeAgentRepository @Inject constructor() : AgentRepository {
 

@@ -56,6 +56,7 @@ dependencies {
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   implementation(project(":core-data"))
+  implementation(testFixtures(project(":core-data")))
   implementation(project(":core-testing"))
   implementation(project(":feature-agent"))
   implementation(project(":feature-agent-navigation"))

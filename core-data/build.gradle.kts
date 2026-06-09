@@ -19,7 +19,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.ksp)
-
   alias(libs.plugins.detekt)
   alias(libs.plugins.spotless)
 }
@@ -39,6 +38,8 @@ android {
     shaders = false
   }
 
+  testFixtures { enable = true }
+
   lint {
     abortOnError = true
     warningsAsErrors = true
@@ -57,14 +58,14 @@ kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 
 dependencies {
   implementation(project(":core-database"))
-
-  // Arch Components
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
-
   implementation(libs.kotlinx.coroutines.android)
 
-  // Local tests: jUnit, coroutines, Android runner
+  testFixturesApi(project(":core-database"))
+  testFixturesApi(libs.hilt.android)
+  testFixturesApi(libs.kotlinx.coroutines.android)
+
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
 }
