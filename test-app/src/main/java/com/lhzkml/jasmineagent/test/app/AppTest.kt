@@ -35,7 +35,7 @@ class AppTest {
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun test1() {
+    fun mainScreen_displaysFakeAgents() {
         // TODO: Add navigation tests
         composeTestRule.onNodeWithText(fakeAgents.first(), substring = true).assertExists()
     }

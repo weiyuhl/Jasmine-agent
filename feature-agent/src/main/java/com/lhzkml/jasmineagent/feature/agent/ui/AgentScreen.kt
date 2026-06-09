@@ -16,7 +16,7 @@
 
 package com.lhzkml.jasmineagent.feature.agent.ui
 
-import com.lhzkml.jasmineagent.core.ui.MyApplicationTheme
+import com.lhzkml.jasmineagent.core.ui.JasmineTheme
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
@@ -128,7 +128,7 @@ internal fun AgentContent(
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    MyApplicationTheme {
+    JasmineTheme {
         AgentContent(items = listOf("Compose", "Room", "Kotlin"), onSave = {}, onItemClick = {})
     }
 }
@@ -136,7 +136,7 @@ private fun DefaultPreview() {
 @Preview(showBackground = true, widthDp = 340)
 @Composable
 private fun PortraitPreview() {
-    MyApplicationTheme {
+    JasmineTheme {
         AgentContent(items = listOf("Compose", "Room", "Kotlin"), onSave = {}, onItemClick = {})
     }
 }
