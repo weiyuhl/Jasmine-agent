@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package com.lhzkml.jasmineagent.data
+package com.lhzkml.jasmineagent.core.data
 
-import com.lhzkml.jasmineagent.core.data.DefaultAgentRepository
-import com.lhzkml.jasmineagent.core.data.FakeAgentDao
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
