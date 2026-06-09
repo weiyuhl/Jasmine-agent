@@ -25,7 +25,7 @@ plugins {
 }
 
 android {
-  namespace = "com.lhzkml.jasmineagent.test.navigation"
+  namespace = "com.lhzkml.jasmineagent.test.app"
   compileSdk = 36
   targetProjectPath = ":app"
 
