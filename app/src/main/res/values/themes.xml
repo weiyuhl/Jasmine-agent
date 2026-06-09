@@ -16,15 +16,8 @@
   -->
 
 <resources>
-    <!--
-        Splash-respecting theme: windowBackground matches JasmineTheme primary surface
-        color (#6650A4 at full opacity as a splash background, immediately replaced
-        by Compose when setContent runs). Status and nav bars are transparent so
-        edge-to-edge works with Compose's system bar insets.
-    -->
     <style name="Theme.Jasmine" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowBackground">@color/jasmine_primary</item>
     </style>
 </resources>

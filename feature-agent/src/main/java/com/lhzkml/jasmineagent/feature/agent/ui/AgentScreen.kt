@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@ import com.lhzkml.jasmineagent.core.ui.JasmineTheme
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -105,15 +108,24 @@ internal fun AgentContent(
             TextField(
                 modifier = Modifier.weight(1f),
                 value = nameAgent,
-                onValueChange = { nameAgent = it }
+                onValueChange = { nameAgent = it },
+                label = { Text("Agent name") }
             )
 
             Button(modifier = Modifier.width(96.dp), onClick = { onSave(nameAgent) }) {
                 Text("Save")
             }
         }
-        items.forEach { item ->
-            Text(text = "Saved item: $item")
+        LazyColumn {
+            items(items) { item ->
+                Text(
+                    text = "Saved item: $item",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onItemClick(com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main) }
+                        .padding(vertical = 8.dp)
+                )
+            }
         }
     }
 }

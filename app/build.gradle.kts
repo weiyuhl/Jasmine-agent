@@ -123,6 +123,8 @@ dependencies {
 
     // Navigation
     implementation(libs.androidx.navigation3.ui)
+    implementation(libs.profileinstaller)
+    implementation(libs.startup.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
     // Instrumented tests

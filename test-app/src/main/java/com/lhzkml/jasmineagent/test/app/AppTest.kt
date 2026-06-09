@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,6 @@ import org.junit.Rule
 import org.junit.runner.RunWith
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
-import com.lhzkml.jasmineagent.core.data.di.fakeAgents
 import com.lhzkml.jasmineagent.ui.MainActivity
 
 @RunWith(AndroidJUnit4::class)
@@ -39,7 +38,6 @@ class AppTest {
 
     @Test
     fun mainScreen_displaysFakeAgents() {
-        // TODO: Add navigation tests
         composeTestRule.onNodeWithText("One", substring = true).assertExists()
     }
 }
