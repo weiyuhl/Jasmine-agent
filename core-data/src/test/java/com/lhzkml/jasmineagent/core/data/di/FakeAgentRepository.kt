@@ -17,16 +17,18 @@
 package com.lhzkml.jasmineagent.core.data.di
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import com.lhzkml.jasmineagent.core.data.AgentRepository
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FakeAgentRepository @Inject constructor() : AgentRepository {
-    override val agents: Flow<List<String>> = flowOf(fakeAgents)
+
+    private val _agents = MutableStateFlow(listOf("One", "Two", "Three"))
+    override val agents: Flow<List<String>> = _agents
 
     override suspend fun add(name: String) {
-        throw UnsupportedOperationException("Not implemented in fake repository")
+        _agents.value = listOf(name) + _agents.value
     }
 }
-
-val fakeAgents = listOf("One", "Two", "Three")
