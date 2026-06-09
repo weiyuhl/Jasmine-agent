@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.lhzkml.jasmineagent.ui
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -35,10 +36,7 @@ class NavigationTest {
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun mainActivity_showsMainScreen() {
-        // Here we just verify that something from the main screen is displayed.
+    fun mainScreen_showsSaveButton() {
         composeTestRule.onNodeWithText("Save").assertExists()
-
-        // TODO: Add actions and assertions to test navigation
     }
 }

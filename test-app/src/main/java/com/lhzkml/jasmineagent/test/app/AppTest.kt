@@ -21,10 +21,13 @@ import androidx.compose.ui.test.onNodeWithText
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Rule
+import org.junit.runner.RunWith
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
 import com.lhzkml.jasmineagent.core.data.di.fakeAgents
 import com.lhzkml.jasmineagent.ui.MainActivity
 
+@RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
 class AppTest {
 
