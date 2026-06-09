@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,6 @@
 
 package com.lhzkml.jasmineagent.feature.agent.ui
 
-import com.lhzkml.jasmineagent.core.ui.JasmineTheme
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,85 +45,79 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import com.lhzkml.jasmineagent.core.ui.JasmineTheme
+import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
+import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
+import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
 
 @Composable
 fun AgentScreen(
-    onItemClick: (NavKey) -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: AgentViewModel = hiltViewModel()
+  onItemClick: (NavKey) -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: AgentViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-    when (val s = state) {
-        is Loading -> LoadingContent(modifier)
-        is Error -> ErrorContent(s.throwable.message, modifier)
-        is Success -> AgentContent(
-            items = s.data,
-            onSave = viewModel::addAgent,
-            onItemClick = onItemClick,
-            modifier = modifier
-        )
-    }
+  val state by viewModel.uiState.collectAsStateWithLifecycle()
+  when (val s = state) {
+    is Loading -> LoadingContent(modifier)
+    is Error -> ErrorContent(s.throwable.message, modifier)
+    is Success ->
+      AgentContent(
+        items = s.data,
+        onSave = viewModel::addAgent,
+        onItemClick = onItemClick,
+        modifier = modifier,
+      )
+  }
 }
 
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize().safeDrawingPadding(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
+  Box(modifier = modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.Center) {
+    CircularProgressIndicator()
+  }
 }
 
 @Composable
 private fun ErrorContent(message: String?, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize().safeDrawingPadding(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = message ?: "Unknown error",
-            color = MaterialTheme.colorScheme.error
-        )
-    }
+  Box(modifier = modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.Center) {
+    Text(text = message ?: "Unknown error", color = MaterialTheme.colorScheme.error)
+  }
 }
 
 @Composable
 internal fun AgentContent(
-    items: List<String>,
-    onSave: (name: String) -> Unit,
-    onItemClick: (NavKey) -> Unit,
-    modifier: Modifier = Modifier
+  items: List<String>,
+  onSave: (name: String) -> Unit,
+  onItemClick: (NavKey) -> Unit,
+  modifier: Modifier = Modifier,
 ) {
-    Column(modifier.safeDrawingPadding()) {
-        var nameAgent by remember { mutableStateOf("Compose") }
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            TextField(
-                modifier = Modifier.weight(1f),
-                value = nameAgent,
-                onValueChange = { nameAgent = it },
-                label = { Text("Agent name") }
-            )
+  Column(modifier.safeDrawingPadding()) {
+    var nameAgent by remember { mutableStateOf("Compose") }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+      TextField(
+        modifier = Modifier.weight(1f),
+        value = nameAgent,
+        onValueChange = { nameAgent = it },
+        label = { Text("Agent name") },
+      )
 
-            Button(modifier = Modifier.width(96.dp), onClick = { onSave(nameAgent) }) {
-                Text("Save")
-            }
-        }
-        LazyColumn {
-            items(items) { item ->
-                Text(
-                    text = "Saved item: $item",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onItemClick(com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main) }
-                        .padding(vertical = 8.dp)
-                )
-            }
-        }
+      Button(modifier = Modifier.width(96.dp), onClick = { onSave(nameAgent) }) { Text("Save") }
     }
+    LazyColumn {
+      items(items) { item ->
+        Text(
+          text = "Saved item: $item",
+          modifier =
+            Modifier.fillMaxWidth()
+              .clickable { onItemClick(com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main) }
+              .padding(vertical = 8.dp),
+        )
+      }
+    }
+  }
 }
 
 // Previews
@@ -135,15 +125,15 @@ internal fun AgentContent(
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    JasmineTheme {
-        AgentContent(items = listOf("Compose", "Room", "Kotlin"), onSave = {}, onItemClick = {})
-    }
+  JasmineTheme {
+    AgentContent(items = listOf("Compose", "Room", "Kotlin"), onSave = {}, onItemClick = {})
+  }
 }
 
 @Preview(showBackground = true, widthDp = 340)
 @Composable
 private fun PortraitPreview() {
-    JasmineTheme {
-        AgentContent(items = listOf("Compose", "Room", "Kotlin"), onSave = {}, onItemClick = {})
-    }
+  JasmineTheme {
+    AgentContent(items = listOf("Compose", "Room", "Kotlin"), onSave = {}, onItemClick = {})
+  }
 }

@@ -23,18 +23,12 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
-@Entity
-data class Agent(
-    @PrimaryKey(autoGenerate = true)
-    val uid: Int = 0,
-    val name: String
-)
+@Entity data class Agent(@PrimaryKey(autoGenerate = true) val uid: Int = 0, val name: String)
 
 @Dao
 interface AgentDao {
-    @Query("SELECT * FROM agent ORDER BY uid DESC LIMIT :limit")
-    fun getAgents(limit: Int = 10): Flow<List<Agent>>
+  @Query("SELECT * FROM agent ORDER BY uid DESC LIMIT :limit")
+  fun getAgents(limit: Int = 10): Flow<List<Agent>>
 
-    @Insert
-    suspend fun insertAgent(item: Agent)
+  @Insert suspend fun insertAgent(item: Agent)
 }

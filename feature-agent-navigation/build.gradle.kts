@@ -17,39 +17,46 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.android.library)
+  alias(libs.plugins.compose.compiler)
+  alias(libs.plugins.kotlin.serialization)
+
+  alias(libs.plugins.detekt)
+  alias(libs.plugins.spotless)
 }
 
 android {
-    namespace = "com.lhzkml.jasmineagent.feature.agent.navigation.keys"
-    compileSdk = 36
-    defaultConfig {
-        minSdk = 23
-        consumerProguardFiles("consumer-rules.pro")
-    }
-    buildFeatures {
-        compose = true
-        aidl = false
-        buildConfig = false
-        shaders = false
-    }
+  namespace = "com.lhzkml.jasmineagent.feature.agent.navigation.keys"
+  compileSdk = 36
+  defaultConfig {
+    minSdk = 23
+    consumerProguardFiles("consumer-rules.pro")
+  }
+  buildFeatures {
+    compose = true
+    aidl = false
+    buildConfig = false
+    shaders = false
+  }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+  lint {
+    abortOnError = true
+    warningsAsErrors = true
+    disable.add("OldTargetApi")
+    disable.add("GradleDependency")
+    disable.add("Aligned16KB")
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
-    }
-}
+kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 
 dependencies {
-    implementation(libs.kotlinx.serialization.core)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.androidx.navigation3.runtime)
+  implementation(libs.kotlinx.serialization.core)
+  implementation(libs.kotlinx.serialization.json)
+  implementation(libs.androidx.navigation3.runtime)
 }

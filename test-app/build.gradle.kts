@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,59 +16,57 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-
 plugins {
-    alias(libs.plugins.android.test)
-    alias(libs.plugins.ksp)
+  alias(libs.plugins.android.test)
+  alias(libs.plugins.ksp)
+
+  alias(libs.plugins.detekt)
+  alias(libs.plugins.spotless)
 }
 
 android {
-    namespace = "com.lhzkml.jasmineagent.test.navigation"
-    compileSdk = 36
-    targetProjectPath = ":app"
+  namespace = "com.lhzkml.jasmineagent.test.navigation"
+  compileSdk = 36
+  targetProjectPath = ":app"
 
-    defaultConfig {
-        minSdk = 23
-        targetSdk = 36
+  defaultConfig {
+    minSdk = 23
+    targetSdk = 36
 
-        testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
-    }
+    testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
+  }
 
-    buildFeatures {
-        aidl = false
-        buildConfig = false
-        renderScript = false
-        shaders = false
-    }
+  buildFeatures {
+    aidl = false
+    buildConfig = false
+    renderScript = false
+    shaders = false
+  }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
-    }
-}
+kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 
 dependencies {
-    implementation(project(":app"))
-    val composeBom = platform(libs.androidx.compose.bom)
-    implementation(composeBom)
-    implementation(project(":core-data"))
-    implementation(project(":core-testing"))
-    implementation(project(":feature-agent"))
-    implementation(project(":feature-agent-navigation"))
+  implementation(project(":app"))
+  val composeBom = platform(libs.androidx.compose.bom)
+  implementation(composeBom)
+  implementation(project(":core-data"))
+  implementation(project(":core-testing"))
+  implementation(project(":feature-agent"))
+  implementation(project(":feature-agent-navigation"))
 
-    // Testing
-    implementation(libs.androidx.test.core)
+  // Testing
+  implementation(libs.androidx.test.core)
 
-    // Hilt and instrumented tests.
-    implementation(libs.hilt.android.testing)
-    ksp(libs.hilt.compiler)
+  // Hilt and instrumented tests.
+  implementation(libs.hilt.android.testing)
+  ksp(libs.hilt.compiler)
 
-    // Compose
-    implementation(libs.androidx.compose.ui.test.junit4)
+  // Compose
+  implementation(libs.androidx.compose.ui.test.junit4)
 }

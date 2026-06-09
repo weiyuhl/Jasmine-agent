@@ -16,23 +16,19 @@
 
 package com.lhzkml.jasmineagent.core.data
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import com.lhzkml.jasmineagent.core.database.Agent
 import com.lhzkml.jasmineagent.core.database.AgentDao
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
-/**
- * Shared test fixtures for core-data layer tests.
- */
+/** Shared test fixtures for core-data layer tests. */
 class FakeAgentDao : AgentDao {
 
-    private val data = mutableListOf<Agent>()
+  private val data = mutableListOf<Agent>()
 
-    override fun getAgents(limit: Int): Flow<List<Agent>> = flow {
-        emit(data.toList())
-    }
+  override fun getAgents(limit: Int): Flow<List<Agent>> = flow { emit(data.toList()) }
 
-    override suspend fun insertAgent(item: Agent) {
-        data.add(0, item)
-    }
+  override suspend fun insertAgent(item: Agent) {
+    data.add(0, item)
+  }
 }

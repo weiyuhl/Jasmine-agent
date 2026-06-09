@@ -16,6 +16,7 @@
 
 package com.lhzkml.jasmineagent.feature.agent.ui
 
+import com.lhzkml.jasmineagent.core.data.AgentRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -24,40 +25,35 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import com.lhzkml.jasmineagent.core.data.AgentRepository
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentViewModel
 
-/**
- * Unit tests for [AgentViewModel].
- */
+/** Unit tests for [AgentViewModel]. */
 @OptIn(ExperimentalCoroutinesApi::class) // TODO: Remove when stable
 class AgentViewModelTest {
-    @Test
-    fun uiState_initiallyLoading() = runTest {
-        val viewModel = AgentViewModel(FakeAgentRepository())
-        assertEquals(AgentUiState.Loading, viewModel.uiState.first())
-    }
+  @Test
+  fun uiState_initiallyLoading() = runTest {
+    val viewModel = AgentViewModel(FakeAgentRepository())
+    assertEquals(AgentUiState.Loading, viewModel.uiState.first())
+  }
 
-    @Test
-    fun uiState_onItemSaved_isDisplayed() = runTest {
-        val repository = FakeAgentRepository()
-        val viewModel = AgentViewModel(repository)
-        viewModel.addAgent("Test Agent")
-        val state = viewModel.uiState.first()
-        assertTrue(state is AgentUiState.Success)
-        assertEquals(listOf("Test Agent"), (state as AgentUiState.Success).data)
-    }
+  @Test
+  fun uiState_onItemSaved_isDisplayed() = runTest {
+    val repository = FakeAgentRepository()
+    val viewModel = AgentViewModel(repository)
+    viewModel.addAgent("Test Agent")
+    val state = viewModel.uiState.first()
+    assertTrue(state is AgentUiState.Success)
+    assertEquals(listOf("Test Agent"), (state as AgentUiState.Success).data)
+  }
 }
 
 private class FakeAgentRepository : AgentRepository {
 
-    private val data = mutableListOf<String>()
+  private val data = mutableListOf<String>()
 
-    override val agents: Flow<List<String>>
-        get() = flow { emit(data.toList()) }
+  override val agents: Flow<List<String>>
+    get() = flow { emit(data.toList()) }
 
-    override suspend fun add(name: String) {
-        data.add(0, name)
-    }
+  override suspend fun add(name: String) {
+    data.add(0, name)
+  }
 }

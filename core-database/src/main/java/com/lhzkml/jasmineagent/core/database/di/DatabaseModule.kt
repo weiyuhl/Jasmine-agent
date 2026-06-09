@@ -18,46 +18,42 @@ package com.lhzkml.jasmineagent.core.database.di
 
 import android.content.Context
 import androidx.room.Room
+import com.lhzkml.jasmineagent.core.database.AgentDao
+import com.lhzkml.jasmineagent.core.database.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import net.sqlcipher.database.SupportFactory
-import com.lhzkml.jasmineagent.core.database.AppDatabase
-import com.lhzkml.jasmineagent.core.database.AgentDao
 import javax.inject.Singleton
+import net.sqlcipher.database.SupportFactory
 
 @Module
 @InstallIn(SingletonComponent::class)
 class DatabaseModule {
 
-    @Provides
-    @Singleton
-    fun provideAgentDao(appDatabase: AppDatabase): AgentDao {
-        return appDatabase.agentDao()
-    }
+  @Provides
+  @Singleton
+  fun provideAgentDao(appDatabase: AppDatabase): AgentDao {
+    return appDatabase.agentDao()
+  }
 
-    @Provides
-    @Singleton
-    fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
-        val passphrase = generatePassphrase(appContext)
-        val factory = SupportFactory(passphrase)
-        return Room.databaseBuilder(
-            appContext,
-            AppDatabase::class.java,
-            "Agent"
-        )
-            .openHelperFactory(factory)
-            .build()
-    }
+  @Provides
+  @Singleton
+  fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
+    val passphrase = generatePassphrase(appContext)
+    val factory = SupportFactory(passphrase)
+    return Room.databaseBuilder(appContext, AppDatabase::class.java, "Agent")
+      .openHelperFactory(factory)
+      .build()
+  }
 
-    private fun generatePassphrase(context: Context): ByteArray {
-        // In production, derive the passphrase from a securely stored key
-        // (e.g., Android Keystore via EncryptedSharedPreferences).
-        // This implementation uses a combination of application package name
-        // and a hardcoded seed as the passphrase material.
-        val seed = "jasmine-agent-db-secret"
-        return (context.packageName + seed).toByteArray(Charsets.UTF_8)
-    }
+  private fun generatePassphrase(context: Context): ByteArray {
+    // In production, derive the passphrase from a securely stored key
+    // (e.g., Android Keystore via EncryptedSharedPreferences).
+    // This implementation uses a combination of application package name
+    // and a hardcoded seed as the passphrase material.
+    val seed = "jasmine-agent-db-secret"
+    return (context.packageName + seed).toByteArray(Charsets.UTF_8)
+  }
 }

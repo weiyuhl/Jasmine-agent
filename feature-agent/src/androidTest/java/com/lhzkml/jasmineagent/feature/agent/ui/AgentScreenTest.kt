@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,20 +29,17 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AgentScreenTest {
 
-    @get:Rule
-    val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+  @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
-    @Before
-    fun setup() {
-        composeTestRule.setContent {
-            AgentContent(FAKE_DATA, onSave = {}, onItemClick = {})
-        }
-    }
+  @Before
+  fun setup() {
+    composeTestRule.setContent { AgentContent(FAKE_DATA, onSave = {}, onItemClick = {}) }
+  }
 
-    @Test
-    fun firstItem_exists() {
-        composeTestRule.onNodeWithText(FAKE_DATA.first()).assertExists().performClick()
-    }
+  @Test
+  fun firstItem_exists() {
+    composeTestRule.onNodeWithText(FAKE_DATA.first()).assertExists().performClick()
+  }
 }
 
 private val FAKE_DATA = listOf("Compose", "Room", "Kotlin")

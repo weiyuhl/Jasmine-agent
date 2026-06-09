@@ -29,14 +29,12 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class NavigationTest {
 
-    @get:Rule(order = 0)
-    var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-    @get:Rule(order = 1)
-    val composeTestRule = createAndroidComposeRule<MainActivity>()
+  @get:Rule(order = 1) val composeTestRule = createAndroidComposeRule<MainActivity>()
 
-    @Test
-    fun mainScreen_showsSaveButton() {
-        composeTestRule.onNodeWithText("Save").assertExists()
-    }
+  @Test
+  fun mainScreen_showsSaveButton() {
+    composeTestRule.onNodeWithText("Save").assertExists()
+  }
 }

@@ -15,3 +15,37 @@
  */
 
 // Root build.gradle.kts
+
+plugins {
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.spotless) apply false
+}
+
+subprojects {
+    afterEvaluate {
+        if (plugins.hasPlugin("io.gitlab.arturbosch.detekt")) {
+            configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+                buildUponDefaultConfig = true
+                allRules = false
+                config.setFrom(rootProject.file("detekt-config.yml"))
+            }
+        }
+        if (plugins.hasPlugin("com.diffplug.spotless")) {
+            configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+                kotlin {
+                    target("src/**/*.kt")
+                    targetExclude("**/build/**")
+                    ktfmt("0.52").googleStyle()
+                    trimTrailingWhitespace()
+                    endWithNewline()
+                }
+                kotlinGradle {
+                    target("*.kts")
+                    ktfmt("0.52").googleStyle()
+                    trimTrailingWhitespace()
+                    endWithNewline()
+                }
+            }
+        }
+    }
+}

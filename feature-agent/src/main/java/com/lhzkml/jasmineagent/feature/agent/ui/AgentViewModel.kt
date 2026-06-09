@@ -18,38 +18,38 @@ package com.lhzkml.jasmineagent.feature.agent.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lhzkml.jasmineagent.core.data.AgentRepository
+import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
+import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
+import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import com.lhzkml.jasmineagent.core.data.AgentRepository
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
-import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
-import javax.inject.Inject
 
 @HiltViewModel
-class AgentViewModel @Inject constructor(
-    private val agentRepository: AgentRepository
-) : ViewModel() {
+class AgentViewModel @Inject constructor(private val agentRepository: AgentRepository) :
+  ViewModel() {
 
-    val uiState: StateFlow<AgentUiState> = agentRepository
-        .agents.map<List<String>, AgentUiState> { Success(data = it) }
-        .catch { emit(Error(it)) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
+  val uiState: StateFlow<AgentUiState> =
+    agentRepository.agents
+      .map<List<String>, AgentUiState> { Success(data = it) }
+      .catch { emit(Error(it)) }
+      .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Loading)
 
-    fun addAgent(name: String) {
-        viewModelScope.launch {
-            agentRepository.add(name)
-        }
-    }
+  fun addAgent(name: String) {
+    viewModelScope.launch { agentRepository.add(name) }
+  }
 }
 
 sealed interface AgentUiState {
-    object Loading : AgentUiState
-    data class Error(val throwable: Throwable) : AgentUiState
-    data class Success(val data: List<String>) : AgentUiState
+  object Loading : AgentUiState
+
+  data class Error(val throwable: Throwable) : AgentUiState
+
+  data class Success(val data: List<String>) : AgentUiState
 }

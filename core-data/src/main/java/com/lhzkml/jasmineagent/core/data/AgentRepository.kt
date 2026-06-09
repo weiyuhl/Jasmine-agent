@@ -16,26 +16,24 @@
 
 package com.lhzkml.jasmineagent.core.data
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import com.lhzkml.jasmineagent.core.database.Agent
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 interface AgentRepository {
-    val agents: Flow<List<String>>
+  val agents: Flow<List<String>>
 
-    suspend fun add(name: String)
+  suspend fun add(name: String)
 }
 
-class DefaultAgentRepository @Inject constructor(
-    private val agentDao: AgentDao
-) : AgentRepository {
+class DefaultAgentRepository @Inject constructor(private val agentDao: AgentDao) : AgentRepository {
 
-    override val agents: Flow<List<String>> =
-        agentDao.getAgents().map { items -> items.map { it.name } }
+  override val agents: Flow<List<String>> =
+    agentDao.getAgents().map { items -> items.map { it.name } }
 
-    override suspend fun add(name: String) {
-        agentDao.insertAgent(Agent(name = name))
-    }
+  override suspend fun add(name: String) {
+    agentDao.insertAgent(Agent(name = name))
+  }
 }

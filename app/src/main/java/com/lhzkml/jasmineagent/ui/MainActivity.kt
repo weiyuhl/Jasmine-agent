@@ -25,29 +25,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import dagger.hilt.android.AndroidEntryPoint
 import com.lhzkml.jasmineagent.core.ui.JasmineTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(
-                lightScrim = android.graphics.Color.TRANSPARENT,
-                darkScrim = android.graphics.Color.TRANSPARENT
-            )
+  override fun onCreate(savedInstanceState: Bundle?) {
+    enableEdgeToEdge(
+      statusBarStyle =
+        SystemBarStyle.auto(
+          lightScrim = android.graphics.Color.TRANSPARENT,
+          darkScrim = android.graphics.Color.TRANSPARENT,
         )
-        super.onCreate(savedInstanceState)
-        setContent {
-            JasmineTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainNavigation()
-                }
-            }
+    )
+    super.onCreate(savedInstanceState)
+    setContent {
+      JasmineTheme {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          MainNavigation()
         }
+      }
     }
+  }
 }

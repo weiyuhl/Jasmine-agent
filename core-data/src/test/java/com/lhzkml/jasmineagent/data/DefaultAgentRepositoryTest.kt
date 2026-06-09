@@ -16,26 +16,24 @@
 
 package com.lhzkml.jasmineagent.data
 
+import com.lhzkml.jasmineagent.core.data.DefaultAgentRepository
+import com.lhzkml.jasmineagent.core.data.FakeAgentDao
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import com.lhzkml.jasmineagent.core.data.DefaultAgentRepository
-import com.lhzkml.jasmineagent.core.data.FakeAgentDao
 
-/**
- * Unit tests for [DefaultAgentRepository].
- */
+/** Unit tests for [DefaultAgentRepository]. */
 @OptIn(ExperimentalCoroutinesApi::class) // TODO: Remove when stable
 class DefaultAgentRepositoryTest {
 
-    @Test
-    fun agents_newItemSaved_itemIsReturned() = runTest {
-        val repository = DefaultAgentRepository(FakeAgentDao())
+  @Test
+  fun agents_newItemSaved_itemIsReturned() = runTest {
+    val repository = DefaultAgentRepository(FakeAgentDao())
 
-        repository.add("Repository")
+    repository.add("Repository")
 
-        assertEquals(repository.agents.first().size, 1)
-    }
+    assertEquals(repository.agents.first().size, 1)
+  }
 }

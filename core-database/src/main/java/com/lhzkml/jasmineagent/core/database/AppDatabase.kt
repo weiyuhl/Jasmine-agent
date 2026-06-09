@@ -21,5 +21,5 @@ import androidx.room.RoomDatabase
 
 @Database(entities = [Agent::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun agentDao(): AgentDao
+  abstract fun agentDao(): AgentDao
 }
