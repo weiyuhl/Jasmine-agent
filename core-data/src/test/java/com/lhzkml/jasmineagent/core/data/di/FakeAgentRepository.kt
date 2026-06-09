@@ -16,21 +16,17 @@
 
 package com.lhzkml.jasmineagent.core.data.di
 
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import com.lhzkml.jasmineagent.core.data.AgentRepository
-import com.lhzkml.jasmineagent.core.data.DefaultAgentRepository
-import javax.inject.Singleton
+import javax.inject.Inject
 
-@Module
-@InstallIn(SingletonComponent::class)
-interface DataModule {
+class FakeAgentRepository @Inject constructor() : AgentRepository {
+    override val agents: Flow<List<String>> = flowOf(fakeAgents)
 
-    @Singleton
-    @Binds
-    fun bindsAgentRepository(
-        agentRepository: DefaultAgentRepository
-    ): AgentRepository
+    override suspend fun add(name: String) {
+        throw UnsupportedOperationException("Not implemented in fake repository")
+    }
 }
+
+val fakeAgents = listOf("One", "Two", "Three")
