@@ -33,6 +33,7 @@ import javax.inject.Singleton
 class DatabaseModule {
 
     @Provides
+    @Singleton
     fun provideAgentDao(appDatabase: AppDatabase): AgentDao {
         return appDatabase.agentDao()
     }
