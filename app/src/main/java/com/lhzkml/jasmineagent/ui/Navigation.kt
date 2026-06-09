@@ -16,7 +16,7 @@
 
 package com.lhzkml.jasmineagent.ui
 
-import com.lhzkml.jasmineagent.feature.agent.navigation.Main
+import com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main
 import com.lhzkml.jasmineagent.feature.agent.navigation.AgentEntryProvider
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator

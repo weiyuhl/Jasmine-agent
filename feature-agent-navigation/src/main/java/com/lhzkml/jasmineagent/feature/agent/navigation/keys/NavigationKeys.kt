@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.lhzkml.jasmineagent.feature.agent.navigation
+package com.lhzkml.jasmineagent.feature.agent.navigation.keys
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

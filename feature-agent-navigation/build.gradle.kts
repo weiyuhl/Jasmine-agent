@@ -23,7 +23,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lhzkml.jasmineagent.feature.agent.navigation"
+    namespace = "com.lhzkml.jasmineagent.feature.agent.navigation.keys"
     compileSdk = 36
     defaultConfig {
         minSdk = 23
