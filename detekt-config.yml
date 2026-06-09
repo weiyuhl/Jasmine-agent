@@ -41,7 +41,7 @@ coroutines:
   GlobalCoroutineUsage:
     active: true
   InjectDispatcher:
-    active: false
+    active: true
   RedundantSuspendModifier:
     active: true
   SleepInsteadOfDelay:
