@@ -28,7 +28,6 @@ android {
 
     defaultConfig {
         minSdk = 23
-        testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
