@@ -16,11 +16,9 @@
 
 package com.lhzkml.jasmineagent.feature.agent.ui
 
-import com.lhzkml.jasmineagent.core.data.AgentRepository
+import com.lhzkml.jasmineagent.core.data.di.FakeAgentRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -42,18 +40,6 @@ class AgentViewModelTest {
     viewModel.addAgent("Test Agent")
     val state = viewModel.uiState.first()
     assertTrue(state is AgentUiState.Success)
-    assertEquals(listOf("Test Agent"), (state as AgentUiState.Success).data)
-  }
-}
-
-private class FakeAgentRepository : AgentRepository {
-
-  private val data = mutableListOf<String>()
-
-  override val agents: Flow<List<String>>
-    get() = flow { emit(data.toList()) }
-
-  override suspend fun add(name: String) {
-    data.add(0, name)
+    assertTrue((state as AgentUiState.Success).data.contains("Test Agent"))
   }
 }
