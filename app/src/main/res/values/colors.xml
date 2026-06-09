@@ -16,4 +16,6 @@
   -->
 
 <resources>
+    <!-- Jasmine primary brand color, same as Compose Purple40 -->
+    <color name="jasmine_primary">#6650A4</color>
 </resources>
