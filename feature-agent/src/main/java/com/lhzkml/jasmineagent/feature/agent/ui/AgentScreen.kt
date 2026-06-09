@@ -40,11 +40,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
@@ -115,10 +113,7 @@ internal fun AgentContent(
             }
         }
         items.forEach { item ->
-            Text(
-                text = "Saved item: $item",
-                modifier = Modifier.clickable { onItemClick(Main) }
-            )
+            Text(text = "Saved item: $item")
         }
     }
 }
