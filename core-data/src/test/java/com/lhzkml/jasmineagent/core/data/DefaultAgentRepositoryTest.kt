@@ -51,6 +51,6 @@ class DefaultAgentRepositoryTest {
 
       repository.add("Repository")
 
-      assertEquals(repository.agents.first().size, 1)
+      assertEquals(listOf("Repository"), repository.agents.first())
     }
 }

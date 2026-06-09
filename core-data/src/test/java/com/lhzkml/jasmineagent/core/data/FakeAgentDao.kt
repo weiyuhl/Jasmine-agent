@@ -21,7 +21,7 @@ import com.lhzkml.jasmineagent.core.database.AgentDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-/** Shared test fixtures for core-data layer tests. */
+/** Test-only fake DAO for core-data layer tests. */
 class FakeAgentDao : AgentDao {
 
   private val data = mutableListOf<Agent>()

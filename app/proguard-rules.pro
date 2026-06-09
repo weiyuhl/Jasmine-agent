@@ -44,3 +44,20 @@
 
 # Navigation3
 -keep class * extends androidx.navigation3.runtime.NavKey
+# Kotlin Coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-dontwarn kotlinx.coroutines.**
+-keep class kotlinx.coroutines.** { *; }
+
+# ProfileInstaller
+-dontwarn androidx.profileinstaller.**
+-keep class androidx.profileinstaller.** { *; }
+
+# Startup
+-keep class androidx.startup.** { *; }
+-dontwarn androidx.startup.**
+
+# Compose
+-dontwarn androidx.compose.**
+-keep class androidx.compose.** { *; }
