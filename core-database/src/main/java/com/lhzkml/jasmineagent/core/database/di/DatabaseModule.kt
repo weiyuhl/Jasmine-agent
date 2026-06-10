@@ -17,7 +17,11 @@
 package com.lhzkml.jasmineagent.core.database.di
 
 import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import com.lhzkml.jasmineagent.core.database.AppDatabase
 import dagger.Module
@@ -25,6 +29,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.security.MessageDigest
+import java.security.SecureRandom
 import javax.inject.Singleton
 import net.sqlcipher.database.SupportFactory
 
@@ -48,12 +54,33 @@ class DatabaseModule {
       .build()
   }
 
+  @Provides
+  @Singleton
+  fun provideEncryptedPreferences(@ApplicationContext appContext: Context): SharedPreferences {
+    val masterKey =
+      MasterKey.Builder(appContext).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+    return EncryptedSharedPreferences.create(
+      appContext,
+      "jasmine_db_secrets",
+      masterKey,
+      EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+    )
+  }
+
   private fun generatePassphrase(context: Context): ByteArray {
-    // In production, derive the passphrase from a securely stored key
-    // (e.g., Android Keystore via EncryptedSharedPreferences).
-    // This implementation uses a combination of application package name
-    // and a hardcoded seed as the passphrase material.
-    val seed = "jasmine-agent-db-secret"
-    return (context.packageName + seed).toByteArray(Charsets.UTF_8)
+    val prefs = provideEncryptedPreferences(context)
+    val saltKey = "db_passphrase_salt"
+    var salt = prefs.getString(saltKey, null)
+
+    if (salt == null) {
+      val bytes = ByteArray(32)
+      SecureRandom().nextBytes(bytes)
+      salt = bytes.joinToString(separator = "") { "%02x".format(it) }
+      prefs.edit { putString(saltKey, salt) }
+    }
+
+    val material = context.packageName + salt.toString()
+    return MessageDigest.getInstance("SHA-256").digest(material.toByteArray(Charsets.UTF_8))
   }
 }

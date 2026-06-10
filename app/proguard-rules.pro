@@ -61,3 +61,13 @@
 # Compose
 -dontwarn androidx.compose.**
 -keep class androidx.compose.** { *; }
+# Security Crypto (EncryptedSharedPreferences / MasterKey)
+-keep class androidx.security.crypto.** { *; }
+-dontwarn androidx.security.crypto.**
+-keepclassmembers class * extends com.google.crypto.tink.shaded.protobuf.GeneratedMessageLite {
+    <fields>;
+}
+# Tink / Security Crypto internal annotations (errorprone)
+-dontwarn com.google.errorprone.annotations.**
+-dontwarn com.google.crypto.tink.**
+-keep class com.google.crypto.tink.** { *; }

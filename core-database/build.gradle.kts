@@ -64,6 +64,8 @@ dependencies {
   implementation(libs.androidx.room.ktx)
   implementation(libs.sqlcipher)
   ksp(libs.androidx.room.compiler)
+  implementation(libs.androidx.core.ktx)
+  implementation(libs.security.crypto)
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
 }
