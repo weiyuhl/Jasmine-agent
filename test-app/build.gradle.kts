@@ -27,12 +27,12 @@ plugins {
 
 android {
   namespace = "com.lhzkml.jasmineagent.test.app"
-  compileSdk = 36
+  compileSdk = 37
   targetProjectPath = ":app"
 
   defaultConfig {
     minSdk = 23
-    targetSdk = 36
+    targetSdk = 37
 
     testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
   }

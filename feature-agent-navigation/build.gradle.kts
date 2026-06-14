@@ -25,7 +25,7 @@ plugins {
 
 android {
   namespace = "com.lhzkml.jasmineagent.feature.agent.navigation.keys"
-  compileSdk = 36
+  compileSdk = 37
   defaultConfig {
     minSdk = 23
     consumerProguardFiles("consumer-rules.pro")

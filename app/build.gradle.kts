@@ -30,12 +30,12 @@ plugins {
 
 android {
   namespace = "com.lhzkml.jasmineagent"
-  compileSdk = 36
+  compileSdk = 37
 
   defaultConfig {
     applicationId = "com.lhzkml.jasmineagent"
     minSdk = 23
-    targetSdk = 36
+    targetSdk = 37
     versionCode = 1
     versionName = "1.0"
 

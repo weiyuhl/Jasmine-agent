@@ -25,7 +25,7 @@ plugins {
 
 android {
   namespace = "com.lhzkml.jasmineagent.core.data"
-  compileSdk = 36
+  compileSdk = 37
 
   defaultConfig {
     minSdk = 23
