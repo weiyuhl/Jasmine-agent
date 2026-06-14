@@ -33,7 +33,12 @@ android {
   }
 }
 
-kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
+kotlin {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_17)
+    moduleName.set("jasmineagent_test_app")
+  }
+}
 
 dependencies {
   implementation(project(":app"))

@@ -39,7 +39,12 @@ android {
 
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 
-kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
+kotlin {
+  compilerOptions {
+    jvmTarget.set(JvmTarget.JVM_17)
+    moduleName.set("jasmineagent_core_database")
+  }
+}
 
 dependencies {
   // Arch Components
