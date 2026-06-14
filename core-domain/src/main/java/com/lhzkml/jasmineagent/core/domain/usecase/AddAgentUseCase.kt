@@ -13,7 +13,7 @@ sealed interface AddAgentResult {
   data class ValidationFailure(val error: ValidationError, val cause: Throwable? = null) :
     AddAgentResult
 
-  data class RepositoryFailure(val message: String, val cause: Throwable) : AddAgentResult
+  data class RepositoryFailure(val message: String?, val cause: Throwable) : AddAgentResult
 }
 
 class AddAgentUseCase @Inject constructor(private val repository: AgentRepository) {
@@ -31,7 +31,7 @@ class AddAgentUseCase @Inject constructor(private val repository: AgentRepositor
     } catch (e: IllegalArgumentException) {
       AddAgentResult.ValidationFailure(ValidationError.AlreadyExists(name.trim()), e)
     } catch (e: AgentRepositoryException) {
-      AddAgentResult.RepositoryFailure(e.message ?: "Unknown error", e)
+      AddAgentResult.RepositoryFailure(e.message, e)
     }
   }
 }

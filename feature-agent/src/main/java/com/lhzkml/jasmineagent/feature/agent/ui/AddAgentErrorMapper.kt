@@ -7,10 +7,6 @@ internal fun ValidationError.toAddAgentError(): AddAgentError =
     is ValidationError.EmptyInput -> AddAgentError.EmptyName
     is ValidationError.TooLong -> AddAgentError.NameTooLong(actual, max)
     is ValidationError.TooShort -> AddAgentError.NameTooShort(actual, min)
-    is ValidationError.InvalidCharacters ->
-      AddAgentError.InvalidCharacters(
-        "Invalid characters: ${invalidChars.joinToString(", ") { "'$it'" }}"
-      )
+    is ValidationError.InvalidCharacters -> AddAgentError.InvalidCharacters(invalidChars)
     is ValidationError.AlreadyExists -> AddAgentError.DuplicateName(name)
-    is ValidationError.Custom -> AddAgentError.CustomError(message)
   }

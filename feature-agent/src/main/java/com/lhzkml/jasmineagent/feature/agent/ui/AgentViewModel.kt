@@ -55,12 +55,12 @@ constructor(
         is AddAgentResult.ValidationFailure -> {
           val error = result.error.toAddAgentError()
           _addAgentState.value = AddAgentState.Error(error)
-          _events.send(AgentEvent.ShowError(error.message))
+          _events.send(AgentEvent.ShowError(error))
         }
         is AddAgentResult.RepositoryFailure -> {
           val error = AddAgentError.DatabaseError(result.message, result.cause)
           _addAgentState.value = AddAgentState.Error(error)
-          _events.send(AgentEvent.ShowError(error.message))
+          _events.send(AgentEvent.ShowError(error))
         }
       }
     }
@@ -104,36 +104,21 @@ sealed interface AddAgentState {
 }
 
 sealed interface AddAgentError {
-  val message: String
+  data object EmptyName : AddAgentError
 
-  data object EmptyName : AddAgentError {
-    override val message: String = "Agent name cannot be empty"
-  }
+  data class NameTooLong(val actual: Int, val max: Int) : AddAgentError
 
-  data class NameTooLong(val actual: Int, val max: Int) : AddAgentError {
-    override val message: String = "Agent name too long ($actual characters, max $max)"
-  }
+  data class NameTooShort(val actual: Int, val min: Int) : AddAgentError
 
-  data class NameTooShort(val actual: Int, val min: Int) : AddAgentError {
-    override val message: String = "Agent name too short ($actual characters, min $min)"
-  }
+  data class InvalidCharacters(val invalidChars: Set<Char>) : AddAgentError
 
-  data class InvalidCharacters(val details: String) : AddAgentError {
-    override val message: String =
-      "Agent name contains invalid characters. Only letters, numbers, spaces, hyphens, underscores, and dots are allowed. $details"
-  }
+  data class DuplicateName(val name: String) : AddAgentError
 
-  data class DuplicateName(val name: String) : AddAgentError {
-    override val message: String = "Agent with name '$name' already exists"
-  }
-
-  data class CustomError(override val message: String) : AddAgentError
-
-  data class DatabaseError(override val message: String, val cause: Throwable) : AddAgentError
+  data class DatabaseError(val message: String?, val cause: Throwable) : AddAgentError
 }
 
 sealed interface AgentEvent {
-  data class ShowError(val message: String) : AgentEvent
+  data class ShowError(val error: AddAgentError) : AgentEvent
 
   data class AgentAdded(val name: String) : AgentEvent
 }

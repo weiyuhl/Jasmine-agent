@@ -1,8 +1,11 @@
 package com.lhzkml.jasmineagent.ui
 
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.lhzkml.jasmineagent.feature.agent.R
+import com.lhzkml.jasmineagent.feature.agent.ui.AgentSemantics
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Rule
@@ -19,6 +22,9 @@ class NavigationTest {
 
   @Test
   fun mainScreen_showsSaveButton() {
-    composeTestRule.onNodeWithText("Save").assertExists()
+    composeTestRule
+      .onNodeWithText(composeTestRule.activity.getString(R.string.agent_action_save))
+      .assertExists()
+    composeTestRule.onNodeWithTag(AgentSemantics.SAVE_BUTTON).assertExists()
   }
 }

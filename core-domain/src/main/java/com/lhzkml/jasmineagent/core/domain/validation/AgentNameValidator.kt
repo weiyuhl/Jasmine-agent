@@ -7,30 +7,15 @@ sealed interface ValidationResult {
 }
 
 sealed interface ValidationError {
-  val message: String
+  data object EmptyInput : ValidationError
 
-  data object EmptyInput : ValidationError {
-    override val message: String = "Input cannot be empty"
-  }
+  data class TooShort(val actual: Int, val min: Int) : ValidationError
 
-  data class TooShort(val actual: Int, val min: Int) : ValidationError {
-    override val message: String = "Input too short ($actual characters, minimum $min)"
-  }
+  data class TooLong(val actual: Int, val max: Int) : ValidationError
 
-  data class TooLong(val actual: Int, val max: Int) : ValidationError {
-    override val message: String = "Input too long ($actual characters, maximum $max)"
-  }
+  data class InvalidCharacters(val invalidChars: Set<Char>) : ValidationError
 
-  data class InvalidCharacters(val invalidChars: Set<Char>) : ValidationError {
-    override val message: String =
-      "Invalid characters found: ${invalidChars.joinToString(", ") { "'$it'" }}"
-  }
-
-  data class AlreadyExists(val name: String) : ValidationError {
-    override val message: String = "Item with name '$name' already exists"
-  }
-
-  data class Custom(override val message: String) : ValidationError
+  data class AlreadyExists(val name: String) : ValidationError
 }
 
 object AgentNameValidator {

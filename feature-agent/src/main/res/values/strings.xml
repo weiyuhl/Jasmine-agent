@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="agent_action_save">Save</string>
+    <string name="agent_action_retry">Retry</string>
+    <string name="agent_field_name_label">Agent name</string>
+    <string name="agent_empty_message">No agents yet. Add one above!</string>
+    <string name="agent_error_unknown">Unknown error occurred</string>
+    <string name="agent_added_message">Agent \'%1$s\' added successfully</string>
+    <string name="agent_screen_content_description">Agent management screen</string>
+    <string name="agent_form_content_description">Add agent form</string>
+    <string name="agent_list_content_description">Agent list</string>
+    <string name="agent_list_item_content_description">Agent %1$s</string>
+    <string name="agent_loading_content_description">Loading agents</string>
+    <string name="agent_error_content_description">Agent error message</string>
+    <string name="agent_snackbar_content_description">Agent status message</string>
+    <string name="agent_error_empty_name">Agent name cannot be empty</string>
+    <plurals name="agent_error_name_too_long">
+        <item quantity="one">Agent name too long (%1$d character, max %2$d)</item>
+        <item quantity="other">Agent name too long (%1$d characters, max %2$d)</item>
+    </plurals>
+    <plurals name="agent_error_name_too_short">
+        <item quantity="one">Agent name too short (%1$d character, min %2$d)</item>
+        <item quantity="other">Agent name too short (%1$d characters, min %2$d)</item>
+    </plurals>
+    <string name="agent_error_invalid_characters">Agent name contains invalid characters. Only letters, numbers, spaces, hyphens, underscores, and dots are allowed. Invalid characters: %1$s</string>
+    <string name="agent_error_duplicate_name">Agent with name \'%1$s\' already exists</string>
+    <string name="agent_error_database_fallback">Database error occurred</string>
+</resources>
