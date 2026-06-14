@@ -17,3 +17,7 @@ keystore.properties
 
 # Kotlin
 .kotlin/
+
+# Local AI assistant configuration
+.trae/
+.claude/
