@@ -74,7 +74,7 @@
 - **新增字段**: createdAt, updatedAt, status, description
 - **新增索引**: name (UNIQUE), created_at
 - **新增方法**: 9个查询/更新方法
-- **旧版本兼容迁移**: 已删除 `MIGRATION_1_2`
+- **旧版本兼容迁移**: 已彻底删除
 
 #### ✅ 9. ProGuard 优化
 - **app/proguard-rules.pro**: 移除过宽规则
@@ -249,7 +249,7 @@ when {
 ```
 
 ### 旧版本兼容迁移
-已删除 `MIGRATION_1_2`、Room `.addMigrations(...)` 注册和 v1 schema，当前版本只保留 v2 schema 新建路径。
+已删除旧版本迁移代码、Room 迁移注册和 v1 schema，当前版本只保留 v2 schema 新建路径。
 
 ---
 

@@ -124,8 +124,7 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 - `getActiveAgentCount()` - 统计活跃数量
 
 **旧版本兼容迁移**:
-- 已彻底删除 `MIGRATION_1_2`
-- 已移除 Room `.addMigrations(...)` 注册
+- 已彻底删除旧版本迁移代码和注册入口
 - 当前版本只保留 v2 schema 新建路径
 
 #### 9. ProGuard 规则优化和 consumer-rules.pro 填充 ✅

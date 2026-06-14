@@ -108,7 +108,7 @@ ProfileInstaller.writeProfile(context, executor, diagnosticsCallback)
 
 **新增方法**: 9个查询/更新/删除方法
 
-**旧版本兼容迁移**: 已彻底删除 `MIGRATION_1_2`，当前版本只保留 v2 schema 新建路径
+**旧版本兼容迁移**: 已彻底删除，当前版本只保留 v2 schema 新建路径
 
 #### 9. ProGuard 优化 ✅
 **app/proguard-rules.pro**: 移除过宽规则
