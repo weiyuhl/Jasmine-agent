@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentResult
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
-import com.lhzkml.jasmineagent.core.domain.validation.ValidationError
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
@@ -73,20 +72,6 @@ constructor(
 
   fun resetAddAgentState() {
     _addAgentState.value = AddAgentState.Idle
-  }
-
-  private fun ValidationError.toAddAgentError(): AddAgentError {
-    return when (this) {
-      is ValidationError.EmptyInput -> AddAgentError.EmptyName
-      is ValidationError.TooLong -> AddAgentError.NameTooLong(actual, max)
-      is ValidationError.TooShort -> AddAgentError.NameTooShort(actual, min)
-      is ValidationError.InvalidCharacters ->
-        AddAgentError.InvalidCharacters(
-          "Invalid characters: ${invalidChars.joinToString(", ") { "'$it'" }}"
-        )
-      is ValidationError.AlreadyExists -> AddAgentError.DuplicateName(name)
-      is ValidationError.Custom -> AddAgentError.CustomError(message)
-    }
   }
 
   private fun loadAgents() {

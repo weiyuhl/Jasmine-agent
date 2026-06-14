@@ -1,5 +1,6 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
+import androidx.lifecycle.viewModelScope
 import com.lhzkml.jasmineagent.core.data.AgentRepository
 import com.lhzkml.jasmineagent.core.data.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.database.Agent
@@ -9,11 +10,13 @@ import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -27,7 +30,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class AgentViewModelTest {
 
-  private val testDispatcher = StandardTestDispatcher()
+  private lateinit var testDispatcher: TestDispatcher
   private lateinit var viewModel: AgentViewModel
   private lateinit var fakeRepository: FakeAgentRepository
   private lateinit var addAgentUseCase: AddAgentUseCase
@@ -35,6 +38,7 @@ class AgentViewModelTest {
 
   @Before
   fun setup() {
+    testDispatcher = StandardTestDispatcher()
     Dispatchers.setMain(testDispatcher)
     fakeRepository = FakeAgentRepository()
     addAgentUseCase = AddAgentUseCase(fakeRepository)
@@ -44,6 +48,7 @@ class AgentViewModelTest {
 
   @After
   fun tearDown() {
+    viewModel.viewModelScope.cancel()
     Dispatchers.resetMain()
   }
 
@@ -52,8 +57,12 @@ class AgentViewModelTest {
     runTest(testDispatcher) {
       val localViewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase)
 
-      val initialState = localViewModel.uiState.value
-      assertTrue("Initial state should be Loading", initialState is AgentUiState.Loading)
+      try {
+        val initialState = localViewModel.uiState.value
+        assertTrue("Initial state should be Loading", initialState is AgentUiState.Loading)
+      } finally {
+        localViewModel.viewModelScope.cancel()
+      }
     }
 
   @Test

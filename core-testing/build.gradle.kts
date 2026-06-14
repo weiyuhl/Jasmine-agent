@@ -23,6 +23,14 @@ android {
     shaders = false
   }
 
+  lint {
+    abortOnError = true
+    warningsAsErrors = true
+    disable.add("OldTargetApi")
+    disable.add("GradleDependency")
+    disable.add("Aligned16KB")
+  }
+
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17

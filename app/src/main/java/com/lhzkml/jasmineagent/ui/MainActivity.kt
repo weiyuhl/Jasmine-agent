@@ -1,5 +1,6 @@
 package com.lhzkml.jasmineagent.ui
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -16,13 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    enableEdgeToEdge(
-      statusBarStyle =
-        SystemBarStyle.auto(
-          lightScrim = android.graphics.Color.TRANSPARENT,
-          darkScrim = android.graphics.Color.TRANSPARENT,
-        )
-    )
+    enableTransparentSystemBars()
     super.onCreate(savedInstanceState)
     setContent {
       JasmineTheme {
@@ -31,5 +26,20 @@ class MainActivity : ComponentActivity() {
         }
       }
     }
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    enableTransparentSystemBars()
+  }
+
+  private fun enableTransparentSystemBars() {
+    enableEdgeToEdge(
+      statusBarStyle =
+        SystemBarStyle.auto(
+          lightScrim = android.graphics.Color.TRANSPARENT,
+          darkScrim = android.graphics.Color.TRANSPARENT,
+        )
+    )
   }
 }

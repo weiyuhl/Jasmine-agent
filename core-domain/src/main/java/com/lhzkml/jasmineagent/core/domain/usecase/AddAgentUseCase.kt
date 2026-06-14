@@ -18,7 +18,7 @@ sealed interface AddAgentResult {
 
 class AddAgentUseCase @Inject constructor(private val repository: AgentRepository) {
 
-  suspend operator fun invoke(name: String): AddAgentResult {
+  public suspend operator fun invoke(name: String): AddAgentResult {
     val validationResult = AgentNameValidator.validate(name)
 
     if (validationResult is ValidationResult.Invalid) {

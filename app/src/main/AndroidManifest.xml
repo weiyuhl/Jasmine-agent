@@ -27,6 +27,7 @@
         </provider>
         <activity
             android:name=".ui.MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="true"
             android:theme="@style/Theme.Jasmine">
             <intent-filter>
