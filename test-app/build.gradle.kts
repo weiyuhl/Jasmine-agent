@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   alias(libs.plugins.android.test)
+  alias(libs.plugins.hilt.gradle)
   alias(libs.plugins.ksp)
 
   alias(libs.plugins.detekt)
@@ -65,6 +66,7 @@ dependencies {
   implementation(libs.androidx.test.core)
 
   // Hilt and instrumented tests.
+  implementation(libs.hilt.android)
   implementation(libs.hilt.android.testing)
   ksp(libs.hilt.compiler)
 

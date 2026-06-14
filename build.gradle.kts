@@ -29,9 +29,18 @@ plugins {
 }
 
 subprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+                useVersion(libs.versions.kotlin.get())
+                because("Hilt 2.59.2 brings older kotlin-metadata-jvm versions that cannot read Kotlin 2.4 metadata.")
+            }
+        }
+    }
+
     afterEvaluate {
-        if (plugins.hasPlugin("io.gitlab.arturbosch.detekt")) {
-            configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+        if (plugins.hasPlugin("dev.detekt")) {
+            configure<dev.detekt.gradle.extensions.DetektExtension> {
                 buildUponDefaultConfig = true
                 allRules = false
                 config.setFrom(rootProject.file("detekt-config.yml"))
@@ -42,13 +51,13 @@ subprojects {
                 kotlin {
                     target("src/**/*.kt")
                     targetExclude("**/build/**")
-                    ktfmt("0.52").googleStyle()
+                    ktfmt("0.63").googleStyle()
                     trimTrailingWhitespace()
                     endWithNewline()
                 }
                 kotlinGradle {
                     target("*.kts")
-                    ktfmt("0.52").googleStyle()
+                    ktfmt("0.63").googleStyle()
                     trimTrailingWhitespace()
                     endWithNewline()
                 }

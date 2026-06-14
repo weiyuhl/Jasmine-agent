@@ -107,13 +107,12 @@ constructor(
 
   private fun loadAgents() {
     loadAgentsJob?.cancel()
-    loadAgentsJob =
-      viewModelScope.launch {
-        getAgentsUseCase()
-          .map<List<String>, AgentUiState> { Success(data = it) }
-          .catch { emit(Error(it, canRetry = true)) }
-          .collect { _uiState.value = it }
-      }
+    loadAgentsJob = viewModelScope.launch {
+      getAgentsUseCase()
+        .map<List<String>, AgentUiState> { Success(data = it) }
+        .catch { emit(Error(it, canRetry = true)) }
+        .collect { _uiState.value = it }
+    }
   }
 }
 
