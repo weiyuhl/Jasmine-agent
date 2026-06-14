@@ -115,6 +115,8 @@ naming:
     active: true
     ignoreAnnotated:
       - 'org.junit.Test'
+      - 'androidx.compose.runtime.Composable'
+      - 'androidx.compose.ui.tooling.preview.Preview'
   MatchingDeclarationName:
     active: false
   MemberNameEqualsClassName:
@@ -213,7 +215,7 @@ style:
     active: true
   ForbiddenComment:
     active: true
-    values:
+    comments:
       - 'TODO:'
       - 'FIXME:'
   ForbiddenVoid:
@@ -299,6 +301,8 @@ style:
     active: true
   UnusedPrivateMember:
     active: true
+    ignoreAnnotated:
+      - 'androidx.compose.ui.tooling.preview.Preview'
   UseAnyOrNoneInsteadOfFind:
     active: true
   UseArrayLiteralsInAnnotations:

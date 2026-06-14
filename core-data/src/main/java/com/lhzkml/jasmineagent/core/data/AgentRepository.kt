@@ -16,11 +16,12 @@
 
 package com.lhzkml.jasmineagent.core.data
 
+import android.database.sqlite.SQLiteConstraintException
+import android.database.sqlite.SQLiteException
 import com.lhzkml.jasmineagent.core.database.Agent
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 interface AgentRepository {
   val agents: Flow<List<String>>
@@ -28,12 +29,22 @@ interface AgentRepository {
   suspend fun add(name: String)
 }
 
+class AgentRepositoryException(message: String, cause: Throwable? = null) :
+  IllegalStateException(message, cause)
+
 class DefaultAgentRepository @Inject constructor(private val agentDao: AgentDao) : AgentRepository {
 
-  override val agents: Flow<List<String>> =
-    agentDao.getAgents().map { items -> items.map { it.name } }
+  override val agents: Flow<List<String>> = agentDao.getActiveAgentNames()
 
   override suspend fun add(name: String) {
-    agentDao.insertAgent(Agent(name = name))
+    val existingAgent = agentDao.getAgentByName(name)
+    require(existingAgent == null) { "Agent with name '$name' already exists" }
+    try {
+      agentDao.insertAgent(Agent(name = name))
+    } catch (e: SQLiteConstraintException) {
+      throw IllegalArgumentException("Agent with name '$name' already exists", e)
+    } catch (e: SQLiteException) {
+      throw AgentRepositoryException("Failed to add agent '$name'", e)
+    }
   }
 }

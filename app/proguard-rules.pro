@@ -1,10 +1,3 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
-
 # SQLCipher - keep native methods and database classes
 -keep class net.sqlcipher.** { *; }
 -keep class net.sqlcipher.database.** { *; }
@@ -44,11 +37,11 @@
 
 # Navigation3
 -keep class * extends androidx.navigation3.runtime.NavKey
-# Kotlin Coroutines
+
+# Kotlin Coroutines - minimal rules
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
 -dontwarn kotlinx.coroutines.**
--keep class kotlinx.coroutines.** { *; }
 
 # ProfileInstaller
 -dontwarn androidx.profileinstaller.**
@@ -58,16 +51,21 @@
 -keep class androidx.startup.** { *; }
 -dontwarn androidx.startup.**
 
-# Compose
+# Compose - minimal rules (compiler handles most)
 -dontwarn androidx.compose.**
--keep class androidx.compose.** { *; }
+
 # Security Crypto (EncryptedSharedPreferences / MasterKey)
 -keep class androidx.security.crypto.** { *; }
 -dontwarn androidx.security.crypto.**
 -keepclassmembers class * extends com.google.crypto.tink.shaded.protobuf.GeneratedMessageLite {
     <fields>;
 }
+
 # Tink / Security Crypto internal annotations (errorprone)
 -dontwarn com.google.errorprone.annotations.**
 -dontwarn com.google.crypto.tink.**
 -keep class com.google.crypto.tink.** { *; }
+
+# Paging 3
+-keep class androidx.paging.** { *; }
+-dontwarn androidx.paging.**

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.lhzkml.jasmineagent.core.database.di
 
 import android.content.Context
@@ -24,13 +26,15 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import com.lhzkml.jasmineagent.core.database.AppDatabase
+import com.lhzkml.jasmineagent.core.database.MIGRATION_1_2
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import java.security.MessageDigest
 import java.security.SecureRandom
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 import javax.inject.Singleton
 import net.sqlcipher.database.SupportFactory
 
@@ -40,17 +44,19 @@ class DatabaseModule {
 
   @Provides
   @Singleton
-  fun provideAgentDao(appDatabase: AppDatabase): AgentDao {
-    return appDatabase.agentDao()
-  }
+  fun provideAgentDao(appDatabase: AppDatabase): AgentDao = appDatabase.agentDao()
 
   @Provides
   @Singleton
-  fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
-    val passphrase = generatePassphrase(appContext)
+  fun provideAppDatabase(
+    @ApplicationContext appContext: Context,
+    encryptedPreferences: SharedPreferences,
+  ): AppDatabase {
+    val passphrase = generatePassphrase(appContext, encryptedPreferences)
     val factory = SupportFactory(passphrase)
     return Room.databaseBuilder(appContext, AppDatabase::class.java, "Agent")
       .openHelperFactory(factory)
+      .addMigrations(MIGRATION_1_2)
       .build()
   }
 
@@ -68,19 +74,40 @@ class DatabaseModule {
     )
   }
 
-  private fun generatePassphrase(context: Context): ByteArray {
-    val prefs = provideEncryptedPreferences(context)
+  private fun generatePassphrase(
+    context: Context,
+    encryptedPreferences: SharedPreferences,
+  ): ByteArray {
     val saltKey = "db_passphrase_salt"
-    var salt = prefs.getString(saltKey, null)
 
-    if (salt == null) {
-      val bytes = ByteArray(32)
-      SecureRandom().nextBytes(bytes)
-      salt = bytes.joinToString(separator = "") { "%02x".format(it) }
-      prefs.edit { putString(saltKey, salt) }
-    }
+    val salt =
+      encryptedPreferences.getString(saltKey, null)?.let { hexString ->
+        hexString.chunked(HEX_BYTE_LENGTH).map { it.toInt(HEX_RADIX).toByte() }.toByteArray()
+      }
+        ?: run {
+          val newSalt = ByteArray(SALT_BYTES).apply { SecureRandom().nextBytes(this) }
+          val saltHex = newSalt.joinToString(separator = "") { "%02x".format(it) }
+          encryptedPreferences.edit { putString(saltKey, saltHex) }
+          newSalt
+        }
 
-    val material = context.packageName + salt.toString()
-    return MessageDigest.getInstance("SHA-256").digest(material.toByteArray(Charsets.UTF_8))
+    val password = context.packageName.toCharArray()
+    val spec = PBEKeySpec(password, salt, PBKDF2_ITERATIONS, PASSPHRASE_BITS)
+
+    val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+    val secretKey = factory.generateSecret(spec)
+
+    password.fill('\u0000')
+    spec.clearPassword()
+
+    return secretKey.encoded
+  }
+
+  private companion object {
+    const val SALT_BYTES = 32
+    const val HEX_BYTE_LENGTH = 2
+    const val HEX_RADIX = 16
+    const val PBKDF2_ITERATIONS = 100_000
+    const val PASSPHRASE_BITS = 256
   }
 }

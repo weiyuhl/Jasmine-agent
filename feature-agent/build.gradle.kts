@@ -62,6 +62,7 @@ kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 
 dependencies {
   implementation(project(":core-data"))
+  implementation(project(":core-domain"))
   testImplementation(testFixtures(project(":core-data")))
   implementation(project(":core-ui"))
   val composeBom = platform(libs.androidx.compose.bom)

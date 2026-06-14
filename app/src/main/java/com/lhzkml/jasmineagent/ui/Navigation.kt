@@ -38,6 +38,6 @@ fun MainNavigation() {
         rememberSaveableStateHolderNavEntryDecorator(),
         rememberViewModelStoreNavEntryDecorator(),
       ),
-    entryProvider = entryProvider { AgentEntryProvider(backStack = backStack) },
+    entryProvider = entryProvider { AgentEntryProvider() },
   )
 }

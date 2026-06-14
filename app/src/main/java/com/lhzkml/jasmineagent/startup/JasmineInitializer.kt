@@ -22,7 +22,7 @@ import androidx.startup.Initializer
 class JasmineInitializer : Initializer<Unit> {
 
   override fun create(context: Context) {
-    androidx.profileinstaller.ProfileInstaller.writeProfile(context)
+    // Application initialization logic here
   }
 
   override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -45,10 +46,16 @@ android {
 
   signingConfigs {
     create("release") {
-      storeFile = file("jasmine.jks")
-      storePassword = "123456"
-      keyAlias = "jasmine"
-      keyPassword = "123456"
+      val keystorePropertiesFile = rootProject.file("keystore.properties")
+      if (keystorePropertiesFile.exists()) {
+        val keystoreProperties = Properties().apply { load(keystorePropertiesFile.inputStream()) }
+        storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+        storePassword = keystoreProperties.getProperty("storePassword")
+        keyAlias = keystoreProperties.getProperty("keyAlias")
+        keyPassword = keystoreProperties.getProperty("keyPassword")
+      } else {
+        logger.warn("keystore.properties not found. Release signing will be unavailable.")
+      }
     }
   }
 

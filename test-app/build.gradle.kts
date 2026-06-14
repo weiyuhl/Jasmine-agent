@@ -39,7 +39,6 @@ android {
   buildFeatures {
     aidl = false
     buildConfig = false
-    renderScript = false
     shaders = false
   }
 
@@ -56,6 +55,7 @@ dependencies {
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   implementation(project(":core-data"))
+  implementation(project(":core-domain"))
   implementation(testFixtures(project(":core-data")))
   implementation(project(":core-testing"))
   implementation(project(":feature-agent"))

@@ -17,9 +17,8 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Before
 import org.junit.Rule
@@ -33,12 +32,19 @@ class AgentScreenTest {
 
   @Before
   fun setup() {
-    composeTestRule.setContent { AgentContent(FAKE_DATA, onSave = {}, onItemClick = {}) }
+    composeTestRule.setContent {
+      AgentContent(
+        items = FAKE_DATA,
+        onSave = {},
+        addAgentState = AddAgentState.Idle,
+        onResetAddAgentState = {},
+      )
+    }
   }
 
   @Test
   fun firstItem_exists() {
-    composeTestRule.onNodeWithText(FAKE_DATA.first()).assertExists().performClick()
+    composeTestRule.onNodeWithText(FAKE_DATA.first()).assertExists()
   }
 }
 

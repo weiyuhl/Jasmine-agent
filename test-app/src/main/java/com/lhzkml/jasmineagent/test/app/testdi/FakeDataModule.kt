@@ -27,5 +27,5 @@ import dagger.hilt.testing.TestInstallIn
 @Module
 @TestInstallIn(components = [SingletonComponent::class], replaces = [DataModule::class])
 interface FakeDataModule {
-  @Binds abstract fun bindRepository(fakeRepository: FakeAgentRepository): AgentRepository
+  @Binds fun bindRepository(fakeRepository: FakeAgentRepository): AgentRepository
 }

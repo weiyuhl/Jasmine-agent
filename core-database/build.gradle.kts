@@ -36,7 +36,6 @@ android {
   buildFeatures {
     aidl = false
     buildConfig = false
-    renderScript = false
     shaders = false
   }
 
@@ -62,10 +61,18 @@ dependencies {
   // Arch Components
   implementation(libs.androidx.room.runtime)
   implementation(libs.androidx.room.ktx)
+  implementation(libs.androidx.room.paging)
+  implementation(libs.androidx.paging.runtime)
   implementation(libs.sqlcipher)
   ksp(libs.androidx.room.compiler)
   implementation(libs.androidx.core.ktx)
   implementation(libs.security.crypto)
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
+
+  // Testing
+  testImplementation(libs.junit)
+  testImplementation(libs.robolectric)
+  testImplementation(libs.androidx.test.core)
+  testImplementation(libs.androidx.test.ext.junit)
 }
