@@ -45,8 +45,6 @@ dependencies {
   // Arch Components
   implementation(libs.androidx.room.runtime)
   implementation(libs.androidx.room.ktx)
-  implementation(libs.androidx.room.paging)
-  implementation(libs.androidx.paging.runtime)
   implementation(libs.sqlcipher)
   ksp(libs.androidx.room.compiler)
   implementation(libs.androidx.core.ktx)

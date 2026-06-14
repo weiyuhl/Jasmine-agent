@@ -80,7 +80,7 @@ spec.clearPassword()
 **问题**: 主线程同步 I/O，延长冷启动  
 **修复**: `app/startup/JasmineInitializer.kt`
 ```kotlin
-ProfileInstaller.writeProfile(context, executor, {}, false)
+ProfileInstaller.writeProfile(context, executor, diagnosticsCallback)
 ```
 **性能**: 冷启动减少 **100-500ms**
 
@@ -88,11 +88,12 @@ ProfileInstaller.writeProfile(context, executor, {}, false)
 
 ### ⚡ 性能和架构改进（4项）
 
-#### 7. 数据库分页机制 ✅
+#### 7. Paging 死代码清理 ✅
 **实现**: `core-database/Agent.kt`
-- 添加 Paging 3 依赖
-- 新方法: `getActiveAgentsPagingSource(): PagingSource<Int, Agent>`
-- 支持无限滚动
+- 未接入 Paging UI，原 Paging 3 依赖和 DAO `PagingSource` 属于未消费代码
+- 已移除 Paging 依赖、DAO 分页入口和 Paging ProGuard 规则
+- 后续如需要分页，应从 Repository 到 UI 一次性接入 `PagingData`
+- 当前版本不再声明已支持无限滚动
 
 #### 8. Agent 实体扩展 ✅
 **新增字段**:
@@ -107,14 +108,7 @@ ProfileInstaller.writeProfile(context, executor, {}, false)
 
 **新增方法**: 9个查询/更新/删除方法
 
-**数据库迁移**: `MIGRATION_1_2` (v1→v2)
-```sql
-CREATE TABLE agent_new (...新字段...)
-INSERT INTO agent_new SELECT uid, name, ... FROM agent
-DROP TABLE agent
-ALTER TABLE agent_new RENAME TO agent
-CREATE UNIQUE INDEX index_agent_name ON agent(name)
-```
+**旧版本兼容迁移**: 已彻底删除 `MIGRATION_1_2`，当前版本只保留 v2 schema 新建路径
 
 #### 9. ProGuard 优化 ✅
 **app/proguard-rules.pro**: 移除过宽规则
@@ -266,7 +260,7 @@ fun addAgent(name: String) {
 | **测试用例** | ~10 | **~50** | +400% |
 | **覆盖率** | <10% | **~60%** | +500% |
 | **架构层次** | 3层 | **4层** | Clean Arch |
-| **密钥强度** | SHA-256×1 | **PBKDF2×100K** | +100,000x |
+| **密钥强度** | SHA-256×1 | **PBKDF2×100K + 随机secret** | +100,000x 且输入域不再只依赖包名 |
 | **冷启动** | 基线 | **-100~500ms** | 优化 |
 | **APK体积** | 基线 | **-5~10%** | 优化 |
 
@@ -295,13 +289,13 @@ fun addAgent(name: String) {
 **安全层**:
 1. `app/build.gradle.kts` - 签名配置
 2. `.gitignore` - 凭证保护
-3. `core-database/di/DatabaseModule.kt` - PBKDF2
+3. `core-database/di/DatabaseModule.kt` - PBKDF2 + 持久化随机 secret
 4. `core-database/AppDatabase.kt` - 版本2 + 迁移
 
 **数据层**:
 5. `core-database/Agent.kt` - 实体扩展
 6. `core-data/AgentRepository.kt` - 重复检测
-7. `gradle/libs.versions.toml` - Paging 3
+7. `gradle/libs.versions.toml` - 移除未接入的 Paging 3 依赖
 8. `core-database/build.gradle.kts` - 依赖
 
 **业务层**:
@@ -436,7 +430,7 @@ fun addAgent(name: String) {
 ### 修复后 (风险评分: 1.5/10)
 ```
 ✅ 安全: 凭证外部化 + .gitignore
-✅ 安全: PBKDF2 + 100K迭代 + 32字节salt
+✅ 安全: PBKDF2 + 100K迭代 + 32字节salt + 32字节随机secret
 ✅ 安全: 依赖注入规范
 ✅ 安全: 6层输入验证 + 白名单
 ✅ 安全: 完整异常捕获
@@ -476,8 +470,8 @@ Unit Tests (Database)     7个 ← 新增安全测试
 - **UI**: Jetpack Compose (BOM 2026.05.01)
 - **导航**: Navigation3 1.1.2
 - **数据库**: Room 2.8.4 + SQLCipher 4.5.4
-- **分页**: Paging 3.4.0
-- **加密**: Security-Crypto 1.1.0-alpha07 + PBKDF2
+- **分页**: 未接入 UI，已移除未使用 Paging 依赖
+- **加密**: Security-Crypto + PBKDF2 + 随机secret
 
 ### 质量工具
 - **静态分析**: Detekt 1.23.8 (335规则)
@@ -501,7 +495,7 @@ Unit Tests (Database)     7个 ← 新增安全测试
 
 ### 运行时优化
 - ✅ StateFlow WhileSubscribed(5000): 后台内存 **-30%**
-- ✅ Paging 3: 大数据集内存 **-70%**
+- ✅ Paging 3 死代码清理: 移除未消费依赖和虚假的性能收益声明
 
 ### 构建优化
 - ✅ KSP 替代 kapt: 编译速度 **+200%**
@@ -517,7 +511,7 @@ Unit Tests (Database)     7个 ← 新增安全测试
 - [x] Domain 层架构完整
 - [x] 测试覆盖提升 500%
 - [x] ProGuard 规则完整
-- [x] 数据库迁移就绪
+- [x] 旧版本兼容迁移已删除
 - [x] 文档完整记录
 
 ### 质量层面

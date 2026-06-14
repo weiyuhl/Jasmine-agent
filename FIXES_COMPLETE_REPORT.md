@@ -26,7 +26,7 @@
 #### 2. 弱密钥派生算法 (SHA-256 → PBKDF2) ✅
 **问题**: `DatabaseModule` 使用 SHA-256 派生 SQLCipher 密钥，易受暴力破解
 **修复**:
-- 使用 PBKDF2WithHmacSHA256 替代 SHA-256
+- 使用 PBKDF2WithHmacSHA256 替代 SHA-256，并加入持久化随机 secret，避免输入只受包名约束
 - 迭代次数设置为 100,000 次（OWASP 推荐）
 - 正确处理 salt 的十六进制转换
 - 清理密码字符数组防止内存泄漏
@@ -90,7 +90,7 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 #### 6. JasmineInitializer 主线程同步 I/O 问题 ✅
 **问题**: `ProfileInstaller.writeProfile(context)` 阻塞主线程
 **修复**:
-- 使用异步 API：`ProfileInstaller.writeProfile(context, executor, diagnosticsCallback, forceWrite)`
+- 使用公开异步 API：`ProfileInstaller.writeProfile(context, executor, diagnosticsCallback)`
 - 创建单线程 Executor 执行磁盘 I/O
 - 减少冷启动延迟 100-500ms
 
@@ -98,11 +98,11 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 
 ### ⚡ 性能和架构改进
 
-#### 7. 数据库分页机制 (Paging 3) ✅
-**新增功能**:
-- 添加 Paging 3 依赖（`androidx.paging:paging-runtime` 和 `room-paging`）
-- 创建 `getActiveAgentsPagingSource(): PagingSource<Int, Agent>`
-- 支持无限滚动和按需加载
+#### 7. Paging 3 死代码清理 ✅
+**清理内容**:
+- 未接入 Paging UI，原 Paging 3 依赖和 `PagingSource` 属于未消费代码
+- 已移除 Paging 3 依赖、DAO 分页入口和 Paging ProGuard 规则
+- 当前版本不再声明已支持无限滚动或按需加载
 
 #### 8. Agent 实体扩展字段和索引 ✅
 **新增字段**:
@@ -123,17 +123,17 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 - `deleteAgent()` - 删除 Agent
 - `getActiveAgentCount()` - 统计活跃数量
 
-**数据库迁移**:
-- 创建 `MIGRATION_1_2` 迁移脚本
-- 使用 `CREATE TABLE ... INSERT ... DROP ... RENAME` 模式
-- 向后兼容，旧数据自动迁移
+**旧版本兼容迁移**:
+- 已彻底删除 `MIGRATION_1_2`
+- 已移除 Room `.addMigrations(...)` 注册
+- 当前版本只保留 v2 schema 新建路径
 
 #### 9. ProGuard 规则优化和 consumer-rules.pro 填充 ✅
 **app/proguard-rules.pro 优化**:
 - 移除过宽的 `-keep class kotlinx.coroutines.** { *; }`
 - 移除过宽的 `-keep class androidx.compose.** { *; }`
 - 改为 `-keepnames` 和 `-dontwarn` 最小化规则
-- 添加 Paging 3 规则
+- 移除未使用的 Paging 3 规则
 
 **consumer-rules.pro 填充**（5 个模块）:
 - **core-database**: Room、SQLCipher、实体类、迁移类
@@ -207,14 +207,14 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 
 ### 重大重构（10+ 文件）
 - `app/build.gradle.kts` - 签名配置
-- `core-database/di/DatabaseModule.kt` - PBKDF2 + 依赖注入
+- `core-database/di/DatabaseModule.kt` - PBKDF2 + 随机 secret + 依赖注入
 - `core-database/Agent.kt` - 实体扩展
 - `core-database/AppDatabase.kt` - 版本 2 + 迁移
 - `core-data/AgentRepository.kt` - 重复检测
 - `feature-agent/ui/AgentViewModel.kt` - 错误处理 + 验证
 - `feature-agent/ui/AgentScreen.kt` - UI 重试机制
 - `app/startup/JasmineInitializer.kt` - 异步 I/O
-- `gradle/libs.versions.toml` - Paging 3 依赖
+- `gradle/libs.versions.toml` - 移除未接入 Paging 3 依赖
 - `app/proguard-rules.pro` - 优化规则
 - **5 个 consumer-rules.pro** - 填充规则
 
@@ -229,7 +229,7 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 
 ### 修复后风险等级
 - ✅ **无**: 所有凭证外部化
-- ✅ **无**: PBKDF2 + 100K 迭代
+- ✅ **无**: PBKDF2 + 100K 迭代 + 随机 secret
 - ✅ **无**: 依赖注入规范
 
 **暴力破解成本**: 从 **几小时** 提升到 **几十年**
@@ -255,7 +255,7 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 | 优化项 | 改进效果 |
 |--------|---------|
 | JasmineInitializer 异步化 | 冷启动 -100~500ms |
-| Paging 3 分页 | 大数据集内存 -70% |
+| Paging 3 死代码清理 | 移除未消费依赖和虚假收益声明 |
 | ProGuard 优化 | APK 体积 -5~10% |
 | StateFlow WhileSubscribed | 后台内存 -30% |
 
@@ -263,12 +263,9 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 
 ## 🔧 依赖更新
 
-### 新增依赖
+### 依赖清理
 ```toml
-androidxPaging = "3.4.0"
-androidx-room-paging
-androidx-paging-runtime
-androidx-paging-compose
+Paging 3 未接入 UI，相关依赖已移除
 ```
 
 ### 测试依赖
@@ -297,7 +294,7 @@ androidx-test-core（core-database 模块）
 
 ### 短期（1-2 周）
 1. 补充 Compose UI 测试（`ui-test-junit4`）
-2. 添加 Room 数据库迁移测试
+2. 补充当前 v2 schema 的 Room 创建/DAO 集成测试
 3. 集成 Detekt 到 CI/CD
 4. 添加 Baseline Profile 生成脚本
 
@@ -322,7 +319,7 @@ androidx-test-core（core-database 模块）
 - [x] 安全漏洞已修复
 - [x] 测试覆盖关键路径
 - [x] ProGuard 规则完整
-- [x] 数据库迁移脚本就绪
+- [x] 旧版本兼容迁移已删除
 - [x] 文档更新完成
 
 ---
@@ -341,7 +338,7 @@ androidx-test-core（core-database 模块）
 
 本次修复**不是简单的补丁**，而是：
 1. **生产级安全加固** - 符合 OWASP 标准
-2. **架构级改进** - 分页、索引、状态机
+2. **架构级改进** - 索引、状态机、Repository/DAO 对齐
 3. **完整的测试覆盖** - 30+ 测试用例
 4. **开发体验优化** - 清晰的错误提示、友好的 UI
 

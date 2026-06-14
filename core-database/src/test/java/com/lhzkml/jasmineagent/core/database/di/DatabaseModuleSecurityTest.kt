@@ -76,13 +76,40 @@ class DatabaseModuleSecurityTest {
   }
 
   @Test
-  fun testSaltStoredInEncryptedPreferences() {
+  fun testPassphraseInputsStoredInEncryptedPreferences() {
     generatePassphraseViaReflection(context, testPreferences)
 
     val salt = testPreferences.getString("db_passphrase_salt", null)
+    val secret = testPreferences.getString("db_passphrase_secret", null)
+
     assertNotNull("Salt should be stored", salt)
     assertEquals("Salt should be 64 hex characters (32 bytes)", 64, salt?.length)
     assertTrue("Salt should be valid hex", salt?.matches(Regex("^[0-9a-f]{64}$")) == true)
+
+    assertNotNull("Secret should be stored", secret)
+    assertEquals("Secret should be 64 hex characters (32 bytes)", 64, secret?.length)
+    assertTrue("Secret should be valid hex", secret?.matches(Regex("^[0-9a-f]{64}$")) == true)
+  }
+
+  @Test
+  fun testPassphraseChangesWhenSecretChanges() {
+    val passphrase1 = generatePassphraseViaReflection(context, testPreferences)
+    val originalSalt = testPreferences.getString("db_passphrase_salt", null)
+
+    testPreferences.edit().remove("db_passphrase_secret").apply()
+
+    val passphrase2 = generatePassphraseViaReflection(context, testPreferences)
+
+    assertEquals(
+      "Salt should not change when only secret is cleared",
+      originalSalt,
+      testPreferences.getString("db_passphrase_salt", null),
+    )
+    assertNotEquals(
+      "Passphrase should change when random secret changes",
+      passphrase1.contentToString(),
+      passphrase2.contentToString(),
+    )
   }
 
   @Test

@@ -2,8 +2,11 @@ package com.lhzkml.jasmineagent.core.domain.usecase
 
 import com.lhzkml.jasmineagent.core.data.AgentRepository
 import com.lhzkml.jasmineagent.core.data.AgentRepositoryException
+import com.lhzkml.jasmineagent.core.database.Agent
+import com.lhzkml.jasmineagent.core.database.AgentStatus
 import com.lhzkml.jasmineagent.core.domain.validation.ValidationError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -113,6 +116,17 @@ class AddAgentUseCaseTest {
 
     override val agents = flowOf<List<String>>(emptyList())
 
+    override fun getAgents(limit: Int): Flow<List<Agent>> =
+      flowOf(
+        addedAgents.take(limit).mapIndexed { index, name -> Agent(uid = index + 1, name = name) }
+      )
+
+    override suspend fun getById(uid: Int): Agent? =
+      addedAgents.getOrNull(uid - 1)?.let { Agent(uid = uid, name = it) }
+
+    override suspend fun getByName(name: String): Agent? =
+      addedAgents.firstOrNull { it == name }?.let { Agent(name = it) }
+
     override suspend fun add(name: String) {
       when {
         shouldThrowIllegalArgument -> throw IllegalArgumentException("Already exists")
@@ -120,6 +134,14 @@ class AddAgentUseCaseTest {
         else -> addedAgents.add(name)
       }
     }
+
+    override suspend fun updateStatus(uid: Int, status: AgentStatus) = Unit
+
+    override suspend fun delete(uid: Int) {
+      addedAgents.removeAt(uid - 1)
+    }
+
+    override suspend fun getActiveCount(): Int = addedAgents.size
 
     fun setShouldThrowIllegalArgument(shouldThrow: Boolean) {
       shouldThrowIllegalArgument = shouldThrow

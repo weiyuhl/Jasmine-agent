@@ -78,7 +78,6 @@ android {
   }
 }
 
-// Enable room auto-migrations
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 
 // Migrate from kotlinOptions to compilerOptions

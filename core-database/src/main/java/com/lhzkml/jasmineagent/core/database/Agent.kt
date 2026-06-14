@@ -1,6 +1,5 @@
 package com.lhzkml.jasmineagent.core.database
 
-import androidx.paging.PagingSource
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
@@ -31,9 +30,6 @@ enum class AgentStatus {
 
 @Dao
 interface AgentDao {
-  @Query("SELECT * FROM agent WHERE status = 'ACTIVE' ORDER BY created_at DESC")
-  fun getActiveAgentsPagingSource(): PagingSource<Int, Agent>
-
   @Query("SELECT name FROM agent WHERE status = 'ACTIVE' ORDER BY name COLLATE NOCASE")
   fun getActiveAgentNames(): Flow<List<String>>
 

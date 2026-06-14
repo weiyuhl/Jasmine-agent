@@ -11,7 +11,6 @@
 # Room
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Entity class *
--dontwarn androidx.room.paging.**
 
 # Hilt
 -keep class dagger.hilt.** { *; }
@@ -65,7 +64,3 @@
 -dontwarn com.google.errorprone.annotations.**
 -dontwarn com.google.crypto.tink.**
 -keep class com.google.crypto.tink.** { *; }
-
-# Paging 3
--keep class androidx.paging.** { *; }
--dontwarn androidx.paging.**

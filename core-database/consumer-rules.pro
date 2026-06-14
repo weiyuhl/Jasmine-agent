@@ -12,7 +12,6 @@
 -keep class com.lhzkml.jasmineagent.core.database.AgentStatus { *; }
 -keep interface com.lhzkml.jasmineagent.core.database.AgentDao { *; }
 -keep class com.lhzkml.jasmineagent.core.database.AppDatabase { *; }
--keep class com.lhzkml.jasmineagent.core.database.MIGRATION_1_2 { *; }
 
 # Security Crypto
 -keep class androidx.security.crypto.** { *; }

@@ -2,6 +2,8 @@ package com.lhzkml.jasmineagent.feature.agent.ui
 
 import com.lhzkml.jasmineagent.core.data.AgentRepository
 import com.lhzkml.jasmineagent.core.data.AgentRepositoryException
+import com.lhzkml.jasmineagent.core.database.Agent
+import com.lhzkml.jasmineagent.core.database.AgentStatus
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
 import kotlinx.coroutines.Dispatchers
@@ -268,11 +270,32 @@ class AgentViewModelTest {
       _agents.collect { emit(it) }
     }
 
+    override fun getAgents(limit: Int): Flow<List<Agent>> = flow {
+      errorToThrow?.let { throw it }
+      _agents.collect { names ->
+        emit(names.take(limit).mapIndexed { index, name -> Agent(uid = index + 1, name = name) })
+      }
+    }
+
+    override suspend fun getById(uid: Int): Agent? =
+      _agents.value.getOrNull(uid - 1)?.let { Agent(uid = uid, name = it) }
+
+    override suspend fun getByName(name: String): Agent? =
+      _agents.value.firstOrNull { it == name }?.let { Agent(name = it) }
+
     override suspend fun add(name: String) {
       if (shouldThrowOnAdd) {
         throw AgentRepositoryException("Repository error")
       }
       addedAgents.add(name)
     }
+
+    override suspend fun updateStatus(uid: Int, status: AgentStatus) = Unit
+
+    override suspend fun delete(uid: Int) {
+      _agents.value = _agents.value.filterIndexed { index, _ -> index != uid - 1 }
+    }
+
+    override suspend fun getActiveCount(): Int = _agents.value.size
   }
 }

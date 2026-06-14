@@ -20,7 +20,7 @@
 
 #### ✅ 2. 弱密钥派生算法
 - **文件**: `core-database/di/DatabaseModule.kt`
-- **修复**: SHA-256 → PBKDF2WithHmacSHA256
+- **修复**: SHA-256 → PBKDF2WithHmacSHA256 + 持久化随机 secret
 - **参数**: 100,000 迭代 + 256位密钥
 - **额外**: 敏感数据清理（password.fill, spec.clearPassword）
 - **暴力破解成本**: 提高 100,000 倍
@@ -65,17 +65,16 @@
 
 ### ⚡ 性能和架构改进（3项）
 
-#### ✅ 7. 数据库分页机制
-- **新增依赖**: Paging 3 (androidx.paging:3.4.0)
-- **新增方法**: `getActiveAgentsPagingSource()`
-- **支持**: 无限滚动 + 按需加载
+#### ✅ 7. Paging 死代码清理
+- **移除依赖**: 未接入 UI 的 Paging 3 依赖
+- **移除方法**: 未消费的 `getActiveAgentsPagingSource()`
+- **说明**: 当前版本不再声明已支持无限滚动或按需加载
 
 #### ✅ 8. Agent 实体扩展
 - **新增字段**: createdAt, updatedAt, status, description
 - **新增索引**: name (UNIQUE), created_at
 - **新增方法**: 9个查询/更新方法
-- **数据库迁移**: MIGRATION_1_2 脚本
-- **向后兼容**: ✅
+- **旧版本兼容迁移**: 已删除 `MIGRATION_1_2`
 
 #### ✅ 9. ProGuard 优化
 - **app/proguard-rules.pro**: 移除过宽规则
@@ -115,7 +114,7 @@
 | **测试文件** | 3个 | 4个 | +33% |
 | **测试用例** | ~10个 | ~30个 | +200% |
 | **覆盖率** | <10% | ~40% | +300% |
-| **密钥强度** | 单次SHA-256 | PBKDF2 10万次 | +100,000x |
+| **密钥强度** | 单次SHA-256 | PBKDF2 10万次 + 随机secret | +100,000x 且输入域不再只依赖包名 |
 | **冷启动** | 基线 | -100~500ms | 提升 |
 | **APK体积** | 基线 | -5~10% | 优化 |
 
@@ -135,7 +134,7 @@
 ### 修复后
 ```
 ✅ 无漏洞: 凭证外部化 + .gitignore
-✅ 强加密: PBKDF2 + 10万迭代 + 32字节salt
+✅ 强加密: PBKDF2 + 10万迭代 + 32字节salt + 32字节随机secret
 ✅ 规范架构: 依赖注入正确实现
 ✅ 完整验证: 5层输入检查 + 白名单
 ✅ 健壮处理: 所有异常捕获 + 用户反馈
@@ -152,7 +151,7 @@
 2. **密封接口**: AddAgentError (5类型)
 3. **事件驱动**: Channel + Flow (AgentEvent)
 4. **Repository模式增强**: 重复检测 + 状态过滤
-5. **分页架构**: PagingSource 就绪
+5. **Paging清理**: 移除未接入 UI 的死代码
 
 ### 代码质量
 - ✅ Detekt: 0 违规
@@ -207,7 +206,7 @@
 ### 2️⃣ 企业级架构设计
 - 状态机 + 事件驱动
 - 完整的错误分类
-- 可扩展的分页机制
+- Repository/DAO 能力对齐，分页留待完整 UI 接入时再引入
 
 ### 3️⃣ 专业级测试覆盖
 - 7个安全测试
@@ -249,14 +248,8 @@ when {
 }
 ```
 
-### 数据库迁移
-```sql
-CREATE TABLE agent_new (...)
-INSERT INTO agent_new SELECT uid, name, ... FROM agent
-DROP TABLE agent
-ALTER TABLE agent_new RENAME TO agent
-CREATE UNIQUE INDEX index_agent_name ON agent(name)
-```
+### 旧版本兼容迁移
+已删除 `MIGRATION_1_2`、Room `.addMigrations(...)` 注册和 v1 schema，当前版本只保留 v2 schema 新建路径。
 
 ---
 
@@ -268,7 +261,7 @@ CREATE UNIQUE INDEX index_agent_name ON agent(name)
 - [x] 性能优化已实施
 - [x] 测试覆盖提升300%
 - [x] ProGuard规则完整
-- [x] 数据库迁移就绪
+- [x] 旧版本兼容迁移已删除
 - [x] 文档完整记录
 
 ---
@@ -311,7 +304,7 @@ $env:JAVA_HOME = "D:\jdk-17"  # 去掉版本后缀
 
 ### 短期（1周内）
 1. 补充 Compose UI 测试
-2. 添加数据库迁移测试
+2. 补充当前 v2 schema 的 Room 创建/DAO 集成测试
 3. 集成 CI/CD
 
 ### 中期（1月内）

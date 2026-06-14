@@ -1,6 +1,5 @@
 package com.lhzkml.jasmineagent.core.data
 
-import androidx.paging.PagingSource
 import com.lhzkml.jasmineagent.core.database.Agent
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import com.lhzkml.jasmineagent.core.database.AgentStatus
@@ -11,10 +10,7 @@ import kotlinx.coroutines.flow.flow
 class FakeAgentDao : AgentDao {
 
   private val data = mutableListOf<Agent>()
-
-  override fun getActiveAgentsPagingSource(): PagingSource<Int, Agent> {
-    throw UnsupportedOperationException("PagingSource not supported in fake")
-  }
+  private var nextUid = 1
 
   override fun getActiveAgentNames(): Flow<List<String>> = flow {
     emit(data.filter { it.status == AgentStatus.ACTIVE }.map { it.name })
@@ -27,7 +23,8 @@ class FakeAgentDao : AgentDao {
   override suspend fun getAgentByName(name: String): Agent? = data.find { it.name == name }
 
   override suspend fun insertAgent(item: Agent) {
-    data.add(0, item)
+    val uid = if (item.uid == 0) nextUid++ else item.uid
+    data.add(0, item.copy(uid = uid))
   }
 
   override suspend fun updateAgentStatus(uid: Int, status: AgentStatus, updatedAt: Long) {
