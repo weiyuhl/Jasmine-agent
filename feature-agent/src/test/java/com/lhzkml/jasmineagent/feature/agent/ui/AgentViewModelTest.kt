@@ -9,6 +9,11 @@ import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -18,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -299,37 +305,43 @@ class AgentViewModelTest {
     }
 
   private class FakeAgentRepository : AgentRepository {
-    val addedAgents = mutableListOf<String>()
-    var addCallCount = 0
-    private var shouldThrowOnAdd = false
-    private var addDelayMillis = 0L
+    private val addedAgentStore = CopyOnWriteArrayList<String>()
+    private val addCallCounter = AtomicInteger(0)
+    val addedAgents: List<String>
+      get() = addedAgentStore.toList()
+
+    val addCallCount: Int
+      get() = addCallCounter.get()
+
+    private val shouldThrowOnAdd = AtomicBoolean(false)
+    private val addDelayMillis = AtomicLong(0L)
     private val _agents = MutableStateFlow<List<String>>(emptyList())
-    private var errorToThrow: AgentRepositoryException? = null
+    private val errorToThrow = AtomicReference<AgentRepositoryException?>(null)
 
     fun emit(agents: List<String>) {
-      errorToThrow = null
-      _agents.value = agents
+      errorToThrow.set(null)
+      _agents.update { agents }
     }
 
     fun throwError(exception: AgentRepositoryException) {
-      errorToThrow = exception
+      errorToThrow.set(exception)
     }
 
     fun setShouldThrowOnAdd(shouldThrow: Boolean) {
-      shouldThrowOnAdd = shouldThrow
+      shouldThrowOnAdd.set(shouldThrow)
     }
 
     fun setAddDelayMillis(delayMillis: Long) {
-      addDelayMillis = delayMillis
+      addDelayMillis.set(delayMillis)
     }
 
     override val agents: Flow<List<String>> = flow {
-      errorToThrow?.let { throw it }
+      errorToThrow.get()?.let { throw it }
       _agents.collect { emit(it) }
     }
 
     override fun getAgents(limit: Int): Flow<List<AgentRecord>> = flow {
-      errorToThrow?.let { throw it }
+      errorToThrow.get()?.let { throw it }
       _agents.collect { names ->
         emit(names.take(limit).mapIndexed { index, name -> agentRecord(index + 1, name) })
       }
@@ -342,20 +354,21 @@ class AgentViewModelTest {
       _agents.value.firstOrNull { it == name }?.let { agentRecord(name = it) }
 
     override suspend fun add(name: String) {
-      addCallCount += 1
-      if (addDelayMillis > 0) {
-        delay(addDelayMillis)
+      addCallCounter.incrementAndGet()
+      val delayMillis = addDelayMillis.get()
+      if (delayMillis > 0) {
+        delay(delayMillis)
       }
-      if (shouldThrowOnAdd) {
+      if (shouldThrowOnAdd.get()) {
         throw AgentRepositoryException(AgentRepositoryFailure.STORAGE)
       }
-      addedAgents.add(name)
+      addedAgentStore.add(name)
     }
 
     override suspend fun updateStatus(uid: Int, status: AgentRecordStatus) = Unit
 
     override suspend fun delete(uid: Int) {
-      _agents.value = _agents.value.filterIndexed { index, _ -> index != uid - 1 }
+      _agents.update { agents -> agents.filterIndexed { index, _ -> index != uid - 1 } }
     }
 
     override suspend fun getActiveCount(): Int = _agents.value.size

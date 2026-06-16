@@ -4,54 +4,76 @@ import android.database.sqlite.SQLiteException
 import com.lhzkml.jasmineagent.core.database.Agent
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import com.lhzkml.jasmineagent.core.database.AgentStatus
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /** Test-only fake DAO for core-data layer tests. */
 class FakeAgentDao : AgentDao {
 
+  private val mutex = Mutex()
   private val data = mutableListOf<Agent>()
-  private var nextUid = 1
-  private var activeNamesError: SQLiteException? = null
-  private var getByNameError: SQLiteException? = null
+  private val nextUid = AtomicInteger(1)
+  private val activeNamesError = AtomicReference<SQLiteException?>(null)
+  private val getByNameError = AtomicReference<SQLiteException?>(null)
 
   override fun getActiveAgentNames(): Flow<List<String>> = flow {
-    activeNamesError?.let { throw it }
-    emit(data.filter { it.status == AgentStatus.ACTIVE }.map { it.name })
+    val names = mutex.withLock {
+      activeNamesError.get()?.let { throw it }
+      data.filter { it.status == AgentStatus.ACTIVE }.map { it.name }
+    }
+    emit(names)
   }
 
-  override fun getAgents(limit: Int): Flow<List<Agent>> = flow { emit(data.take(limit)) }
+  override fun getAgents(limit: Int): Flow<List<Agent>> = flow {
+    emit(mutex.withLock { data.take(limit) })
+  }
 
-  override suspend fun getAgentById(uid: Int): Agent? = data.find { it.uid == uid }
+  override suspend fun getAgentById(uid: Int): Agent? = mutex.withLock {
+    data.find { it.uid == uid }
+  }
 
   override suspend fun getAgentByName(name: String): Agent? {
-    getByNameError?.let { throw it }
-    return data.find { it.name == name }
+    return mutex.withLock {
+      getByNameError.get()?.let { throw it }
+      data.find { it.name == name }
+    }
   }
 
   override suspend fun insertAgent(item: Agent) {
-    val uid = if (item.uid == 0) nextUid++ else item.uid
-    data.add(0, item.copy(uid = uid))
+    mutex.withLock {
+      val uid = if (item.uid == 0) nextUid.getAndIncrement() else item.uid
+      data.add(0, item.copy(uid = uid))
+    }
   }
 
   override suspend fun updateAgentStatus(uid: Int, status: AgentStatus, updatedAt: Long) {
-    val index = data.indexOfFirst { it.uid == uid }
-    if (index != -1) {
-      data[index] = data[index].copy(status = status, updatedAt = updatedAt)
+    mutex.withLock {
+      val index = data.indexOfFirst { it.uid == uid }
+      if (index != -1) {
+        data[index] = data[index].copy(status = status, updatedAt = updatedAt)
+      }
     }
   }
 
   override suspend fun deleteAgent(uid: Int) {
-    data.removeAll { it.uid == uid }
+    mutex.withLock {
+      data.removeAll { it.uid == uid }
+    }
   }
 
-  override suspend fun getActiveAgentCount(): Int = data.count { it.status == AgentStatus.ACTIVE }
+  override suspend fun getActiveAgentCount(): Int = mutex.withLock {
+    data.count { it.status == AgentStatus.ACTIVE }
+  }
 
   fun throwActiveNamesError(exception: SQLiteException) {
-    activeNamesError = exception
+    activeNamesError.set(exception)
   }
 
   fun throwGetByNameError(exception: SQLiteException) {
-    getByNameError = exception
+    getByNameError.set(exception)
   }
 }

@@ -6,6 +6,8 @@ import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import com.lhzkml.jasmineagent.core.domain.validation.ValidationError
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -111,38 +113,41 @@ class AddAgentUseCaseTest {
   }
 
   private class FakeAgentRepository : AgentRepository {
-    val addedAgents = mutableListOf<String>()
-    private var shouldThrowIllegalArgument = false
-    private var shouldThrowGenericException = false
+    private val addedAgentStore = CopyOnWriteArrayList<String>()
+    val addedAgents: List<String>
+      get() = addedAgentStore.toList()
+
+    private val shouldThrowIllegalArgument = AtomicBoolean(false)
+    private val shouldThrowGenericException = AtomicBoolean(false)
 
     override val agents = flowOf<List<String>>(emptyList())
 
     override fun getAgents(limit: Int): Flow<List<AgentRecord>> =
-      flowOf(addedAgents.take(limit).mapIndexed { index, name -> agentRecord(index + 1, name) })
+      flowOf(addedAgentStore.take(limit).mapIndexed { index, name -> agentRecord(index + 1, name) })
 
     override suspend fun getById(uid: Int): AgentRecord? =
-      addedAgents.getOrNull(uid - 1)?.let { agentRecord(uid, it) }
+      addedAgentStore.getOrNull(uid - 1)?.let { agentRecord(uid, it) }
 
     override suspend fun getByName(name: String): AgentRecord? =
-      addedAgents.firstOrNull { it == name }?.let { agentRecord(name = it) }
+      addedAgentStore.firstOrNull { it == name }?.let { agentRecord(name = it) }
 
     override suspend fun add(name: String) {
       when {
-        shouldThrowIllegalArgument ->
+        shouldThrowIllegalArgument.get() ->
           throw AgentRepositoryException(AgentRepositoryFailure.DUPLICATE_NAME)
-        shouldThrowGenericException ->
+        shouldThrowGenericException.get() ->
           throw AgentRepositoryException(AgentRepositoryFailure.STORAGE)
-        else -> addedAgents.add(name)
+        else -> addedAgentStore.add(name)
       }
     }
 
     override suspend fun updateStatus(uid: Int, status: AgentRecordStatus) = Unit
 
     override suspend fun delete(uid: Int) {
-      addedAgents.removeAt(uid - 1)
+      addedAgentStore.removeAt(uid - 1)
     }
 
-    override suspend fun getActiveCount(): Int = addedAgents.size
+    override suspend fun getActiveCount(): Int = addedAgentStore.size
 
     private fun agentRecord(
       uid: Int = 0,
@@ -158,11 +163,11 @@ class AddAgentUseCaseTest {
       )
 
     fun setShouldThrowIllegalArgument(shouldThrow: Boolean) {
-      shouldThrowIllegalArgument = shouldThrow
+      shouldThrowIllegalArgument.set(shouldThrow)
     }
 
     fun setShouldThrowGenericException(shouldThrow: Boolean) {
-      shouldThrowGenericException = shouldThrow
+      shouldThrowGenericException.set(shouldThrow)
     }
   }
 }

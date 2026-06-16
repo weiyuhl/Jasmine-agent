@@ -10,8 +10,11 @@ import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,8 +47,8 @@ constructor(
   private val _events = MutableSharedFlow<AgentEvent>(extraBufferCapacity = 1)
   val events: SharedFlow<AgentEvent> = _events
 
-  private var loadAgentsJob: Job? = null
-  private var addAgentJob: Job? = null
+  private val loadAgentsJob = AtomicReference<Job?>(null)
+  private val addAgentInFlight = AtomicBoolean(false)
 
   init {
     loadAgents()
@@ -53,38 +56,42 @@ constructor(
 
   fun onAgentNameChanged(name: String) {
     savedStateHandle[AGENT_NAME_KEY] = name
-    _agentName.value = name
+    _agentName.update { name }
     _addAgentState.update { state ->
       if (state is AddAgentState.Error) AddAgentState.Idle else state
     }
   }
 
   fun addAgent() {
-    if (addAgentJob?.isActive == true || addAgentState.value is AddAgentState.Adding) {
+    if (!addAgentInFlight.compareAndSet(false, true)) {
       return
     }
 
-    _addAgentState.value = AddAgentState.Adding
+    _addAgentState.update { AddAgentState.Adding }
     val name = agentName.value
 
-    addAgentJob = viewModelScope.launch {
-      when (val result = addAgentUseCase(name)) {
-        is AddAgentResult.Success -> {
-          savedStateHandle[AGENT_NAME_KEY] = ""
-          _agentName.value = ""
-          _addAgentState.value = AddAgentState.Idle
-          _events.emit(AgentEvent.AgentAdded(result.name))
+    viewModelScope.launch {
+      try {
+        when (val result = addAgentUseCase(name)) {
+          is AddAgentResult.Success -> {
+            savedStateHandle[AGENT_NAME_KEY] = ""
+            _agentName.update { "" }
+            _addAgentState.update { AddAgentState.Idle }
+            _events.emit(AgentEvent.AgentAdded(result.name))
+          }
+          is AddAgentResult.ValidationFailure -> {
+            val error = result.error.toAddAgentError()
+            _addAgentState.update { AddAgentState.Error(error) }
+            _events.emit(AgentEvent.ShowError(error))
+          }
+          is AddAgentResult.RepositoryFailure -> {
+            val error = result.error.toAddAgentError()
+            _addAgentState.update { AddAgentState.Error(error) }
+            _events.emit(AgentEvent.ShowError(error))
+          }
         }
-        is AddAgentResult.ValidationFailure -> {
-          val error = result.error.toAddAgentError()
-          _addAgentState.value = AddAgentState.Error(error)
-          _events.emit(AgentEvent.ShowError(error))
-        }
-        is AddAgentResult.RepositoryFailure -> {
-          val error = result.error.toAddAgentError()
-          _addAgentState.value = AddAgentState.Error(error)
-          _events.emit(AgentEvent.ShowError(error))
-        }
+      } finally {
+        addAgentInFlight.set(false)
       }
     }
   }
@@ -94,18 +101,20 @@ constructor(
   }
 
   private fun loadAgents() {
-    loadAgentsJob?.cancel()
-    loadAgentsJob = viewModelScope.launch {
-      getAgentsUseCase()
-        .map<List<String>, AgentUiState> { Success(data = it) }
-        .catch {
-          if (it is CancellationException) {
-            throw it
+    val nextJob =
+      viewModelScope.launch(start = CoroutineStart.LAZY) {
+        getAgentsUseCase()
+          .map<List<String>, AgentUiState> { Success(data = it) }
+          .catch {
+            if (it is CancellationException) {
+              throw it
+            }
+            emit(Error(AgentLoadError.Storage, canRetry = true))
           }
-          emit(Error(AgentLoadError.Storage, canRetry = true))
-        }
-        .collect { _uiState.value = it }
-    }
+          .collect { state -> _uiState.update { state } }
+      }
+    loadAgentsJob.getAndSet(nextJob)?.cancel()
+    nextJob.start()
   }
 
   private companion object {
