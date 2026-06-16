@@ -89,6 +89,9 @@ kotlin {
 }
 
 dependencies {
+  implementation(project(":core-data"))
+  implementation(project(":core-database"))
+  implementation(project(":core-domain"))
   implementation(project(":core-ui"))
   implementation(project(":feature-agent"))
   implementation(project(":feature-agent-navigation"))

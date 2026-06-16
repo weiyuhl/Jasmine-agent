@@ -44,7 +44,6 @@ kotlin {
 }
 
 dependencies {
-  implementation(project(":core-data"))
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
   implementation(libs.kotlinx.coroutines.android)

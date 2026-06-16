@@ -1,6 +1,9 @@
 package com.lhzkml.jasmineagent.core.data
 
-import com.lhzkml.jasmineagent.core.database.AgentStatus
+import android.database.sqlite.SQLiteException
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -10,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 
@@ -69,9 +73,44 @@ class DefaultAgentRepositoryTest {
 
       repository.add("Inactive")
       val agent = repository.getByName("Inactive")
-      repository.updateStatus(requireNotNull(agent).uid, AgentStatus.INACTIVE)
+      repository.updateStatus(requireNotNull(agent).uid, AgentRecordStatus.INACTIVE)
 
       assertEquals(emptyList<String>(), repository.agents.first())
       assertEquals(0, repository.getActiveCount())
+    }
+
+  @Test
+  fun add_whenDuplicateCheckFails_mapsStorageFailure() =
+    runTest(testDispatcher) {
+      val dao = FakeAgentDao()
+      val repository = DefaultAgentRepository(dao)
+      dao.throwGetByNameError(SQLiteException("query failed"))
+
+      val exception = expectRepositoryException { repository.add("Broken") }
+
+      assertEquals(AgentRepositoryFailure.STORAGE, exception.failure)
+    }
+
+  @Test
+  fun agents_whenDaoFlowFails_mapsStorageFailure() =
+    runTest(testDispatcher) {
+      val dao = FakeAgentDao()
+      val repository = DefaultAgentRepository(dao)
+      dao.throwActiveNamesError(SQLiteException("flow failed"))
+
+      val exception = expectRepositoryException { repository.agents.first() }
+
+      assertEquals(AgentRepositoryFailure.STORAGE, exception.failure)
+    }
+
+  private suspend fun expectRepositoryException(
+    block: suspend () -> Unit
+  ): AgentRepositoryException =
+    try {
+      block()
+      fail("Expected AgentRepositoryException")
+      error("unreachable")
+    } catch (e: AgentRepositoryException) {
+      e
     }
 }

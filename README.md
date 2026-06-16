@@ -29,6 +29,15 @@ $env:JAVA_HOME='D:\jdk-17.0.2'
 .\gradlew.bat testDebugUnitTest detekt spotlessCheck --warning-mode all
 ```
 
+Generate aggregated API documentation from Kotlin KDoc and Java Javadoc comments:
+
+```powershell
+$env:JAVA_HOME='D:\jdk-17.0.2'
+.\gradlew.bat :apiDocs --warning-mode all
+```
+
+The generated Dokka HTML entry point is `build/dokka/html/index.html`.
+
 Build a signed release APK with the local temporary signing properties:
 
 ```powershell
@@ -64,11 +73,13 @@ Paging 3 is intentionally not included because the UI does not consume `PagingDa
 The main verification chain is:
 
 ```powershell
-.\gradlew.bat testDebugUnitTest detekt spotlessCheck :app:assembleRelease :feature-agent:compileDebugAndroidTestKotlin :test-app:assembleDebug --warning-mode all --continue
+.\gradlew.bat testDebugUnitTest detekt spotlessCheck :checkApiDocs :app:assembleRelease :feature-agent:compileDebugAndroidTestKotlin :test-app:assembleDebug --warning-mode all --continue
 ```
 
 ## Documentation
 
+- `:apiDocs`: generates aggregated Dokka API docs from code comments.
+- `:checkApiDocs`: verification task for ensuring API docs remain buildable.
 - `CONTRIBUTING.md`: development workflow and contribution expectations.
 - `CHANGELOG.md`: notable project changes.
 - `BUILD_VERIFICATION.md`: build verification notes.

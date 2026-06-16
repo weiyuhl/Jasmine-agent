@@ -17,6 +17,7 @@ sqlcipher = "4.5.4"
 robolectric = "4.16.1"
 coroutines = "1.11.0"
 detekt = "2.0.0-alpha.4"
+dokka = "2.2.0"
 hilt = "2.59.2"
 junit = "4.13.2"
 kotlin = "2.4.0"
@@ -72,6 +73,7 @@ android-library = { id = "com.android.library", version.ref = "androidGradlePlug
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 hilt-gradle = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp"}
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

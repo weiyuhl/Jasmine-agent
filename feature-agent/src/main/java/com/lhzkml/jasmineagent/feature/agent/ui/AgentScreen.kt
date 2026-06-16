@@ -1,6 +1,5 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
-import android.content.res.Resources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,9 +22,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
@@ -53,6 +50,7 @@ import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
 fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltViewModel()) {
   val state by viewModel.uiState.collectAsStateWithLifecycle()
   val addAgentState by viewModel.addAgentState.collectAsStateWithLifecycle()
+  val agentName by viewModel.agentName.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val resources = LocalResources.current
   val screenContentDescription = stringResource(R.string.agent_screen_content_description)
@@ -80,7 +78,7 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
       is Loading -> LoadingContent(Modifier.fillMaxSize())
       is Error ->
         ErrorContent(
-          s.throwable.message,
+          s.error.message(resources),
           s.canRetry,
           viewModel::retryLoadAgents,
           Modifier.fillMaxSize(),
@@ -88,9 +86,10 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
       is Success ->
         AgentContent(
           items = s.data,
+          agentName = agentName,
+          onAgentNameChange = viewModel::onAgentNameChanged,
           onSave = viewModel::addAgent,
           addAgentState = addAgentState,
-          onResetAddAgentState = viewModel::resetAddAgentState,
           modifier = Modifier.fillMaxSize(),
         )
     }
@@ -172,9 +171,10 @@ private fun ErrorContent(
 @Composable
 internal fun AgentContent(
   items: List<String>,
-  onSave: (name: String) -> Unit,
+  agentName: String,
+  onAgentNameChange: (String) -> Unit,
+  onSave: () -> Unit,
   addAgentState: AddAgentState,
-  onResetAddAgentState: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   val resources = LocalResources.current
@@ -185,34 +185,14 @@ internal fun AgentContent(
       contentDescription = formContentDescription
     }
   ) {
-    var nameAgent by remember { mutableStateOf("") }
-    var validationError by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(addAgentState) {
-      when (addAgentState) {
-        is AddAgentState.Success -> {
-          nameAgent = ""
-          validationError = null
-          onResetAddAgentState()
-        }
-        is AddAgentState.Error -> {
-          validationError = addAgentState.error.message(resources)
-        }
-        else -> {
-          validationError = null
-        }
-      }
-    }
+    val validationError = (addAgentState as? AddAgentState.Error)?.error?.message(resources)
 
     AddAgentForm(
-      nameAgent = nameAgent,
+      nameAgent = agentName,
       validationError = validationError,
       addAgentState = addAgentState,
-      onNameChange = {
-        nameAgent = it
-        validationError = null
-      },
-      onSave = { onSave(nameAgent) },
+      onNameChange = onAgentNameChange,
+      onSave = onSave,
     )
 
     if (items.isEmpty()) {
@@ -344,32 +324,16 @@ private fun AgentList(items: List<String>) {
   }
 }
 
-private fun AddAgentError.message(resources: Resources): String =
-  when (this) {
-    AddAgentError.EmptyName -> resources.getString(R.string.agent_error_empty_name)
-    is AddAgentError.NameTooLong ->
-      resources.getQuantityString(R.plurals.agent_error_name_too_long, actual, actual, max)
-    is AddAgentError.NameTooShort ->
-      resources.getQuantityString(R.plurals.agent_error_name_too_short, actual, actual, min)
-    is AddAgentError.InvalidCharacters ->
-      resources.getString(
-        R.string.agent_error_invalid_characters,
-        invalidChars.joinToString(", ") { "'$it'" },
-      )
-    is AddAgentError.DuplicateName -> resources.getString(R.string.agent_error_duplicate_name, name)
-    is AddAgentError.DatabaseError ->
-      message ?: resources.getString(R.string.agent_error_database_fallback)
-  }
-
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
   JasmineTheme {
     AgentContent(
       items = listOf("Compose", "Room", "Kotlin"),
+      agentName = "",
+      onAgentNameChange = {},
       onSave = {},
       addAgentState = AddAgentState.Idle,
-      onResetAddAgentState = {},
     )
   }
 }
@@ -380,9 +344,10 @@ private fun EmptyStatePreview() {
   JasmineTheme {
     AgentContent(
       items = emptyList(),
+      agentName = "",
+      onAgentNameChange = {},
       onSave = {},
       addAgentState = AddAgentState.Idle,
-      onResetAddAgentState = {},
     )
   }
 }
@@ -393,9 +358,10 @@ private fun ErrorStatePreview() {
   JasmineTheme {
     AgentContent(
       items = listOf("Compose"),
+      agentName = "",
+      onAgentNameChange = {},
       onSave = {},
       addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
-      onResetAddAgentState = {},
     )
   }
 }

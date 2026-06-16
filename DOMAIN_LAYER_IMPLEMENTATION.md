@@ -74,13 +74,14 @@ sealed interface ValidationError {
 sealed interface AddAgentResult {
   Success(name)
   ValidationFailure(error: ValidationError)
-  RepositoryFailure(message, cause)
+  RepositoryFailure(error: AddAgentRepositoryError, cause)
 }
 ```
 
 **异常处理**:
-- `IllegalArgumentException` → `AlreadyExists` 验证错误
-- 其他异常 → `RepositoryFailure`
+- `AgentRepositoryFailure.DUPLICATE_NAME` → `AlreadyExists` 验证错误
+- `AgentRepositoryFailure.STORAGE` → `RepositoryFailure(AddAgentRepositoryError.STORAGE)`
+- `CancellationException` 显式重新抛出，避免协程取消被吞掉
 
 #### 文件: `GetAgentsUseCase.kt`
 
@@ -102,7 +103,7 @@ sealed interface AddAgentResult {
 **新增**:
 - ✅ 依赖注入 `AddAgentUseCase` 和 `GetAgentsUseCase`
 - ✅ `ValidationError.toAddAgentError()` 转换方法
-- ✅ 新错误类型: `DuplicateName`, `CustomError`
+- ✅ 新错误类型: `DuplicateName`, `Storage`
 
 **代码精简**:
 - 从 ~85 行减少到 ~75 行
@@ -272,7 +273,7 @@ implementation(project(":core-domain"))  // 新增依赖
 ### 错误处理完善
 - **修复前**: 4 种错误类型
 - **修复后**: 6 种错误类型
-  - 新增: `DuplicateName`, `CustomError`
+  - 新增: `DuplicateName`, `Storage`
 
 ---
 

@@ -1,5 +1,5 @@
 # Repository interface and implementation
--keep interface com.lhzkml.jasmineagent.core.data.AgentRepository { *; }
+-keep interface com.lhzkml.jasmineagent.core.domain.repository.AgentRepository { *; }
 -keep class com.lhzkml.jasmineagent.core.data.DefaultAgentRepository { *; }
 
 # Hilt bindings

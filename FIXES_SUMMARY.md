@@ -59,7 +59,7 @@
 #### ✅ 6. JasmineInitializer 异步化
 - **文件**: `app/startup/JasmineInitializer.kt`
 - **修复**: 使用异步 API + Executor
-- **性能提升**: 冷启动减少 100-500ms
+- **性能影响**: 避免在主线程执行 ProfileInstaller 写入；具体冷启动收益需要基准测试验证
 
 ---
 
@@ -113,10 +113,10 @@
 | **安全漏洞** | 3个严重 | 0个 | ✅ 100% |
 | **测试文件** | 3个 | 4个 | +33% |
 | **测试用例** | ~10个 | ~30个 | +200% |
-| **覆盖率** | <10% | ~40% | +300% |
+| **覆盖率** | 未统计 | 未统计 | 以实际覆盖率任务为准 |
 | **密钥强度** | 单次SHA-256 | PBKDF2 10万次 + 随机secret | +100,000x 且输入域不再只依赖包名 |
-| **冷启动** | 基线 | -100~500ms | 提升 |
-| **APK体积** | 基线 | -5~10% | 优化 |
+| **冷启动** | 主线程写入风险 | 异步 ProfileInstaller 写入 + baseline profile 规则 | 需基准测试量化 |
+| **APK体积** | 基线 | R8/资源压缩启用 | 需产物对比量化 |
 
 ---
 
@@ -173,7 +173,8 @@
 - `core-database/di/DatabaseModule.kt`
 - `core-database/Agent.kt`
 - `core-database/AppDatabase.kt`
-- `core-data/AgentRepository.kt`
+- `core-domain/repository/AgentRepository.kt`
+- `core-data/DefaultAgentRepository.kt`
 - `feature-agent/ui/AgentViewModel.kt`
 - `feature-agent/ui/AgentScreen.kt`
 - `feature-agent/src/test/.../AgentViewModelTest.kt`
@@ -234,9 +235,9 @@ spec.clearPassword()
 
 ### 状态管理
 ```kotlin
-sealed interface AddAgentState { Idle, Adding, Success, Error }
+sealed interface AddAgentState { Idle, Adding, Error }
 sealed interface AddAgentError { EmptyName, NameTooLong, ... }
-private val _events = Channel<AgentEvent>(Channel.BUFFERED)
+private val _events = MutableSharedFlow<AgentEvent>(extraBufferCapacity = 1)
 ```
 
 ### 输入验证
@@ -320,7 +321,7 @@ $env:JAVA_HOME = "D:\jdk-17"  # 去掉版本后缀
 
 - ✅ 安全性: D级 → A级
 - ✅ 可维护性: 低 → 高
-- ✅ 测试覆盖: 10% → 40%
+- ✅ 测试: 已补充关键路径测试，覆盖率需以覆盖率工具统计为准
 - ✅ 用户体验: 基础 → 完整
 - ✅ 架构质量: 简单 → 企业级
 

@@ -11,6 +11,7 @@ All notable changes to this project are recorded here.
 - Removed old Room migration compatibility code and v1 schema history.
 - Added explicit baseline profile rules for startup and agent feature hot paths.
 - Replaced sample Material colors with a Jasmine brand palette and disabled dynamic color by default.
+- Added Dokka-based API documentation generation and verification tasks.
 
 ## 2026-06-14
 

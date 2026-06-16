@@ -34,9 +34,10 @@ class AgentScreenTest {
       JasmineTheme {
         AgentContent(
           items = FAKE_DATA,
+          agentName = "",
+          onAgentNameChange = {},
           onSave = {},
           addAgentState = AddAgentState.Idle,
-          onResetAddAgentState = {},
         )
       }
     }
@@ -80,9 +81,10 @@ class AgentScreenTest {
       JasmineTheme {
         AgentContent(
           items = emptyList(),
+          agentName = "",
+          onAgentNameChange = {},
           onSave = {},
           addAgentState = AddAgentState.Idle,
-          onResetAddAgentState = {},
         )
       }
     }
@@ -99,9 +101,10 @@ class AgentScreenTest {
       JasmineTheme {
         AgentContent(
           items = FAKE_DATA,
+          agentName = "",
+          onAgentNameChange = {},
           onSave = {},
           addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
-          onResetAddAgentState = {},
         )
       }
     }
@@ -119,9 +122,10 @@ class AgentScreenTest {
         JasmineTheme {
           AgentContent(
             items = FAKE_DATA,
+            agentName = "",
+            onAgentNameChange = {},
             onSave = {},
             addAgentState = AddAgentState.Idle,
-            onResetAddAgentState = {},
           )
         }
       }

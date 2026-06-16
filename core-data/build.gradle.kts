@@ -46,12 +46,15 @@ kotlin {
 }
 
 dependencies {
+  implementation(project(":core-domain"))
   api(project(":core-database"))
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
   implementation(libs.kotlinx.coroutines.android)
 
+  testImplementation(project(":core-domain"))
   testFixturesApi(project(":core-database"))
+  testFixturesApi(project(":core-domain"))
   testFixturesApi(libs.hilt.android)
   testFixturesApi(libs.kotlinx.coroutines.android)
 

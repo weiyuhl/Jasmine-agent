@@ -1,6 +1,6 @@
 package com.lhzkml.jasmineagent.core.domain.usecase
 
-import com.lhzkml.jasmineagent.core.data.AgentRepository
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 

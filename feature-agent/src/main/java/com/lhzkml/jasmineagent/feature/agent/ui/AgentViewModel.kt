@@ -1,5 +1,6 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentResult
@@ -10,14 +11,16 @@ import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -26,6 +29,7 @@ class AgentViewModel
 constructor(
   private val addAgentUseCase: AddAgentUseCase,
   private val getAgentsUseCase: GetAgentsUseCase,
+  private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow<AgentUiState>(Loading)
@@ -34,33 +38,52 @@ constructor(
   private val _addAgentState = MutableStateFlow<AddAgentState>(AddAgentState.Idle)
   val addAgentState: StateFlow<AddAgentState> = _addAgentState.asStateFlow()
 
-  private val _events = Channel<AgentEvent>(Channel.BUFFERED)
-  val events = _events.receiveAsFlow()
+  private val _agentName = MutableStateFlow(savedStateHandle[AGENT_NAME_KEY] ?: "")
+  val agentName: StateFlow<String> = _agentName.asStateFlow()
+
+  private val _events = MutableSharedFlow<AgentEvent>(extraBufferCapacity = 1)
+  val events: SharedFlow<AgentEvent> = _events
 
   private var loadAgentsJob: Job? = null
+  private var addAgentJob: Job? = null
 
   init {
     loadAgents()
   }
 
-  fun addAgent(name: String) {
-    _addAgentState.value = AddAgentState.Adding
+  fun onAgentNameChanged(name: String) {
+    savedStateHandle[AGENT_NAME_KEY] = name
+    _agentName.value = name
+    _addAgentState.update { state ->
+      if (state is AddAgentState.Error) AddAgentState.Idle else state
+    }
+  }
 
-    viewModelScope.launch {
+  fun addAgent() {
+    if (addAgentJob?.isActive == true || addAgentState.value is AddAgentState.Adding) {
+      return
+    }
+
+    _addAgentState.value = AddAgentState.Adding
+    val name = agentName.value
+
+    addAgentJob = viewModelScope.launch {
       when (val result = addAgentUseCase(name)) {
         is AddAgentResult.Success -> {
-          _addAgentState.value = AddAgentState.Success
-          _events.send(AgentEvent.AgentAdded(result.name))
+          savedStateHandle[AGENT_NAME_KEY] = ""
+          _agentName.value = ""
+          _addAgentState.value = AddAgentState.Idle
+          _events.emit(AgentEvent.AgentAdded(result.name))
         }
         is AddAgentResult.ValidationFailure -> {
           val error = result.error.toAddAgentError()
           _addAgentState.value = AddAgentState.Error(error)
-          _events.send(AgentEvent.ShowError(error))
+          _events.emit(AgentEvent.ShowError(error))
         }
         is AddAgentResult.RepositoryFailure -> {
-          val error = AddAgentError.DatabaseError(result.message, result.cause)
+          val error = result.error.toAddAgentError()
           _addAgentState.value = AddAgentState.Error(error)
-          _events.send(AgentEvent.ShowError(error))
+          _events.emit(AgentEvent.ShowError(error))
         }
       }
     }
@@ -70,35 +93,42 @@ constructor(
     loadAgents()
   }
 
-  fun resetAddAgentState() {
-    _addAgentState.value = AddAgentState.Idle
-  }
-
   private fun loadAgents() {
     loadAgentsJob?.cancel()
     loadAgentsJob = viewModelScope.launch {
       getAgentsUseCase()
         .map<List<String>, AgentUiState> { Success(data = it) }
-        .catch { emit(Error(it, canRetry = true)) }
+        .catch {
+          if (it is CancellationException) {
+            throw it
+          }
+          emit(Error(AgentLoadError.Storage, canRetry = true))
+        }
         .collect { _uiState.value = it }
     }
+  }
+
+  private companion object {
+    const val AGENT_NAME_KEY = "agent_name"
   }
 }
 
 sealed interface AgentUiState {
   data object Loading : AgentUiState
 
-  data class Error(val throwable: Throwable, val canRetry: Boolean = true) : AgentUiState
+  data class Error(val error: AgentLoadError, val canRetry: Boolean = true) : AgentUiState
 
   data class Success(val data: List<String>) : AgentUiState
+}
+
+enum class AgentLoadError {
+  Storage
 }
 
 sealed interface AddAgentState {
   data object Idle : AddAgentState
 
   data object Adding : AddAgentState
-
-  data object Success : AddAgentState
 
   data class Error(val error: AddAgentError) : AddAgentState
 }
@@ -114,7 +144,7 @@ sealed interface AddAgentError {
 
   data class DuplicateName(val name: String) : AddAgentError
 
-  data class DatabaseError(val message: String?, val cause: Throwable) : AddAgentError
+  data object Storage : AddAgentError
 }
 
 sealed interface AgentEvent {

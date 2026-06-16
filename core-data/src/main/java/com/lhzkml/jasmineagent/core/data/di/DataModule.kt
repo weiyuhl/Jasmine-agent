@@ -1,7 +1,7 @@
 package com.lhzkml.jasmineagent.core.data.di
 
-import com.lhzkml.jasmineagent.core.data.AgentRepository
 import com.lhzkml.jasmineagent.core.data.DefaultAgentRepository
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

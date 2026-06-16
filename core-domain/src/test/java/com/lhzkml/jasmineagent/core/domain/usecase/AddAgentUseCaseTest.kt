@@ -1,9 +1,10 @@
 package com.lhzkml.jasmineagent.core.domain.usecase
 
-import com.lhzkml.jasmineagent.core.data.AgentRepository
-import com.lhzkml.jasmineagent.core.data.AgentRepositoryException
-import com.lhzkml.jasmineagent.core.database.Agent
-import com.lhzkml.jasmineagent.core.database.AgentStatus
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import com.lhzkml.jasmineagent.core.domain.validation.ValidationError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -106,7 +107,7 @@ class AddAgentUseCaseTest {
 
     assertTrue("Result should be RepositoryFailure", result is AddAgentResult.RepositoryFailure)
     val failure = result as AddAgentResult.RepositoryFailure
-    assertEquals("Error message should match", "Repository error", failure.message)
+    assertEquals("Error should be storage", AddAgentRepositoryError.STORAGE, failure.error)
   }
 
   private class FakeAgentRepository : AgentRepository {
@@ -116,32 +117,45 @@ class AddAgentUseCaseTest {
 
     override val agents = flowOf<List<String>>(emptyList())
 
-    override fun getAgents(limit: Int): Flow<List<Agent>> =
-      flowOf(
-        addedAgents.take(limit).mapIndexed { index, name -> Agent(uid = index + 1, name = name) }
-      )
+    override fun getAgents(limit: Int): Flow<List<AgentRecord>> =
+      flowOf(addedAgents.take(limit).mapIndexed { index, name -> agentRecord(index + 1, name) })
 
-    override suspend fun getById(uid: Int): Agent? =
-      addedAgents.getOrNull(uid - 1)?.let { Agent(uid = uid, name = it) }
+    override suspend fun getById(uid: Int): AgentRecord? =
+      addedAgents.getOrNull(uid - 1)?.let { agentRecord(uid, it) }
 
-    override suspend fun getByName(name: String): Agent? =
-      addedAgents.firstOrNull { it == name }?.let { Agent(name = it) }
+    override suspend fun getByName(name: String): AgentRecord? =
+      addedAgents.firstOrNull { it == name }?.let { agentRecord(name = it) }
 
     override suspend fun add(name: String) {
       when {
-        shouldThrowIllegalArgument -> throw IllegalArgumentException("Already exists")
-        shouldThrowGenericException -> throw AgentRepositoryException("Repository error")
+        shouldThrowIllegalArgument ->
+          throw AgentRepositoryException(AgentRepositoryFailure.DUPLICATE_NAME)
+        shouldThrowGenericException ->
+          throw AgentRepositoryException(AgentRepositoryFailure.STORAGE)
         else -> addedAgents.add(name)
       }
     }
 
-    override suspend fun updateStatus(uid: Int, status: AgentStatus) = Unit
+    override suspend fun updateStatus(uid: Int, status: AgentRecordStatus) = Unit
 
     override suspend fun delete(uid: Int) {
       addedAgents.removeAt(uid - 1)
     }
 
     override suspend fun getActiveCount(): Int = addedAgents.size
+
+    private fun agentRecord(
+      uid: Int = 0,
+      name: String,
+    ): AgentRecord =
+      AgentRecord(
+        uid = uid,
+        name = name,
+        createdAt = 0L,
+        updatedAt = 0L,
+        status = AgentRecordStatus.ACTIVE,
+        description = null,
+      )
 
     fun setShouldThrowIllegalArgument(shouldThrow: Boolean) {
       shouldThrowIllegalArgument = shouldThrow

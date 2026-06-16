@@ -66,13 +66,13 @@ spec.clearPassword()
   - 长度限制（2-100 字符）
   - 字符白名单（字母、数字、空格、`-_. `）
 - 创建 `AddAgentState` 状态机
-- 创建 `AddAgentError` 密封接口（4 种验证错误 + 数据库错误）
-- 通过 `Channel` 发送 `AgentEvent`（ShowError / AgentAdded）
+- 创建 `AddAgentError` 密封接口（验证错误 + 重名 + 存储错误）
+- 通过 `MutableSharedFlow` 发送 `AgentEvent`（ShowError / AgentAdded）
 
 **新增类型**:
 ```kotlin
-sealed interface AddAgentState { Idle, Adding, Success, Error }
-sealed interface AddAgentError { EmptyName, NameTooLong, NameTooShort, InvalidCharacters, DatabaseError }
+sealed interface AddAgentState { Idle, Adding, Error }
+sealed interface AddAgentError { EmptyName, NameTooLong, NameTooShort, InvalidCharacters, DuplicateName, Storage }
 sealed interface AgentEvent { ShowError, AgentAdded }
 ```
 
@@ -171,11 +171,12 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 8. `addAgent_withNameTooShort_showsError` - 过短输入（1 字符）
 9. `addAgent_withInvalidCharacters_showsError` - 非法字符
 10. `addAgent_withValidSpecialCharacters_succeeds` - 合法特殊字符（`-_.`）
-11. `addAgent_withRepositoryError_showsDatabaseError` - 数据库错误
-12. `resetAddAgentState_setsStateToIdle` - 状态重置
-13. `eventsChannel_emitsShowError_onValidationFailure` - 错误事件
-14. `eventsChannel_emitsAgentAdded_onSuccess` - 成功事件
-15. 创建 `FakeAgentRepository` 用于隔离测试
+11. `addAgent_withRepositoryError_showsStorageError` - 存储错误
+12. `onAgentNameChanged_clearsPreviousValidationError` - 输入变化后错误状态清理
+13. `agentName_restoresFromSavedStateHandle` - 配置变更/进程恢复输入状态
+14. `eventsChannel_emitsShowError_onValidationFailure` - 错误事件
+15. `eventsChannel_emitsAgentAdded_onSuccess` - 成功事件
+16. `addAgent_whileAlreadyAdding_ignoresDuplicateSubmission` - 重复提交防护
 
 #### 12. 输入验证单元测试 ✅
 **集成在 AgentViewModelTest 中**
@@ -208,8 +209,9 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 - `app/build.gradle.kts` - 签名配置
 - `core-database/di/DatabaseModule.kt` - PBKDF2 + 随机 secret + 依赖注入
 - `core-database/Agent.kt` - 实体扩展
-- `core-database/AppDatabase.kt` - 版本 2 + 迁移
-- `core-data/AgentRepository.kt` - 重复检测
+- `core-database/AppDatabase.kt` - 版本 2 schema
+- `core-domain/repository/AgentRepository.kt` - Repository 契约
+- `core-data/DefaultAgentRepository.kt` - Room 映射、重复检测和存储错误映射
 - `feature-agent/ui/AgentViewModel.kt` - 错误处理 + 验证
 - `feature-agent/ui/AgentScreen.kt` - UI 重试机制
 - `app/startup/JasmineInitializer.kt` - 异步 I/O
@@ -253,10 +255,10 @@ sealed interface AgentEvent { ShowError, AgentAdded }
 
 | 优化项 | 改进效果 |
 |--------|---------|
-| JasmineInitializer 异步化 | 冷启动 -100~500ms |
+| JasmineInitializer 异步化 | 避免主线程执行 ProfileInstaller 写入，具体收益需基准测试 |
 | Paging 3 死代码清理 | 移除未消费依赖和虚假收益声明 |
-| ProGuard 优化 | APK 体积 -5~10% |
-| StateFlow WhileSubscribed | 后台内存 -30% |
+| ProGuard 优化 | 启用 R8 和资源压缩，体积收益需产物对比 |
+| Baseline Profile | 已添加启动和 Agent 热路径规则 |
 
 ---
 

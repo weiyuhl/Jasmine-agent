@@ -17,7 +17,7 @@ $env:JAVA_HOME='D:\jdk-17.0.2'
 5. Run the verification chain:
 
 ```powershell
-.\gradlew.bat testDebugUnitTest detekt spotlessCheck :app:assembleRelease :feature-agent:compileDebugAndroidTestKotlin :test-app:assembleDebug --warning-mode all --continue
+.\gradlew.bat testDebugUnitTest detekt spotlessCheck :checkApiDocs :app:assembleRelease :feature-agent:compileDebugAndroidTestKotlin :test-app:assembleDebug --warning-mode all --continue
 ```
 
 ## Code Style
@@ -27,6 +27,7 @@ $env:JAVA_HOME='D:\jdk-17.0.2'
 - Keep Compose layout ownership inside screen-level composables.
 - Keep domain validation independent from UI error models.
 - Add tests when behavior, public contracts, or security-sensitive code changes.
+- Keep public and cross-module APIs documented with KDoc. Run `.\gradlew.bat :apiDocs` to generate the aggregated Dokka HTML documentation before review.
 
 ## Dependencies
 
@@ -45,4 +46,5 @@ $env:JAVA_HOME='D:\jdk-17.0.2'
 - The change has a clear scope.
 - Public APIs and module dependencies still match their exposed types.
 - Documentation is updated when behavior or workflow changes.
+- Dokka API documentation still builds when public contracts change.
 - `spotlessCheck`, `detekt`, and relevant tests pass.

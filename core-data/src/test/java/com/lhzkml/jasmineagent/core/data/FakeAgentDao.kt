@@ -1,5 +1,6 @@
 package com.lhzkml.jasmineagent.core.data
 
+import android.database.sqlite.SQLiteException
 import com.lhzkml.jasmineagent.core.database.Agent
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import com.lhzkml.jasmineagent.core.database.AgentStatus
@@ -11,8 +12,11 @@ class FakeAgentDao : AgentDao {
 
   private val data = mutableListOf<Agent>()
   private var nextUid = 1
+  private var activeNamesError: SQLiteException? = null
+  private var getByNameError: SQLiteException? = null
 
   override fun getActiveAgentNames(): Flow<List<String>> = flow {
+    activeNamesError?.let { throw it }
     emit(data.filter { it.status == AgentStatus.ACTIVE }.map { it.name })
   }
 
@@ -20,7 +24,10 @@ class FakeAgentDao : AgentDao {
 
   override suspend fun getAgentById(uid: Int): Agent? = data.find { it.uid == uid }
 
-  override suspend fun getAgentByName(name: String): Agent? = data.find { it.name == name }
+  override suspend fun getAgentByName(name: String): Agent? {
+    getByNameError?.let { throw it }
+    return data.find { it.name == name }
+  }
 
   override suspend fun insertAgent(item: Agent) {
     val uid = if (item.uid == 0) nextUid++ else item.uid
@@ -39,4 +46,12 @@ class FakeAgentDao : AgentDao {
   }
 
   override suspend fun getActiveAgentCount(): Int = data.count { it.status == AgentStatus.ACTIVE }
+
+  fun throwActiveNamesError(exception: SQLiteException) {
+    activeNamesError = exception
+  }
+
+  fun throwGetByNameError(exception: SQLiteException) {
+    getByNameError = exception
+  }
 }

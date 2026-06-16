@@ -6,13 +6,47 @@ plugins {
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.dokka)
     alias(libs.plugins.hilt.gradle) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.spotless) apply false
 }
 
+val documentedProjects =
+    setOf(
+        "app",
+        "core-data",
+        "core-database",
+        "core-domain",
+        "core-testing",
+        "core-ui",
+        "feature-agent-navigation",
+        "feature-agent",
+        "test-app",
+    )
+
+dependencies {
+    documentedProjects.forEach { moduleName -> dokka(project(":$moduleName")) }
+}
+
+tasks.register("apiDocs") {
+    group = "documentation"
+    description = "Generates aggregated Dokka API documentation for all documented modules."
+    dependsOn(":dokkaGenerate")
+}
+
+tasks.register("checkApiDocs") {
+    group = "verification"
+    description = "Verifies that aggregated Dokka API documentation can be generated."
+    dependsOn(":apiDocs")
+}
+
 subprojects {
+    if (name in documentedProjects) {
+        apply(plugin = "org.jetbrains.dokka")
+    }
+
     configurations.configureEach {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {

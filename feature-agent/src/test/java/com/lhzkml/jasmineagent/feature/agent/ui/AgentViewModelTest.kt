@@ -1,16 +1,19 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.lhzkml.jasmineagent.core.data.AgentRepository
-import com.lhzkml.jasmineagent.core.data.AgentRepositoryException
-import com.lhzkml.jasmineagent.core.database.Agent
-import com.lhzkml.jasmineagent.core.database.AgentStatus
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -43,7 +46,7 @@ class AgentViewModelTest {
     fakeRepository = FakeAgentRepository()
     addAgentUseCase = AddAgentUseCase(fakeRepository)
     getAgentsUseCase = GetAgentsUseCase(fakeRepository)
-    viewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase)
+    viewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase, SavedStateHandle())
   }
 
   @After
@@ -55,7 +58,7 @@ class AgentViewModelTest {
   @Test
   fun uiState_initiallyLoading() =
     runTest(testDispatcher) {
-      val localViewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase)
+      val localViewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase, SavedStateHandle())
 
       try {
         val initialState = localViewModel.uiState.value
@@ -79,16 +82,16 @@ class AgentViewModelTest {
   @Test
   fun uiState_becomesError_whenRepositoryThrowsException() =
     runTest(testDispatcher) {
-      fakeRepository.throwError(AgentRepositoryException("Database error"))
+      fakeRepository.throwError(AgentRepositoryException(AgentRepositoryFailure.STORAGE))
       viewModel.retryLoadAgents()
       advanceUntilIdle()
 
       val state = viewModel.uiState.value
       assertTrue("State should be Error", state is AgentUiState.Error)
       assertEquals(
-        "Error message should match",
-        "Database error",
-        (state as AgentUiState.Error).throwable.message,
+        "Error should be storage",
+        AgentLoadError.Storage,
+        (state as AgentUiState.Error).error,
       )
     }
 
@@ -98,11 +101,13 @@ class AgentViewModelTest {
       fakeRepository.emit(emptyList())
       advanceUntilIdle()
 
-      viewModel.addAgent("ValidAgent")
+      viewModel.onAgentNameChanged("ValidAgent")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
-      assertTrue("Add state should be Success", addState is AddAgentState.Success)
+      assertEquals("Add state should return to Idle", AddAgentState.Idle, addState)
+      assertEquals("Agent name should clear after success", "", viewModel.agentName.value)
       assertTrue(
         "Agent should be added to repository",
         fakeRepository.addedAgents.contains("ValidAgent"),
@@ -112,7 +117,8 @@ class AgentViewModelTest {
   @Test
   fun addAgent_withEmptyName_showsError() =
     runTest(testDispatcher) {
-      viewModel.addAgent("")
+      viewModel.onAgentNameChanged("")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
@@ -126,7 +132,8 @@ class AgentViewModelTest {
   @Test
   fun addAgent_withBlankName_showsError() =
     runTest(testDispatcher) {
-      viewModel.addAgent("   ")
+      viewModel.onAgentNameChanged("   ")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
@@ -137,7 +144,8 @@ class AgentViewModelTest {
   fun addAgent_withNameTooLong_showsError() =
     runTest(testDispatcher) {
       val longName = "A".repeat(101)
-      viewModel.addAgent(longName)
+      viewModel.onAgentNameChanged(longName)
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
@@ -151,7 +159,8 @@ class AgentViewModelTest {
   @Test
   fun addAgent_withNameTooShort_showsError() =
     runTest(testDispatcher) {
-      viewModel.addAgent("A")
+      viewModel.onAgentNameChanged("A")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
@@ -165,7 +174,8 @@ class AgentViewModelTest {
   @Test
   fun addAgent_withInvalidCharacters_showsError() =
     runTest(testDispatcher) {
-      viewModel.addAgent("Agent@#\$%")
+      viewModel.onAgentNameChanged("Agent@#\$%")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
@@ -180,48 +190,64 @@ class AgentViewModelTest {
   fun addAgent_withValidSpecialCharacters_succeeds() =
     runTest(testDispatcher) {
       fakeRepository.emit(emptyList())
-      viewModel.addAgent("Valid-Agent_123.0")
+      viewModel.onAgentNameChanged("Valid-Agent_123.0")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
-      assertTrue("Add state should be Success", addState is AddAgentState.Success)
+      assertEquals("Add state should return to Idle", AddAgentState.Idle, addState)
     }
 
   @Test
-  fun addAgent_withRepositoryError_showsDatabaseError() =
+  fun addAgent_withRepositoryError_showsStorageError() =
     runTest(testDispatcher) {
       fakeRepository.setShouldThrowOnAdd(true)
       fakeRepository.emit(emptyList())
       advanceUntilIdle()
 
-      viewModel.addAgent("ValidAgent")
+      viewModel.onAgentNameChanged("ValidAgent")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val addState = viewModel.addAgentState.value
       assertTrue("Add state should be Error", addState is AddAgentState.Error)
       assertTrue(
-        "Error should be DatabaseError",
-        (addState as AddAgentState.Error).error is AddAgentError.DatabaseError,
+        "Error should be Storage",
+        (addState as AddAgentState.Error).error is AddAgentError.Storage,
       )
     }
 
   @Test
-  fun resetAddAgentState_setsStateToIdle() =
+  fun onAgentNameChanged_clearsPreviousValidationError() =
     runTest(testDispatcher) {
-      viewModel.addAgent("")
+      viewModel.onAgentNameChanged("")
+      viewModel.addAgent()
       advanceUntilIdle()
       assertTrue(
         "State should be Error before reset",
         viewModel.addAgentState.value is AddAgentState.Error,
       )
 
-      viewModel.resetAddAgentState()
+      viewModel.onAgentNameChanged("ValidAgent")
 
       assertEquals(
-        "State should be Idle after reset",
+        "State should be Idle after input changes",
         AddAgentState.Idle,
         viewModel.addAgentState.value,
       )
+    }
+
+  @Test
+  fun agentName_restoresFromSavedStateHandle() =
+    runTest(testDispatcher) {
+      val savedStateHandle = SavedStateHandle(mapOf("agent_name" to "Restored"))
+      val localViewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase, savedStateHandle)
+
+      try {
+        assertEquals("Restored", localViewModel.agentName.value)
+      } finally {
+        localViewModel.viewModelScope.cancel()
+      }
     }
 
   @Test
@@ -229,7 +255,8 @@ class AgentViewModelTest {
     runTest(testDispatcher) {
       val event = async { viewModel.events.first() }
 
-      viewModel.addAgent("")
+      viewModel.onAgentNameChanged("")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       assertTrue("Should emit ShowError event", event.await() is AgentEvent.ShowError)
@@ -243,7 +270,8 @@ class AgentViewModelTest {
 
       val event = async { viewModel.events.first() }
 
-      viewModel.addAgent("NewAgent")
+      viewModel.onAgentNameChanged("NewAgent")
+      viewModel.addAgent()
       advanceUntilIdle()
 
       val agentAdded = event.await()
@@ -255,9 +283,26 @@ class AgentViewModelTest {
       )
     }
 
+  @Test
+  fun addAgent_whileAlreadyAdding_ignoresDuplicateSubmission() =
+    runTest(testDispatcher) {
+      fakeRepository.emit(emptyList())
+      fakeRepository.setAddDelayMillis(1_000)
+      viewModel.onAgentNameChanged("NewAgent")
+
+      viewModel.addAgent()
+      viewModel.addAgent()
+      advanceUntilIdle()
+
+      assertEquals("Repository add should run once", 1, fakeRepository.addCallCount)
+      assertEquals(listOf("NewAgent"), fakeRepository.addedAgents)
+    }
+
   private class FakeAgentRepository : AgentRepository {
     val addedAgents = mutableListOf<String>()
+    var addCallCount = 0
     private var shouldThrowOnAdd = false
+    private var addDelayMillis = 0L
     private val _agents = MutableStateFlow<List<String>>(emptyList())
     private var errorToThrow: AgentRepositoryException? = null
 
@@ -274,37 +319,58 @@ class AgentViewModelTest {
       shouldThrowOnAdd = shouldThrow
     }
 
+    fun setAddDelayMillis(delayMillis: Long) {
+      addDelayMillis = delayMillis
+    }
+
     override val agents: Flow<List<String>> = flow {
       errorToThrow?.let { throw it }
       _agents.collect { emit(it) }
     }
 
-    override fun getAgents(limit: Int): Flow<List<Agent>> = flow {
+    override fun getAgents(limit: Int): Flow<List<AgentRecord>> = flow {
       errorToThrow?.let { throw it }
       _agents.collect { names ->
-        emit(names.take(limit).mapIndexed { index, name -> Agent(uid = index + 1, name = name) })
+        emit(names.take(limit).mapIndexed { index, name -> agentRecord(index + 1, name) })
       }
     }
 
-    override suspend fun getById(uid: Int): Agent? =
-      _agents.value.getOrNull(uid - 1)?.let { Agent(uid = uid, name = it) }
+    override suspend fun getById(uid: Int): AgentRecord? =
+      _agents.value.getOrNull(uid - 1)?.let { agentRecord(uid, it) }
 
-    override suspend fun getByName(name: String): Agent? =
-      _agents.value.firstOrNull { it == name }?.let { Agent(name = it) }
+    override suspend fun getByName(name: String): AgentRecord? =
+      _agents.value.firstOrNull { it == name }?.let { agentRecord(name = it) }
 
     override suspend fun add(name: String) {
+      addCallCount += 1
+      if (addDelayMillis > 0) {
+        delay(addDelayMillis)
+      }
       if (shouldThrowOnAdd) {
-        throw AgentRepositoryException("Repository error")
+        throw AgentRepositoryException(AgentRepositoryFailure.STORAGE)
       }
       addedAgents.add(name)
     }
 
-    override suspend fun updateStatus(uid: Int, status: AgentStatus) = Unit
+    override suspend fun updateStatus(uid: Int, status: AgentRecordStatus) = Unit
 
     override suspend fun delete(uid: Int) {
       _agents.value = _agents.value.filterIndexed { index, _ -> index != uid - 1 }
     }
 
     override suspend fun getActiveCount(): Int = _agents.value.size
+
+    private fun agentRecord(
+      uid: Int = 0,
+      name: String,
+    ): AgentRecord =
+      AgentRecord(
+        uid = uid,
+        name = name,
+        createdAt = 0L,
+        updatedAt = 0L,
+        status = AgentRecordStatus.ACTIVE,
+        description = null,
+      )
   }
 }

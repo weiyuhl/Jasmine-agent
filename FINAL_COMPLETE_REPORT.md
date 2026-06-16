@@ -62,10 +62,10 @@ spec.clearPassword()
 
 **修复**: `feature-agent/ui/AgentViewModel.kt`
 - 添加完整 try-catch
-- 创建状态机: `AddAgentState` (Idle/Adding/Success/Error)
+- 创建状态机: `AddAgentState` (Idle/Adding/Error)
 - 创建错误类型: `AddAgentError` (6种)
-- 事件通道: `Channel<AgentEvent>`
-- **后续升级为 Domain 层 Use Cases**
+- 事件流: `MutableSharedFlow<AgentEvent>`
+- 通过 Domain 层 Use Cases 组织业务规则
 
 #### 5. AgentScreen 重试机制 ✅
 **修复**: `feature-agent/ui/AgentScreen.kt`
@@ -147,7 +147,7 @@ ProfileInstaller.writeProfile(context, executor, diagnosticsCallback)
 sealed interface AddAgentResult {
   Success(name)
   ValidationFailure(error: ValidationError)
-  RepositoryFailure(message, cause)
+  RepositoryFailure(error: AddAgentRepositoryError, cause)
 }
 
 suspend fun invoke(name: String): AddAgentResult {
@@ -294,12 +294,13 @@ fun addAgent(name: String) {
 
 **数据层**:
 5. `core-database/Agent.kt` - 实体扩展
-6. `core-data/AgentRepository.kt` - 重复检测
-7. `gradle/libs.versions.toml` - 移除未接入的 Paging 3 依赖
-8. `core-database/build.gradle.kts` - 依赖
+6. `core-domain/repository/AgentRepository.kt` - Repository 契约
+7. `core-data/DefaultAgentRepository.kt` - Room 映射、重复检测和存储错误映射
+8. `gradle/libs.versions.toml` - 移除未接入的 Paging 3 依赖
+9. `core-database/build.gradle.kts` - 依赖
 
 **业务层**:
-9. `feature-agent/ui/AgentViewModel.kt` - Domain 层重构
+10. `feature-agent/ui/AgentViewModel.kt` - Domain 层重构
 10. `feature-agent/ui/AgentScreen.kt` - UI 增强
 11. `feature-agent/build.gradle.kts` - Domain 依赖
 12. `feature-agent/src/test/.../AgentViewModelTest.kt` - 完整测试
@@ -457,25 +458,25 @@ Unit Tests (Database)     7个 ← 新增安全测试
 ────────────────────────────────────────
 ```
 
-**总覆盖**: ~50 个测试用例，覆盖率 **~60%**
+**测试状态**: 已覆盖 Domain、ViewModel、Repository、数据库安全和 Compose 语义关键路径；覆盖率数字需以覆盖率工具统计为准。
 
 ---
 
 ## 📚 技术栈总结
 
 ### 核心技术
-- **语言**: Kotlin 2.3.21 (K2 编译器)
-- **构建**: Gradle 9.5.1 + KSP
+- **语言**: Kotlin 2.4.0 (K2 编译器)
+- **构建**: Gradle 9.5.1 + KSP 2.3.9
 - **DI**: Hilt 2.59.2
 - **UI**: Jetpack Compose (BOM 2026.05.01)
-- **导航**: Navigation3 1.1.2
+- **导航**: Navigation3 1.2.0-alpha04
 - **数据库**: Room 2.8.4 + SQLCipher 4.5.4
 - **分页**: 未接入 UI，已移除未使用 Paging 依赖
 - **加密**: Security-Crypto + PBKDF2 + 随机secret
 
 ### 质量工具
-- **静态分析**: Detekt 1.23.8 (335规则)
-- **格式化**: Spotless 6.25.0 (Google Style)
+- **静态分析**: Detekt 2.0.0-alpha.4
+- **格式化**: Spotless 8.6.0 (Google Style)
 - **Lint**: Android Lint (warningsAsErrors=true)
 - **混淆**: R8 + ProGuard
 
@@ -490,16 +491,17 @@ Unit Tests (Database)     7个 ← 新增安全测试
 ## 🚀 性能优化总结
 
 ### 冷启动优化
-- ✅ ProfileInstaller 异步化: **-100~500ms**
-- ✅ R8 优化: APK体积 **-5~10%**
+- ✅ ProfileInstaller 异步化: 避免主线程写入
+- ✅ Baseline Profile: 已添加启动与 Agent 热路径规则
+- ✅ R8 优化: 启用 minify 和资源压缩
 
 ### 运行时优化
-- ✅ StateFlow WhileSubscribed(5000): 后台内存 **-30%**
+- ✅ ViewModel 使用 StateFlow/SharedFlow 分离稳定状态与一次性事件
 - ✅ Paging 3 死代码清理: 移除未消费依赖和虚假的性能收益声明
 
 ### 构建优化
-- ✅ KSP 替代 kapt: 编译速度 **+200%**
-- ✅ Configuration Cache: 增量构建 **+50%**
+- ✅ KSP 替代 kapt
+- ✅ Gradle build cache/parallel 构建已启用；configuration cache 当前未启用
 
 ---
 
@@ -598,7 +600,7 @@ Copy-Item keystore.properties.example keystore.properties
 |------|--------|--------|------|
 | **安全性** | D级 (3漏洞) | A级 (0漏洞) | ⭐⭐⭐⭐⭐ |
 | **架构** | 3层混合 | Clean Arch 4层 | ⭐⭐⭐⭐⭐ |
-| **测试** | 10% 覆盖 | 60% 覆盖 | ⭐⭐⭐⭐ |
+| **测试** | 覆盖不足 | 关键路径测试已补齐，覆盖率待统计 | ⭐⭐⭐⭐ |
 | **性能** | 基线 | 优化完成 | ⭐⭐⭐⭐ |
 | **可维护性** | 低 | 高 | ⭐⭐⭐⭐⭐ |
 | **可扩展性** | 中 | 高 | ⭐⭐⭐⭐⭐ |
