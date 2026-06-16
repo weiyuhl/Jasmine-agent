@@ -1,0 +1,19 @@
+enum AgentNameValidationKind {
+    "Valid",
+    "EmptyInput",
+    "TooShort",
+    "TooLong",
+    "InvalidCharacters",
+};
+
+dictionary AgentNameValidation {
+    AgentNameValidationKind kind;
+    i32 actual;
+    i32 limit;
+    string invalid_characters;
+};
+
+namespace jasmine_core {
+    string normalize_agent_name(string name);
+    AgentNameValidation validate_agent_name(string name);
+};

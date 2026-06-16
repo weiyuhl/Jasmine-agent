@@ -26,6 +26,8 @@ android {
     testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
 
     vectorDrawables { useSupportLibrary = true }
+
+    ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
   }
 
   signingConfigs {
@@ -64,7 +66,10 @@ android {
     shaders = false
   }
 
-  packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
+  packaging {
+    jniLibs { keepDebugSymbols += "**/libjnidispatch.so" }
+    resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+  }
 
   lint {
     checkReleaseBuilds = true

@@ -26,6 +26,7 @@ enum class AddAgentRepositoryError {
 class AddAgentUseCase @Inject constructor(private val repository: AgentRepository) {
 
   public suspend operator fun invoke(name: String): AddAgentResult {
+    val normalizedName = AgentNameValidator.normalize(name)
     val validationResult = AgentNameValidator.validate(name)
 
     if (validationResult is ValidationResult.Invalid) {
@@ -33,14 +34,14 @@ class AddAgentUseCase @Inject constructor(private val repository: AgentRepositor
     }
 
     return try {
-      repository.add(name.trim())
-      AddAgentResult.Success(name.trim())
+      repository.add(normalizedName)
+      AddAgentResult.Success(normalizedName)
     } catch (e: CancellationException) {
       throw e
     } catch (e: AgentRepositoryException) {
       when (e.failure) {
         AgentRepositoryFailure.DUPLICATE_NAME ->
-          AddAgentResult.ValidationFailure(ValidationError.AlreadyExists(name.trim()), e)
+          AddAgentResult.ValidationFailure(ValidationError.AlreadyExists(normalizedName), e)
         AgentRepositoryFailure.STORAGE ->
           AddAgentResult.RepositoryFailure(AddAgentRepositoryError.STORAGE, e)
       }

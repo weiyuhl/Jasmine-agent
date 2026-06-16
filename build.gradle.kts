@@ -19,6 +19,7 @@ val documentedProjects =
         "core-data",
         "core-database",
         "core-domain",
+        "core-rust",
         "core-testing",
         "core-ui",
         "feature-agent-navigation",

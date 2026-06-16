@@ -49,6 +49,11 @@ kotlin {
   }
 }
 
+val rustHostLibraryName =
+  if (System.getProperty("os.name").startsWith("Windows")) "jasmine_core.dll"
+  else if (System.getProperty("os.name").startsWith("Mac")) "libjasmine_core.dylib"
+  else "libjasmine_core.so"
+
 dependencies {
   implementation(project(":core-domain"))
   implementation(project(":core-ui"))
@@ -95,8 +100,24 @@ dependencies {
   // Local tests: jUnit, coroutines, Android runner
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
+  testRuntimeOnly(libs.kotlin.jna)
 
   // Instrumented tests: jUnit rules and runners
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
+}
+
+tasks.withType<Test>().configureEach {
+  dependsOn(":core-rust:buildRustHost")
+  systemProperty(
+    "jna.library.path",
+    rootProject.layout.projectDirectory.dir("core-rust/build/rustHost/release").asFile.absolutePath,
+  )
+  systemProperty(
+    "uniffi.component.jasmine_core.libraryOverride",
+    rootProject.layout.projectDirectory
+      .file("core-rust/build/rustHost/release/$rustHostLibraryName")
+      .asFile
+      .absolutePath,
+  )
 }

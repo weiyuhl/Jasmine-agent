@@ -1,0 +1,5 @@
+-dontwarn java.awt.**
+-dontwarn javax.swing.**
+-dontwarn com.sun.jna.**
+-keep class com.sun.jna.** { *; }
+-keep class uniffi.** { *; }

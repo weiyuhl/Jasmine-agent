@@ -18,6 +18,10 @@ keystore.properties
 # Kotlin
 .kotlin/
 
+# Rust
+target/
+**/target/
+
 # Local AI assistant configuration
 .trae/
 .claude/

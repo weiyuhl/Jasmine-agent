@@ -1,5 +1,8 @@
 package com.lhzkml.jasmineagent.core.domain.validation
 
+import com.lhzkml.jasmineagent.core.rust.AgentNameCore
+import com.lhzkml.jasmineagent.core.rust.CoreAgentNameValidation
+
 sealed interface ValidationResult {
   data object Valid : ValidationResult
 
@@ -19,27 +22,17 @@ sealed interface ValidationError {
 }
 
 object AgentNameValidator {
-  private const val MIN_LENGTH = 2
-  private const val MAX_LENGTH = 100
-  private val ALLOWED_SPECIAL_CHARS = setOf('-', '_', '.')
+  fun normalize(name: String): String = AgentNameCore.normalize(name)
 
-  fun validate(name: String): ValidationResult {
-    val trimmed = name.trim()
-
-    val invalidChars =
-      trimmed
-        .filter { !it.isLetterOrDigit() && !it.isWhitespace() && it !in ALLOWED_SPECIAL_CHARS }
-        .toSet()
-
-    return when {
-      trimmed.isEmpty() -> ValidationResult.Invalid(ValidationError.EmptyInput)
-      trimmed.length < MIN_LENGTH ->
-        ValidationResult.Invalid(ValidationError.TooShort(trimmed.length, MIN_LENGTH))
-      trimmed.length > MAX_LENGTH ->
-        ValidationResult.Invalid(ValidationError.TooLong(trimmed.length, MAX_LENGTH))
-      invalidChars.isNotEmpty() ->
-        ValidationResult.Invalid(ValidationError.InvalidCharacters(invalidChars))
-      else -> ValidationResult.Valid
+  fun validate(name: String): ValidationResult =
+    when (val validation = AgentNameCore.validate(name)) {
+      CoreAgentNameValidation.Valid -> ValidationResult.Valid
+      CoreAgentNameValidation.EmptyInput -> ValidationResult.Invalid(ValidationError.EmptyInput)
+      is CoreAgentNameValidation.TooShort ->
+        ValidationResult.Invalid(ValidationError.TooShort(validation.actual, validation.min))
+      is CoreAgentNameValidation.TooLong ->
+        ValidationResult.Invalid(ValidationError.TooLong(validation.actual, validation.max))
+      is CoreAgentNameValidation.InvalidCharacters ->
+        ValidationResult.Invalid(ValidationError.InvalidCharacters(validation.invalidChars))
     }
-  }
 }
