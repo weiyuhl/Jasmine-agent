@@ -34,12 +34,10 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun enableTransparentSystemBars() {
+    val transparent = android.graphics.Color.TRANSPARENT
     enableEdgeToEdge(
-      statusBarStyle =
-        SystemBarStyle.auto(
-          lightScrim = android.graphics.Color.TRANSPARENT,
-          darkScrim = android.graphics.Color.TRANSPARENT,
-        )
+      statusBarStyle = SystemBarStyle.light(scrim = transparent, darkScrim = transparent),
+      navigationBarStyle = SystemBarStyle.light(scrim = transparent, darkScrim = transparent),
     )
   }
 }
