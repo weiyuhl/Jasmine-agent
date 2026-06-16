@@ -3,12 +3,15 @@ package com.lhzkml.jasmineagent.feature.agent.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
+import androidx.compose.foundation.layout.FlexAlignItems
+import androidx.compose.foundation.layout.FlexBox
+import androidx.compose.foundation.layout.FlexDirection
+import androidx.compose.foundation.layout.FlexJustifyContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -18,7 +21,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +48,7 @@ import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success
 
+@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltViewModel()) {
   val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -108,6 +111,7 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
   }
 }
 
+@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
   val contentDescription = stringResource(R.string.agent_loading_content_description)
@@ -124,6 +128,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
   }
 }
 
+@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 private fun ErrorContent(
   message: String?,
@@ -137,9 +142,13 @@ private fun ErrorContent(
   val resolvedMessage = message ?: fallbackMessage
 
   Box(modifier = modifier.safeDrawingPadding(), contentAlignment = Alignment.Center) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(16.dp),
+    FlexBox(
+      config = {
+        direction(FlexDirection.Column)
+        alignItems(FlexAlignItems.Center)
+        justifyContent(FlexJustifyContent.Center)
+        gap(16.dp)
+      }
     ) {
       Text(
         text = resolvedMessage,
@@ -168,6 +177,7 @@ private fun ErrorContent(
   }
 }
 
+@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 internal fun AgentContent(
   items: List<String>,
@@ -177,7 +187,6 @@ internal fun AgentContent(
   addAgentState: AddAgentState,
   modifier: Modifier = Modifier,
 ) {
-  val resources = LocalResources.current
   val formContentDescription = stringResource(R.string.agent_form_content_description)
 
   Column(
@@ -185,11 +194,8 @@ internal fun AgentContent(
       contentDescription = formContentDescription
     }
   ) {
-    val validationError = (addAgentState as? AddAgentState.Error)?.error?.message(resources)
-
     AddAgentForm(
       nameAgent = agentName,
-      validationError = validationError,
       addAgentState = addAgentState,
       onNameChange = onAgentNameChange,
       onSave = onSave,
@@ -199,74 +205,6 @@ internal fun AgentContent(
       EmptyAgents()
     } else {
       AgentList(items)
-    }
-  }
-}
-
-@Composable
-private fun AddAgentForm(
-  nameAgent: String,
-  validationError: String?,
-  addAgentState: AddAgentState,
-  onNameChange: (String) -> Unit,
-  onSave: () -> Unit,
-) {
-  val agentNameLabel = stringResource(R.string.agent_field_name_label)
-  val saveLabel = stringResource(R.string.agent_action_save)
-
-  Row(
-    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-    horizontalArrangement = Arrangement.spacedBy(16.dp),
-  ) {
-    Column(modifier = Modifier.weight(1f)) {
-      TextField(
-        modifier =
-          Modifier.fillMaxWidth().testTag(AgentSemantics.NAME_FIELD).semantics {
-            contentDescription = agentNameLabel
-            validationError?.let { error(it) }
-          },
-        value = nameAgent,
-        onValueChange = onNameChange,
-        label = { Text(agentNameLabel) },
-        isError = validationError != null,
-        supportingText =
-          validationError?.let {
-            {
-              Text(
-                text = it,
-                modifier =
-                  Modifier.semantics {
-                    error(it)
-                    liveRegion = LiveRegionMode.Assertive
-                  },
-                color = MaterialTheme.colorScheme.error,
-              )
-            }
-          },
-        enabled = addAgentState !is AddAgentState.Adding,
-      )
-    }
-
-    Button(
-      modifier =
-        Modifier.width(96.dp)
-          .align(Alignment.CenterVertically)
-          .testTag(AgentSemantics.SAVE_BUTTON)
-          .semantics {
-            role = Role.Button
-            contentDescription = saveLabel
-          },
-      onClick = onSave,
-      enabled = addAgentState !is AddAgentState.Adding && nameAgent.isNotBlank(),
-    ) {
-      if (addAgentState is AddAgentState.Adding) {
-        CircularProgressIndicator(
-          modifier = Modifier.width(24.dp),
-          color = MaterialTheme.colorScheme.onPrimary,
-        )
-      } else {
-        Text(saveLabel)
-      }
     }
   }
 }
