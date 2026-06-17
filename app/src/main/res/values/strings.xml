@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Jasmine</string>
+    <string name="nav_agents_label">Agents</string>
+    <string name="nav_agents_content_description">Agents destination</string>
 </resources>

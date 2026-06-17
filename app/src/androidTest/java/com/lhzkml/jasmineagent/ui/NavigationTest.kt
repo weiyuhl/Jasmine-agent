@@ -27,4 +27,15 @@ class NavigationTest {
       .assertExists()
     composeTestRule.onNodeWithTag(AgentSemantics.SAVE_BUTTON).assertExists()
   }
+
+  @Test
+  fun mainScreen_showsAppBars() {
+    composeTestRule.onNodeWithTag(NavigationSemantics.TOP_APP_BAR).assertExists()
+    composeTestRule.onNodeWithTag(NavigationSemantics.BOTTOM_NAVIGATION).assertExists()
+    composeTestRule
+      .onNodeWithText(
+        composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_agents_label)
+      )
+      .assertExists()
+  }
 }
