@@ -71,6 +71,16 @@ class NavigationTest {
   }
 
   @Test
+  fun drawer_opensBlankTab() {
+    composeTestRule.onNodeWithTag(NavigationSemantics.DRAWER_OPEN_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(NavigationSemantics.DRAWER).assertExists()
+
+    composeTestRule.onNodeWithTag(NavigationSemantics.DRAWER_ITEM_BLANK_ONE).performClick()
+
+    composeTestRule.onNodeWithTag(BlankDestinationSemantics.BLANK_ONE).assertExists()
+  }
+
+  @Test
   fun pagerSwipe_opensBlankTabs() {
     composeTestRule.onNodeWithTag(NavigationSemantics.PAGER).performTouchInput { swipeLeft() }
     composeTestRule.onNodeWithTag(BlankDestinationSemantics.BLANK_ONE).assertExists()

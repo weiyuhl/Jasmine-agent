@@ -6,4 +6,5 @@
     <string name="nav_blank_one_content_description">Blank 1 destination</string>
     <string name="nav_blank_two_label">Blank 2</string>
     <string name="nav_blank_two_content_description">Blank 2 destination</string>
+    <string name="nav_drawer_open_content_description">Open navigation drawer</string>
 </resources>
