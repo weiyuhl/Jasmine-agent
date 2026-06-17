@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,12 +29,38 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.lhzkml.jasmineagent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.AgentEntryProvider
+import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
+import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankTwo
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main
 
-private data class AppDestination(val key: NavKey, @StringRes val labelResId: Int)
+private data class AppDestination(
+  val key: NavKey,
+  @StringRes val labelResId: Int,
+  @StringRes val contentDescriptionResId: Int,
+  val icon: androidx.compose.ui.graphics.vector.ImageVector,
+)
 
 private val appDestinations =
-  listOf(AppDestination(key = Main, labelResId = R.string.nav_agents_label))
+  listOf(
+    AppDestination(
+      key = Main,
+      labelResId = R.string.nav_agents_label,
+      contentDescriptionResId = R.string.nav_agents_content_description,
+      icon = Icons.Filled.Home,
+    ),
+    AppDestination(
+      key = BlankOne,
+      labelResId = R.string.nav_blank_one_label,
+      contentDescriptionResId = R.string.nav_blank_one_content_description,
+      icon = Icons.Filled.Add,
+    ),
+    AppDestination(
+      key = BlankTwo,
+      labelResId = R.string.nav_blank_two_label,
+      contentDescriptionResId = R.string.nav_blank_two_content_description,
+      icon = Icons.Filled.Info,
+    ),
+  )
 
 object NavigationSemantics {
   const val TOP_APP_BAR = "main_top_app_bar"
@@ -88,12 +116,12 @@ private fun JasmineNavigationBar(selectedKey: NavKey?, onDestinationSelected: (N
   ) {
     appDestinations.forEach { destination ->
       val label = stringResource(destination.labelResId)
-      val contentDescription = stringResource(R.string.nav_agents_content_description)
+      val contentDescription = stringResource(destination.contentDescriptionResId)
 
       NavigationBarItem(
         selected = selectedKey == destination.key,
         onClick = { onDestinationSelected(destination.key) },
-        icon = { Icon(imageVector = Icons.Filled.Home, contentDescription = contentDescription) },
+        icon = { Icon(imageVector = destination.icon, contentDescription = contentDescription) },
         label = { Text(label) },
       )
     }

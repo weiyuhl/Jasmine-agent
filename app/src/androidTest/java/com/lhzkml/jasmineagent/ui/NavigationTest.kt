@@ -3,8 +3,10 @@ package com.lhzkml.jasmineagent.ui
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lhzkml.jasmineagent.feature.agent.R
+import com.lhzkml.jasmineagent.feature.agent.navigation.BlankDestinationSemantics
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentSemantics
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -37,5 +39,32 @@ class NavigationTest {
         composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_agents_label)
       )
       .assertExists()
+    composeTestRule
+      .onNodeWithText(
+        composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_blank_one_label)
+      )
+      .assertExists()
+    composeTestRule
+      .onNodeWithText(
+        composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_blank_two_label)
+      )
+      .assertExists()
+  }
+
+  @Test
+  fun bottomNavigation_opensBlankTabs() {
+    composeTestRule
+      .onNodeWithText(
+        composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_blank_one_label)
+      )
+      .performClick()
+    composeTestRule.onNodeWithTag(BlankDestinationSemantics.BLANK_ONE).assertExists()
+
+    composeTestRule
+      .onNodeWithText(
+        composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_blank_two_label)
+      )
+      .performClick()
+    composeTestRule.onNodeWithTag(BlankDestinationSemantics.BLANK_TWO).assertExists()
   }
 }

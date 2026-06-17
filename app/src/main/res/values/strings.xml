@@ -2,4 +2,8 @@
     <string name="app_name">Jasmine</string>
     <string name="nav_agents_label">Agents</string>
     <string name="nav_agents_content_description">Agents destination</string>
+    <string name="nav_blank_one_label">Blank 1</string>
+    <string name="nav_blank_one_content_description">Blank 1 destination</string>
+    <string name="nav_blank_two_label">Blank 2</string>
+    <string name="nav_blank_two_content_description">Blank 2 destination</string>
 </resources>
