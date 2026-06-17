@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,14 +30,6 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.lhzkml.jasmineagent.core.ui.JasmineBlack
-import com.lhzkml.jasmineagent.core.ui.JasmineBodyLarge
-import com.lhzkml.jasmineagent.core.ui.JasmineBorder
-import com.lhzkml.jasmineagent.core.ui.JasmineContainer
-import com.lhzkml.jasmineagent.core.ui.JasmineError
-import com.lhzkml.jasmineagent.core.ui.JasmineLabelLarge
-import com.lhzkml.jasmineagent.core.ui.JasmineTextMuted
-import com.lhzkml.jasmineagent.core.ui.JasmineWhite
 import com.lhzkml.jasmineagent.feature.agent.R
 
 @OptIn(ExperimentalFlexBoxApi::class)
@@ -92,6 +86,8 @@ private fun AgentNameField(
   enabled: Boolean,
   modifier: Modifier = Modifier,
 ) {
+  val colorScheme = MaterialTheme.colorScheme
+
   TextField(
     modifier =
       modifier.fillMaxWidth().testTag(AgentSemantics.NAME_FIELD).semantics {
@@ -100,8 +96,14 @@ private fun AgentNameField(
       },
     value = nameAgent,
     onValueChange = onNameChange,
-    textStyle = JasmineBodyLarge,
-    label = { Text(agentNameLabel, style = JasmineLabelLarge, color = JasmineTextMuted) },
+    textStyle = MaterialTheme.typography.bodyLarge,
+    label = {
+      Text(
+        agentNameLabel,
+        style = MaterialTheme.typography.labelLarge,
+        color = colorScheme.onSurfaceVariant,
+      )
+    },
     isError = validationError != null,
     supportingText =
       validationError?.let {
@@ -113,36 +115,42 @@ private fun AgentNameField(
                 error(it)
                 liveRegion = LiveRegionMode.Assertive
               },
-            color = JasmineError,
+            color = colorScheme.error,
           )
         }
       },
-    colors =
-      TextFieldDefaults.colors(
-        focusedTextColor = JasmineBlack,
-        unfocusedTextColor = JasmineBlack,
-        disabledTextColor = JasmineTextMuted,
-        errorTextColor = JasmineBlack,
-        focusedContainerColor = JasmineWhite,
-        unfocusedContainerColor = JasmineWhite,
-        disabledContainerColor = JasmineContainer,
-        errorContainerColor = JasmineWhite,
-        cursorColor = JasmineBlack,
-        errorCursorColor = JasmineError,
-        focusedIndicatorColor = JasmineBlack,
-        unfocusedIndicatorColor = JasmineBorder,
-        disabledIndicatorColor = JasmineBorder,
-        errorIndicatorColor = JasmineError,
-        focusedLabelColor = JasmineBlack,
-        unfocusedLabelColor = JasmineTextMuted,
-        disabledLabelColor = JasmineTextMuted,
-        errorLabelColor = JasmineError,
-        focusedSupportingTextColor = JasmineTextMuted,
-        unfocusedSupportingTextColor = JasmineTextMuted,
-        disabledSupportingTextColor = JasmineTextMuted,
-        errorSupportingTextColor = JasmineError,
-      ),
+    colors = agentNameFieldColors(),
     enabled = enabled,
+  )
+}
+
+@Composable
+private fun agentNameFieldColors(): TextFieldColors {
+  val colorScheme = MaterialTheme.colorScheme
+
+  return TextFieldDefaults.colors(
+    focusedTextColor = colorScheme.onSurface,
+    unfocusedTextColor = colorScheme.onSurface,
+    disabledTextColor = colorScheme.onSurfaceVariant,
+    errorTextColor = colorScheme.onSurface,
+    focusedContainerColor = colorScheme.surface,
+    unfocusedContainerColor = colorScheme.surface,
+    disabledContainerColor = colorScheme.surfaceVariant,
+    errorContainerColor = colorScheme.surface,
+    cursorColor = colorScheme.primary,
+    errorCursorColor = colorScheme.error,
+    focusedIndicatorColor = colorScheme.primary,
+    unfocusedIndicatorColor = colorScheme.outline,
+    disabledIndicatorColor = colorScheme.outlineVariant,
+    errorIndicatorColor = colorScheme.error,
+    focusedLabelColor = colorScheme.primary,
+    unfocusedLabelColor = colorScheme.onSurfaceVariant,
+    disabledLabelColor = colorScheme.onSurfaceVariant,
+    errorLabelColor = colorScheme.error,
+    focusedSupportingTextColor = colorScheme.onSurfaceVariant,
+    unfocusedSupportingTextColor = colorScheme.onSurfaceVariant,
+    disabledSupportingTextColor = colorScheme.onSurfaceVariant,
+    errorSupportingTextColor = colorScheme.error,
   )
 }
 
@@ -154,6 +162,8 @@ private fun SaveAgentButton(
   onSave: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
+  val colorScheme = MaterialTheme.colorScheme
+
   Button(
     modifier =
       modifier.testTag(AgentSemantics.SAVE_BUTTON).semantics {
@@ -164,19 +174,21 @@ private fun SaveAgentButton(
     enabled = enabled,
     colors =
       ButtonDefaults.buttonColors(
-        containerColor = JasmineBlack,
-        contentColor = JasmineWhite,
-        disabledContainerColor = JasmineBlack.copy(alpha = DisabledContainerAlpha),
-        disabledContentColor = JasmineWhite.copy(alpha = DisabledContentAlpha),
+        containerColor = colorScheme.primary,
+        contentColor = colorScheme.onPrimary,
+        disabledContainerColor = colorScheme.primary.copy(alpha = DisabledContainerAlpha),
+        disabledContentColor = colorScheme.onPrimary.copy(alpha = DisabledContentAlpha),
       ),
   ) {
     if (addAgentState is AddAgentState.Adding) {
-      CircularProgressIndicator(modifier = Modifier.width(24.dp), color = JasmineWhite)
+      CircularProgressIndicator(modifier = Modifier.width(24.dp), color = colorScheme.onPrimary)
     } else {
       Text(
         text = saveLabel,
-        color = if (enabled) JasmineWhite else JasmineWhite.copy(alpha = DisabledContentAlpha),
-        style = JasmineLabelLarge,
+        color =
+          if (enabled) colorScheme.onPrimary
+          else colorScheme.onPrimary.copy(alpha = DisabledContentAlpha),
+        style = MaterialTheme.typography.labelLarge,
       )
     }
   }

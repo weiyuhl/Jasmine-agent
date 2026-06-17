@@ -27,6 +27,8 @@ val documentedProjects =
         "test-app",
     )
 
+val kotlinVersion = libs.versions.kotlin.get()
+
 dependencies {
     documentedProjects.forEach { moduleName -> dokka(project(":$moduleName")) }
 }
@@ -51,7 +53,7 @@ subprojects {
     configurations.configureEach {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
-                useVersion(libs.versions.kotlin.get())
+                useVersion(kotlinVersion)
                 because("Hilt 2.59.2 brings older kotlin-metadata-jvm versions that cannot read Kotlin 2.4 metadata.")
             }
         }

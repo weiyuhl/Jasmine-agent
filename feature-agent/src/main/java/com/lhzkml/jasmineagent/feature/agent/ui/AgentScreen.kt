@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -46,13 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
-import com.lhzkml.jasmineagent.core.ui.JasmineBlack
-import com.lhzkml.jasmineagent.core.ui.JasmineBodyLarge
-import com.lhzkml.jasmineagent.core.ui.JasmineContainer
-import com.lhzkml.jasmineagent.core.ui.JasmineError
-import com.lhzkml.jasmineagent.core.ui.JasmineLabelLarge
-import com.lhzkml.jasmineagent.core.ui.JasmineTextMuted
-import com.lhzkml.jasmineagent.core.ui.JasmineWhite
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
@@ -111,10 +105,10 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
       snackbar = { snackbarData ->
         Snackbar(
           snackbarData = snackbarData,
-          containerColor = JasmineBlack,
-          contentColor = JasmineWhite,
-          actionColor = JasmineWhite,
-          dismissActionContentColor = JasmineWhite,
+          containerColor = MaterialTheme.colorScheme.inverseSurface,
+          contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+          actionColor = MaterialTheme.colorScheme.inverseOnSurface,
+          dismissActionContentColor = MaterialTheme.colorScheme.inverseOnSurface,
         )
       },
     )
@@ -156,7 +150,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
       },
     contentAlignment = Alignment.Center,
   ) {
-    CircularProgressIndicator(color = JasmineBlack)
+    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
   }
 }
 
@@ -190,8 +184,8 @@ private fun ErrorContent(
             error(resolvedMessage)
             liveRegion = LiveRegionMode.Assertive
           },
-        color = JasmineError,
-        style = JasmineBodyLarge,
+        color = MaterialTheme.colorScheme.error,
+        style = MaterialTheme.typography.bodyLarge,
       )
       if (canRetry) {
         Button(
@@ -203,9 +197,16 @@ private fun ErrorContent(
           onClick = onRetry,
           shape = RoundedCornerShape(8.dp),
           colors =
-            ButtonDefaults.buttonColors(containerColor = JasmineBlack, contentColor = JasmineWhite),
+            ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.primary,
+              contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
         ) {
-          Text(retryLabel, color = JasmineWhite, style = JasmineLabelLarge)
+          Text(
+            retryLabel,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.labelLarge,
+          )
         }
       }
     }
@@ -259,8 +260,8 @@ private fun EmptyAgents() {
   ) {
     Text(
       text = emptyMessage,
-      style = JasmineBodyLarge,
-      color = JasmineTextMuted,
+      style = MaterialTheme.typography.bodyLarge,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
   }
 }
@@ -302,8 +303,8 @@ private fun AgentListItem(
         contentDescription = itemContentDescription
       },
     shape = RoundedCornerShape(8.dp),
-    color = JasmineContainer,
-    contentColor = JasmineBlack,
+    color = MaterialTheme.colorScheme.surfaceVariant,
+    contentColor = MaterialTheme.colorScheme.onSurface,
   ) {
     FlexBox(
       modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -326,7 +327,7 @@ private fun AgentListItem(
               heading()
               contentDescription = itemContentDescription
             },
-        style = JasmineBodyLarge,
+        style = MaterialTheme.typography.bodyLarge,
       )
       TextButton(
         modifier =
@@ -338,11 +339,15 @@ private fun AgentListItem(
         shape = RoundedCornerShape(8.dp),
         colors =
           ButtonDefaults.textButtonColors(
-            contentColor = JasmineBlack,
-            disabledContentColor = JasmineTextMuted,
+            contentColor = MaterialTheme.colorScheme.primary,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
           ),
       ) {
-        Text(deleteLabel, color = JasmineBlack, style = JasmineLabelLarge)
+        Text(
+          deleteLabel,
+          color = MaterialTheme.colorScheme.primary,
+          style = MaterialTheme.typography.labelLarge,
+        )
       }
     }
   }
