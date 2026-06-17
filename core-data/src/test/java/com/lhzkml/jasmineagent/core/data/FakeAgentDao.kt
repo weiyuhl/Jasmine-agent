@@ -20,10 +20,10 @@ class FakeAgentDao : AgentDao {
   private val activeNamesError = AtomicReference<SQLiteException?>(null)
   private val getByNameError = AtomicReference<SQLiteException?>(null)
 
-  override fun getActiveAgentNames(): Flow<List<String>> = flow {
+  override fun getActiveAgentNames(limit: Int): Flow<List<String>> = flow {
     val names = mutex.withLock {
       activeNamesError.get()?.let { throw it }
-      data.filter { it.status == AgentStatus.ACTIVE }.map { it.name }
+      data.filter { it.status == AgentStatus.ACTIVE }.map { it.name }.take(limit)
     }
     emit(names)
   }

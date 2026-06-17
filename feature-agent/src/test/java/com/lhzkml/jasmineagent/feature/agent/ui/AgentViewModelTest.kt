@@ -8,6 +8,7 @@ import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
+import com.lhzkml.jasmineagent.core.domain.usecase.DeleteAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
@@ -43,6 +44,7 @@ class AgentViewModelTest {
   private lateinit var viewModel: AgentViewModel
   private lateinit var fakeRepository: FakeAgentRepository
   private lateinit var addAgentUseCase: AddAgentUseCase
+  private lateinit var deleteAgentUseCase: DeleteAgentUseCase
   private lateinit var getAgentsUseCase: GetAgentsUseCase
 
   @Before
@@ -51,8 +53,10 @@ class AgentViewModelTest {
     Dispatchers.setMain(testDispatcher)
     fakeRepository = FakeAgentRepository()
     addAgentUseCase = AddAgentUseCase(fakeRepository)
+    deleteAgentUseCase = DeleteAgentUseCase(fakeRepository)
     getAgentsUseCase = GetAgentsUseCase(fakeRepository)
-    viewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase, SavedStateHandle())
+    viewModel =
+      AgentViewModel(addAgentUseCase, deleteAgentUseCase, getAgentsUseCase, SavedStateHandle())
   }
 
   @After
@@ -64,7 +68,8 @@ class AgentViewModelTest {
   @Test
   fun uiState_initiallyLoading() =
     runTest(testDispatcher) {
-      val localViewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase, SavedStateHandle())
+      val localViewModel =
+        AgentViewModel(addAgentUseCase, deleteAgentUseCase, getAgentsUseCase, SavedStateHandle())
 
       try {
         val initialState = localViewModel.uiState.value
@@ -247,7 +252,8 @@ class AgentViewModelTest {
   fun agentName_restoresFromSavedStateHandle() =
     runTest(testDispatcher) {
       val savedStateHandle = SavedStateHandle(mapOf("agent_name" to "Restored"))
-      val localViewModel = AgentViewModel(addAgentUseCase, getAgentsUseCase, savedStateHandle)
+      val localViewModel =
+        AgentViewModel(addAgentUseCase, deleteAgentUseCase, getAgentsUseCase, savedStateHandle)
 
       try {
         assertEquals("Restored", localViewModel.agentName.value)
@@ -304,11 +310,28 @@ class AgentViewModelTest {
       assertEquals(listOf("NewAgent"), fakeRepository.addedAgents)
     }
 
+  @Test
+  fun deleteAgent_withExistingAgent_removesAgentAndEmitsEvent() =
+    runTest(testDispatcher) {
+      fakeRepository.emit(listOf("Disposable"))
+      advanceUntilIdle()
+      val event = async { viewModel.events.first() }
+
+      viewModel.deleteAgent(uid = 1, name = "Disposable")
+      advanceUntilIdle()
+
+      assertEquals(emptyList<String>(), fakeRepository.activeAgents)
+      assertTrue("Should emit AgentDeleted event", event.await() is AgentEvent.AgentDeleted)
+    }
+
   private class FakeAgentRepository : AgentRepository {
     private val addedAgentStore = CopyOnWriteArrayList<String>()
     private val addCallCounter = AtomicInteger(0)
     val addedAgents: List<String>
       get() = addedAgentStore.toList()
+
+    val activeAgents: List<String>
+      get() = _agents.value
 
     val addCallCount: Int
       get() = addCallCounter.get()
@@ -363,6 +386,7 @@ class AgentViewModelTest {
         throw AgentRepositoryException(AgentRepositoryFailure.STORAGE)
       }
       addedAgentStore.add(name)
+      _agents.update { agents -> agents + name }
     }
 
     override suspend fun updateStatus(uid: Int, status: AgentRecordStatus) = Unit

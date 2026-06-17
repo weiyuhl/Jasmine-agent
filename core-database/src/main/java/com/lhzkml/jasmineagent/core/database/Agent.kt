@@ -30,8 +30,8 @@ enum class AgentStatus {
 
 @Dao
 interface AgentDao {
-  @Query("SELECT name FROM agent WHERE status = 'ACTIVE' ORDER BY name COLLATE NOCASE")
-  fun getActiveAgentNames(): Flow<List<String>>
+  @Query("SELECT name FROM agent WHERE status = 'ACTIVE' ORDER BY name COLLATE NOCASE LIMIT :limit")
+  fun getActiveAgentNames(limit: Int = 10): Flow<List<String>>
 
   @Query("SELECT * FROM agent ORDER BY created_at DESC LIMIT :limit")
   fun getAgents(limit: Int = 10): Flow<List<Agent>>

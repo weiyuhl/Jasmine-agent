@@ -11,4 +11,6 @@ object AgentSemantics {
   const val ERROR_MESSAGE = "agent_error_message"
   const val SNACKBAR = "agent_snackbar"
   const val LOADING = "agent_loading"
+
+  fun deleteButton(uid: Int): String = "agent_delete_button_$uid"
 }

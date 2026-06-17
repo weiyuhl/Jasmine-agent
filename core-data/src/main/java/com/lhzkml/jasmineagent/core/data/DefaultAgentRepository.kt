@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.map
 
 class DefaultAgentRepository @Inject constructor(private val agentDao: AgentDao) : AgentRepository {
 
-  override val agents: Flow<List<String>> = agentDao.getActiveAgentNames().mapStorageFailures()
+  override val agents: Flow<List<String>> =
+    agentDao.getActiveAgentNames(AgentRepository.DEFAULT_AGENT_LIMIT).mapStorageFailures()
 
   override fun getAgents(limit: Int): Flow<List<AgentRecord>> =
     agentDao.getAgents(limit).mapAgents().mapStorageFailures()

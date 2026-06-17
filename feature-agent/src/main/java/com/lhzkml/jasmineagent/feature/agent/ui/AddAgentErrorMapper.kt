@@ -1,6 +1,7 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentRepositoryError
+import com.lhzkml.jasmineagent.core.domain.usecase.DeleteAgentRepositoryError
 import com.lhzkml.jasmineagent.core.domain.validation.ValidationError
 
 internal fun AddAgentRepositoryError.toAddAgentError(): AddAgentError =
@@ -15,4 +16,9 @@ internal fun ValidationError.toAddAgentError(): AddAgentError =
     is ValidationError.TooShort -> AddAgentError.NameTooShort(actual, min)
     is ValidationError.InvalidCharacters -> AddAgentError.InvalidCharacters(invalidChars)
     is ValidationError.AlreadyExists -> AddAgentError.DuplicateName(name)
+  }
+
+internal fun DeleteAgentRepositoryError.toAgentDeleteError(): DeleteAgentError =
+  when (this) {
+    DeleteAgentRepositoryError.STORAGE -> DeleteAgentError.Storage
   }

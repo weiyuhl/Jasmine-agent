@@ -2,10 +2,13 @@
 <resources>
     <string name="agent_action_save">Save</string>
     <string name="agent_action_retry">Retry</string>
+    <string name="agent_action_delete">Delete</string>
+    <string name="agent_action_delete_content_description">Delete agent %1$s</string>
     <string name="agent_field_name_label">Agent name</string>
     <string name="agent_empty_message">No agents yet. Add one above!</string>
     <string name="agent_error_unknown">Unknown error occurred</string>
     <string name="agent_added_message">Agent \'%1$s\' added successfully</string>
+    <string name="agent_deleted_message">Agent \'%1$s\' deleted</string>
     <string name="agent_screen_content_description">Agent management screen</string>
     <string name="agent_form_content_description">Add agent form</string>
     <string name="agent_list_content_description">Agent list</string>

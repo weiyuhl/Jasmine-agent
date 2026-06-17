@@ -11,10 +11,15 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
 import com.lhzkml.jasmineagent.core.ui.JasmineTheme
 import com.lhzkml.jasmineagent.feature.agent.R
+import java.util.concurrent.atomic.AtomicReference
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -37,6 +42,7 @@ class AgentScreenTest {
           agentName = "",
           onAgentNameChange = {},
           onSave = {},
+          onDelete = { _, _ -> },
           addAgentState = AddAgentState.Idle,
         )
       }
@@ -45,7 +51,7 @@ class AgentScreenTest {
 
   @Test
   fun firstItem_exists() {
-    composeTestRule.onNodeWithText(FAKE_DATA.first()).assertExists()
+    composeTestRule.onNodeWithText(FAKE_DATA.first().name).assertExists()
   }
 
   @Test
@@ -67,10 +73,38 @@ class AgentScreenTest {
       .assertContentDescriptionEquals(context.getString(R.string.agent_action_save))
 
     composeTestRule
+      .onNodeWithTag(AgentSemantics.deleteButton(FAKE_DATA.first().uid))
+      .assertContentDescriptionEquals(
+        context.getString(R.string.agent_action_delete_content_description, FAKE_DATA.first().name)
+      )
+
+    composeTestRule
       .onNodeWithContentDescription(
-        context.getString(R.string.agent_list_item_content_description, FAKE_DATA.first())
+        context.getString(R.string.agent_list_item_content_description, FAKE_DATA.first().name)
       )
       .assertExists()
+  }
+
+  @Test
+  fun deleteButton_invokesDeleteAction() {
+    val deleted = AtomicReference<Pair<Int, String>?>()
+
+    composeTestRule.setContent {
+      JasmineTheme {
+        AgentContent(
+          items = FAKE_DATA,
+          agentName = "",
+          onAgentNameChange = {},
+          onSave = {},
+          onDelete = { uid, name -> deleted.set(uid to name) },
+          addAgentState = AddAgentState.Idle,
+        )
+      }
+    }
+
+    composeTestRule.onNodeWithTag(AgentSemantics.deleteButton(FAKE_DATA.first().uid)).performClick()
+
+    assertEquals(FAKE_DATA.first().uid to FAKE_DATA.first().name, deleted.get())
   }
 
   @Test
@@ -84,6 +118,7 @@ class AgentScreenTest {
           agentName = "",
           onAgentNameChange = {},
           onSave = {},
+          onDelete = { _, _ -> },
           addAgentState = AddAgentState.Idle,
         )
       }
@@ -104,6 +139,7 @@ class AgentScreenTest {
           agentName = "",
           onAgentNameChange = {},
           onSave = {},
+          onDelete = { _, _ -> },
           addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
         )
       }
@@ -125,6 +161,7 @@ class AgentScreenTest {
             agentName = "",
             onAgentNameChange = {},
             onSave = {},
+            onDelete = { _, _ -> },
             addAgentState = AddAgentState.Idle,
           )
         }
@@ -138,4 +175,19 @@ class AgentScreenTest {
   }
 }
 
-private val FAKE_DATA = listOf("Compose", "Room", "Kotlin")
+private val FAKE_DATA =
+  listOf(
+    agentRecord(1, "Compose"),
+    agentRecord(2, "Room"),
+    agentRecord(3, "Kotlin"),
+  )
+
+private fun agentRecord(uid: Int, name: String): AgentRecord =
+  AgentRecord(
+    uid = uid,
+    name = name,
+    createdAt = 0L,
+    updatedAt = 0L,
+    status = AgentRecordStatus.ACTIVE,
+    description = null,
+  )

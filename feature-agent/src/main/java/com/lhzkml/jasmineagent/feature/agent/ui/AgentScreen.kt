@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -21,6 +22,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,11 +40,10 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lhzkml.jasmineagent.core.ui.JasmineTheme
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
@@ -59,17 +60,7 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
   val screenContentDescription = stringResource(R.string.agent_screen_content_description)
   val snackbarContentDescription = stringResource(R.string.agent_snackbar_content_description)
 
-  LaunchedEffect(resources, viewModel) {
-    viewModel.events.collect { event ->
-      when (event) {
-        is AgentEvent.ShowError -> snackbarHostState.showSnackbar(event.error.message(resources))
-        is AgentEvent.AgentAdded ->
-          snackbarHostState.showSnackbar(
-            resources.getString(R.string.agent_added_message, event.name)
-          )
-      }
-    }
-  }
+  AgentEventHandler(viewModel, snackbarHostState)
 
   Box(
     modifier =
@@ -92,6 +83,7 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
           agentName = agentName,
           onAgentNameChange = viewModel::onAgentNameChanged,
           onSave = viewModel::addAgent,
+          onDelete = viewModel::deleteAgent,
           addAgentState = addAgentState,
           modifier = Modifier.fillMaxSize(),
         )
@@ -108,6 +100,28 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
             liveRegion = LiveRegionMode.Polite
           },
     )
+  }
+}
+
+@Composable
+private fun AgentEventHandler(
+  viewModel: AgentViewModel,
+  snackbarHostState: SnackbarHostState,
+) {
+  val resources = LocalResources.current
+
+  LaunchedEffect(resources, viewModel) {
+    viewModel.events.collect { event ->
+      val message =
+        when (event) {
+          is AgentEvent.ShowError -> event.error.message(resources)
+          is AgentEvent.ShowDeleteError -> event.error.message(resources)
+          is AgentEvent.AgentAdded -> resources.getString(R.string.agent_added_message, event.name)
+          is AgentEvent.AgentDeleted ->
+            resources.getString(R.string.agent_deleted_message, event.name)
+        }
+      snackbarHostState.showSnackbar(message)
+    }
   }
 }
 
@@ -180,10 +194,11 @@ private fun ErrorContent(
 @OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 internal fun AgentContent(
-  items: List<String>,
+  items: List<AgentRecord>,
   agentName: String,
   onAgentNameChange: (String) -> Unit,
   onSave: () -> Unit,
+  onDelete: (uid: Int, name: String) -> Unit,
   addAgentState: AddAgentState,
   modifier: Modifier = Modifier,
 ) {
@@ -204,7 +219,7 @@ internal fun AgentContent(
     if (items.isEmpty()) {
       EmptyAgents()
     } else {
-      AgentList(items)
+      AgentList(items, onDelete)
     }
   }
 }
@@ -229,9 +244,11 @@ private fun EmptyAgents() {
   }
 }
 
+@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
-private fun AgentList(items: List<String>) {
+private fun AgentList(items: List<AgentRecord>, onDelete: (uid: Int, name: String) -> Unit) {
   val listContentDescription = stringResource(R.string.agent_list_content_description)
+  val deleteLabel = stringResource(R.string.agent_action_delete)
 
   LazyColumn(
     modifier =
@@ -240,66 +257,65 @@ private fun AgentList(items: List<String>) {
       },
     verticalArrangement = Arrangement.spacedBy(8.dp),
   ) {
-    items(items) { item ->
-      val itemContentDescription =
-        stringResource(R.string.agent_list_item_content_description, item)
-
-      Surface(
-        modifier =
-          Modifier.fillMaxWidth().semantics {
-            contentDescription = itemContentDescription
-          },
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surfaceVariant,
-      ) {
-        Text(
-          text = item,
-          modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).semantics { heading() },
-          style = MaterialTheme.typography.bodyLarge,
-        )
-      }
+    items(items, key = { it.uid }) { item ->
+      AgentListItem(item, deleteLabel, onDelete)
     }
   }
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalFlexBoxApi::class)
 @Composable
-private fun DefaultPreview() {
-  JasmineTheme {
-    AgentContent(
-      items = listOf("Compose", "Room", "Kotlin"),
-      agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      addAgentState = AddAgentState.Idle,
-    )
-  }
-}
+private fun AgentListItem(
+  item: AgentRecord,
+  deleteLabel: String,
+  onDelete: (uid: Int, name: String) -> Unit,
+) {
+  val itemContentDescription =
+    stringResource(R.string.agent_list_item_content_description, item.name)
+  val deleteContentDescription =
+    stringResource(R.string.agent_action_delete_content_description, item.name)
 
-@Preview(showBackground = true)
-@Composable
-private fun EmptyStatePreview() {
-  JasmineTheme {
-    AgentContent(
-      items = emptyList(),
-      agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      addAgentState = AddAgentState.Idle,
-    )
-  }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ErrorStatePreview() {
-  JasmineTheme {
-    AgentContent(
-      items = listOf("Compose"),
-      agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
-    )
+  Surface(
+    modifier =
+      Modifier.fillMaxWidth().semantics {
+        contentDescription = itemContentDescription
+      },
+    shape = MaterialTheme.shapes.small,
+    color = MaterialTheme.colorScheme.surfaceVariant,
+  ) {
+    FlexBox(
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+      config = {
+        direction(FlexDirection.Row)
+        alignItems(FlexAlignItems.Center)
+        justifyContent(FlexJustifyContent.SpaceBetween)
+        gap(8.dp)
+      },
+    ) {
+      Text(
+        text = item.name,
+        modifier =
+          Modifier.widthIn(min = 0.dp)
+            .flex {
+              grow(1f)
+              shrink(1f)
+            }
+            .semantics {
+              heading()
+              contentDescription = itemContentDescription
+            },
+        style = MaterialTheme.typography.bodyLarge,
+      )
+      TextButton(
+        modifier =
+          Modifier.testTag(AgentSemantics.deleteButton(item.uid)).semantics {
+            role = Role.Button
+            contentDescription = deleteContentDescription
+          },
+        onClick = { onDelete(item.uid, item.name) },
+      ) {
+        Text(deleteLabel)
+      }
+    }
   }
 }

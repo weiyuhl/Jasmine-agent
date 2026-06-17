@@ -3,8 +3,11 @@ package com.lhzkml.jasmineagent.feature.agent.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentResult
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
+import com.lhzkml.jasmineagent.core.domain.usecase.DeleteAgentResult
+import com.lhzkml.jasmineagent.core.domain.usecase.DeleteAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
@@ -31,6 +34,7 @@ class AgentViewModel
 @Inject
 constructor(
   private val addAgentUseCase: AddAgentUseCase,
+  private val deleteAgentUseCase: DeleteAgentUseCase,
   private val getAgentsUseCase: GetAgentsUseCase,
   private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -100,11 +104,24 @@ constructor(
     loadAgents()
   }
 
+  fun deleteAgent(uid: Int, name: String) {
+    viewModelScope.launch {
+      when (val result = deleteAgentUseCase(uid)) {
+        DeleteAgentResult.Success -> _events.emit(AgentEvent.AgentDeleted(name))
+        is DeleteAgentResult.RepositoryFailure -> {
+          val error = result.error.toAgentDeleteError()
+          _events.emit(AgentEvent.ShowDeleteError(error))
+        }
+      }
+    }
+  }
+
   private fun loadAgents() {
     val nextJob =
       viewModelScope.launch(start = CoroutineStart.LAZY) {
-        getAgentsUseCase()
-          .map<List<String>, AgentUiState> { Success(data = it) }
+        getAgentsUseCase
+          .records()
+          .map<List<AgentRecord>, AgentUiState> { Success(data = it) }
           .catch {
             if (it is CancellationException) {
               throw it
@@ -127,7 +144,7 @@ sealed interface AgentUiState {
 
   data class Error(val error: AgentLoadError, val canRetry: Boolean = true) : AgentUiState
 
-  data class Success(val data: List<String>) : AgentUiState
+  data class Success(val data: List<AgentRecord>) : AgentUiState
 }
 
 enum class AgentLoadError {
@@ -159,5 +176,13 @@ sealed interface AddAgentError {
 sealed interface AgentEvent {
   data class ShowError(val error: AddAgentError) : AgentEvent
 
+  data class ShowDeleteError(val error: DeleteAgentError) : AgentEvent
+
   data class AgentAdded(val name: String) : AgentEvent
+
+  data class AgentDeleted(val name: String) : AgentEvent
+}
+
+enum class DeleteAgentError {
+  Storage
 }

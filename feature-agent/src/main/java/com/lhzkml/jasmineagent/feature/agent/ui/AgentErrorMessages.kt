@@ -23,3 +23,8 @@ internal fun AgentLoadError.message(resources: Resources): String =
   when (this) {
     AgentLoadError.Storage -> resources.getString(R.string.agent_error_database_fallback)
   }
+
+internal fun DeleteAgentError.message(resources: Resources): String =
+  when (this) {
+    DeleteAgentError.Storage -> resources.getString(R.string.agent_error_database_fallback)
+  }

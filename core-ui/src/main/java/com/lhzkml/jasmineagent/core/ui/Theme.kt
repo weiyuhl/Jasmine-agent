@@ -38,11 +38,6 @@ private val WhiteColorScheme =
   )
 
 @Composable
-@Suppress("UNUSED_PARAMETER")
-fun JasmineTheme(
-  darkTheme: Boolean = false,
-  dynamicColor: Boolean = false,
-  content: @Composable () -> Unit,
-) {
+fun JasmineTheme(content: @Composable () -> Unit) {
   MaterialTheme(colorScheme = WhiteColorScheme, typography = Typography, content = content)
 }

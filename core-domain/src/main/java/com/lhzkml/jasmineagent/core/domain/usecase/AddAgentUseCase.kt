@@ -9,6 +9,7 @@ import com.lhzkml.jasmineagent.core.domain.validation.ValidationResult
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 
+/** Outcome of attempting to create a new agent. */
 sealed interface AddAgentResult {
   data class Success(val name: String) : AddAgentResult
 
@@ -23,8 +24,10 @@ enum class AddAgentRepositoryError {
   STORAGE
 }
 
+/** Validates, normalizes, and persists a new agent name. */
 class AddAgentUseCase @Inject constructor(private val repository: AgentRepository) {
 
+  /** Adds an agent and maps validation or storage failures into domain results. */
   public suspend operator fun invoke(name: String): AddAgentResult {
     val normalizedName = AgentNameValidator.normalize(name)
     val validationResult = AgentNameValidator.validate(name)
