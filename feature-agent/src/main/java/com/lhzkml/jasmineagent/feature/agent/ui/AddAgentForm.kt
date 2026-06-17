@@ -10,10 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
@@ -27,6 +28,14 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.lhzkml.jasmineagent.core.ui.JasmineBlack
+import com.lhzkml.jasmineagent.core.ui.JasmineBodyLarge
+import com.lhzkml.jasmineagent.core.ui.JasmineBorder
+import com.lhzkml.jasmineagent.core.ui.JasmineContainer
+import com.lhzkml.jasmineagent.core.ui.JasmineError
+import com.lhzkml.jasmineagent.core.ui.JasmineLabelLarge
+import com.lhzkml.jasmineagent.core.ui.JasmineTextMuted
+import com.lhzkml.jasmineagent.core.ui.JasmineWhite
 import com.lhzkml.jasmineagent.feature.agent.R
 
 @OptIn(ExperimentalFlexBoxApi::class)
@@ -91,7 +100,8 @@ private fun AgentNameField(
       },
     value = nameAgent,
     onValueChange = onNameChange,
-    label = { Text(agentNameLabel) },
+    textStyle = JasmineBodyLarge,
+    label = { Text(agentNameLabel, style = JasmineLabelLarge, color = JasmineTextMuted) },
     isError = validationError != null,
     supportingText =
       validationError?.let {
@@ -103,10 +113,35 @@ private fun AgentNameField(
                 error(it)
                 liveRegion = LiveRegionMode.Assertive
               },
-            color = MaterialTheme.colorScheme.error,
+            color = JasmineError,
           )
         }
       },
+    colors =
+      TextFieldDefaults.colors(
+        focusedTextColor = JasmineBlack,
+        unfocusedTextColor = JasmineBlack,
+        disabledTextColor = JasmineTextMuted,
+        errorTextColor = JasmineBlack,
+        focusedContainerColor = JasmineWhite,
+        unfocusedContainerColor = JasmineWhite,
+        disabledContainerColor = JasmineContainer,
+        errorContainerColor = JasmineWhite,
+        cursorColor = JasmineBlack,
+        errorCursorColor = JasmineError,
+        focusedIndicatorColor = JasmineBlack,
+        unfocusedIndicatorColor = JasmineBorder,
+        disabledIndicatorColor = JasmineBorder,
+        errorIndicatorColor = JasmineError,
+        focusedLabelColor = JasmineBlack,
+        unfocusedLabelColor = JasmineTextMuted,
+        disabledLabelColor = JasmineTextMuted,
+        errorLabelColor = JasmineError,
+        focusedSupportingTextColor = JasmineTextMuted,
+        unfocusedSupportingTextColor = JasmineTextMuted,
+        disabledSupportingTextColor = JasmineTextMuted,
+        errorSupportingTextColor = JasmineError,
+      ),
     enabled = enabled,
   )
 }
@@ -127,14 +162,25 @@ private fun SaveAgentButton(
       },
     onClick = onSave,
     enabled = enabled,
+    colors =
+      ButtonDefaults.buttonColors(
+        containerColor = JasmineBlack,
+        contentColor = JasmineWhite,
+        disabledContainerColor = JasmineBlack.copy(alpha = DisabledContainerAlpha),
+        disabledContentColor = JasmineWhite.copy(alpha = DisabledContentAlpha),
+      ),
   ) {
     if (addAgentState is AddAgentState.Adding) {
-      CircularProgressIndicator(
-        modifier = Modifier.width(24.dp),
-        color = MaterialTheme.colorScheme.onPrimary,
-      )
+      CircularProgressIndicator(modifier = Modifier.width(24.dp), color = JasmineWhite)
     } else {
-      Text(saveLabel)
+      Text(
+        text = saveLabel,
+        color = if (enabled) JasmineWhite else JasmineWhite.copy(alpha = DisabledContentAlpha),
+        style = JasmineLabelLarge,
+      )
     }
   }
 }
+
+private const val DisabledContainerAlpha = 0.38f
+private const val DisabledContentAlpha = 0.74f

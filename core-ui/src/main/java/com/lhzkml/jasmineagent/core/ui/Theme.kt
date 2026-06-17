@@ -1,43 +1,13 @@
 package com.lhzkml.jasmineagent.core.ui
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
-private val WhiteColorScheme =
-  lightColorScheme(
-    primary = JasmineBlack,
-    onPrimary = JasmineWhite,
-    primaryContainer = JasmineWhite,
-    onPrimaryContainer = JasmineBlack,
-    secondary = JasmineBlack,
-    onSecondary = JasmineWhite,
-    secondaryContainer = JasmineWhite,
-    onSecondaryContainer = JasmineBlack,
-    tertiary = JasmineBlack,
-    onTertiary = JasmineWhite,
-    tertiaryContainer = JasmineWhite,
-    onTertiaryContainer = JasmineBlack,
-    background = JasmineWhite,
-    onBackground = JasmineBlack,
-    surface = JasmineWhite,
-    onSurface = JasmineBlack,
-    surfaceVariant = JasmineContainer,
-    onSurfaceVariant = JasmineTextMuted,
-    outline = JasmineBorder,
-    outlineVariant = JasmineBorder,
-    error = JasmineError,
-    onError = JasmineWhite,
-    errorContainer = JasmineWhite,
-    onErrorContainer = JasmineError,
-    inverseSurface = JasmineBlack,
-    inverseOnSurface = JasmineWhite,
-    inversePrimary = JasmineWhite,
-    surfaceTint = JasmineWhite,
-    scrim = JasmineBlack,
-  )
-
+/** Lightweight app wrapper that does not install a Material3 theme. */
 @Composable
 fun JasmineTheme(content: @Composable () -> Unit) {
-  MaterialTheme(colorScheme = WhiteColorScheme, typography = Typography, content = content)
+  Box(modifier = Modifier.fillMaxSize().background(JasmineWhite)) { content() }
 }
