@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
@@ -18,7 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -32,12 +36,13 @@ import com.lhzkml.jasmineagent.feature.agent.navigation.AgentEntryProvider
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankTwo
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main
+import kotlinx.coroutines.launch
 
 private data class AppDestination(
   val key: NavKey,
   @StringRes val labelResId: Int,
   @StringRes val contentDescriptionResId: Int,
-  val icon: androidx.compose.ui.graphics.vector.ImageVector,
+  val icon: ImageVector,
 )
 
 private val appDestinations =
@@ -65,31 +70,53 @@ private val appDestinations =
 object NavigationSemantics {
   const val TOP_APP_BAR = "main_top_app_bar"
   const val BOTTOM_NAVIGATION = "main_bottom_navigation"
+  const val PAGER = "main_navigation_pager"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavigation() {
-  val backStack = rememberNavBackStack(Main)
+  val pagerState = rememberPagerState(pageCount = { appDestinations.size })
+  val coroutineScope = rememberCoroutineScope()
+  val selectedDestination = appDestinations[pagerState.currentPage]
 
   Scaffold(
     topBar = { JasmineTopAppBar() },
-    bottomBar = { JasmineNavigationBar(backStack.lastOrNull(), backStack::navigateToTopLevel) },
+    bottomBar = {
+      JasmineNavigationBar(selectedDestination.key) { destination ->
+        val page = appDestinations.indexOfFirst { it.key == destination }
+        if (page >= 0 && page != pagerState.currentPage) {
+          coroutineScope.launch { pagerState.animateScrollToPage(page) }
+        }
+      }
+    },
     containerColor = MaterialTheme.colorScheme.background,
     contentColor = MaterialTheme.colorScheme.onBackground,
   ) { innerPadding ->
-    Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-      NavDisplay(
-        backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
-        entryDecorators =
-          listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
-          ),
-        entryProvider = entryProvider { AgentEntryProvider() },
-      )
+    HorizontalPager(
+      state = pagerState,
+      modifier = Modifier.fillMaxSize().padding(innerPadding).testTag(NavigationSemantics.PAGER),
+    ) { page ->
+      DestinationPage(appDestinations[page].key)
     }
+  }
+}
+
+@Composable
+private fun DestinationPage(rootKey: NavKey) {
+  val backStack = rememberNavBackStack(rootKey)
+
+  Box(modifier = Modifier.fillMaxSize()) {
+    NavDisplay(
+      backStack = backStack,
+      onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+      entryDecorators =
+        listOf(
+          rememberSaveableStateHolderNavEntryDecorator(),
+          rememberViewModelStoreNavEntryDecorator(),
+        ),
+      entryProvider = entryProvider { AgentEntryProvider() },
+    )
   }
 }
 
@@ -126,11 +153,4 @@ private fun JasmineNavigationBar(selectedKey: NavKey?, onDestinationSelected: (N
       )
     }
   }
-}
-
-private fun MutableList<NavKey>.navigateToTopLevel(destination: NavKey) {
-  if (lastOrNull() == destination) return
-
-  clear()
-  add(destination)
 }
