@@ -1,12 +1,19 @@
 package com.lhzkml.jasmineagent.feature.agent.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
 import com.lhzkml.jasmineagent.core.ui.JasmineTheme
 
-@Preview(showBackground = true)
+@Preview(name = "Phone", device = Devices.PHONE, showBackground = true)
+@Preview(name = "Foldable", device = Devices.FOLDABLE, showBackground = true)
+@Preview(name = "Tablet", device = Devices.TABLET, showBackground = true)
+@Preview(name = "Desktop", device = Devices.DESKTOP, showBackground = true)
+private annotation class AgentFormFactorPreviews
+
+@AgentFormFactorPreviews
 @Composable
 private fun DefaultPreview() {
   JasmineTheme {
@@ -21,7 +28,7 @@ private fun DefaultPreview() {
   }
 }
 
-@Preview(showBackground = true)
+@AgentFormFactorPreviews
 @Composable
 private fun EmptyStatePreview() {
   JasmineTheme {
@@ -36,7 +43,7 @@ private fun EmptyStatePreview() {
   }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Phone large font", showBackground = true, fontScale = 1.5f)
 @Composable
 private fun ErrorStatePreview() {
   JasmineTheme {

@@ -1,6 +1,7 @@
 package com.lhzkml.jasmineagent.ui
 
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -43,5 +44,8 @@ class MainActivity : ComponentActivity() {
       statusBarStyle = SystemBarStyle.light(scrim = transparent, darkScrim = transparent),
       navigationBarStyle = SystemBarStyle.light(scrim = transparent, darkScrim = transparent),
     )
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      window.isNavigationBarContrastEnforced = false
+    }
   }
 }

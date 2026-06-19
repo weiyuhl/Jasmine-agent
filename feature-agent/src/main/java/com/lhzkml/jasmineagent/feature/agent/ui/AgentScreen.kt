@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.FlexDirection
 import androidx.compose.foundation.layout.FlexJustifyContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
@@ -227,9 +228,14 @@ internal fun AgentContent(
   val formContentDescription = stringResource(R.string.agent_form_content_description)
 
   Column(
-    modifier.safeDrawingPadding().padding(16.dp).testTag(AgentSemantics.FORM).semantics {
-      contentDescription = formContentDescription
-    }
+    modifier
+      .safeDrawingPadding()
+      .imePadding()
+      .padding(16.dp)
+      .testTag(AgentSemantics.FORM)
+      .semantics {
+        contentDescription = formContentDescription
+      }
   ) {
     AddAgentForm(
       nameAgent = agentName,

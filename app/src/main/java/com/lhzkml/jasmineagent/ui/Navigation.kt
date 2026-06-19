@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,8 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -108,6 +111,7 @@ object NavigationSemantics {
   const val DRAWER_ITEM_BLANK_ONE = "main_navigation_drawer_item_blank_one"
   const val DRAWER_ITEM_BLANK_TWO = "main_navigation_drawer_item_blank_two"
   const val BOTTOM_NAVIGATION = "main_bottom_navigation"
+  const val NAVIGATION_RAIL = "main_navigation_rail"
   const val ELASTIC_INDICATOR = "main_bottom_navigation_elastic_indicator"
   const val PAGER = "main_navigation_pager"
 }
@@ -126,43 +130,55 @@ fun MainNavigation() {
     }
   }
 
-  Scaffold(
-    topBar = {
-      JasmineTopAppBar(
-        showNavigationIcon = selectedDestination.key == Main,
-        onNavigationClick = { coroutineScope.launch { drawerState.open() } },
-      )
-    },
-    bottomBar = {
-      JasmineNavigationBar(selectedDestination.key) { destination ->
-        val page = appDestinations.indexOfFirst { it.key == destination }
-        if (page >= 0 && page != pagerState.currentPage) {
-          coroutineScope.launch { pagerState.animateScrollToPage(page) }
+  BoxWithConstraints {
+    val useNavigationRail = maxWidth >= NavigationRailBreakpoint
+    val onDestinationSelected: (NavKey) -> Unit = { destination ->
+      val page = appDestinations.indexOfFirst { it.key == destination }
+      if (page >= 0 && page != pagerState.currentPage) {
+        coroutineScope.launch { pagerState.animateScrollToPage(page) }
+      }
+    }
+
+    Scaffold(
+      topBar = {
+        JasmineTopAppBar(
+          showNavigationIcon = selectedDestination.key == Main,
+          onNavigationClick = { coroutineScope.launch { drawerState.open() } },
+        )
+      },
+      bottomBar = {
+        if (!useNavigationRail) {
+          JasmineNavigationBar(selectedDestination.key, onDestinationSelected)
+        }
+      },
+      containerColor = MaterialTheme.colorScheme.background,
+      contentColor = MaterialTheme.colorScheme.onBackground,
+    ) { innerPadding ->
+      Row(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        if (useNavigationRail) {
+          JasmineNavigationRail(selectedDestination.key, onDestinationSelected)
+        }
+        HorizontalPager(
+          state = pagerState,
+          modifier = Modifier.weight(1f).fillMaxSize().testTag(NavigationSemantics.PAGER),
+        ) { page ->
+          DestinationPage(
+            destination = appDestinations[page],
+            drawerState = drawerState,
+            onDrawerDestinationSelected = { destination ->
+              val destinationPage = appDestinations.indexOfFirst { it.key == destination }
+              if (destinationPage >= 0) {
+                coroutineScope.launch {
+                  drawerState.close()
+                  if (destinationPage != pagerState.currentPage) {
+                    pagerState.animateScrollToPage(destinationPage)
+                  }
+                }
+              }
+            },
+          )
         }
       }
-    },
-    containerColor = MaterialTheme.colorScheme.background,
-    contentColor = MaterialTheme.colorScheme.onBackground,
-  ) { innerPadding ->
-    HorizontalPager(
-      state = pagerState,
-      modifier = Modifier.fillMaxSize().padding(innerPadding).testTag(NavigationSemantics.PAGER),
-    ) { page ->
-      DestinationPage(
-        destination = appDestinations[page],
-        drawerState = drawerState,
-        onDrawerDestinationSelected = { destination ->
-          val destinationPage = appDestinations.indexOfFirst { it.key == destination }
-          if (destinationPage >= 0) {
-            coroutineScope.launch {
-              drawerState.close()
-              if (destinationPage != pagerState.currentPage) {
-                pagerState.animateScrollToPage(destinationPage)
-              }
-            }
-          }
-        },
-      )
     }
   }
 }
@@ -285,6 +301,29 @@ private fun JasmineNavigationBar(selectedKey: NavKey?, onDestinationSelected: (N
 }
 
 @Composable
+private fun JasmineNavigationRail(selectedKey: NavKey?, onDestinationSelected: (NavKey) -> Unit) {
+  val colorScheme = MaterialTheme.colorScheme
+
+  NavigationRail(
+    modifier = Modifier.testTag(NavigationSemantics.NAVIGATION_RAIL),
+    containerColor = colorScheme.surface,
+    contentColor = colorScheme.onSurface,
+  ) {
+    appDestinations.forEach { destination ->
+      val label = stringResource(destination.labelResId)
+      val contentDescription = stringResource(destination.contentDescriptionResId)
+
+      NavigationRailItem(
+        selected = selectedKey == destination.key,
+        onClick = { onDestinationSelected(destination.key) },
+        icon = { Icon(imageVector = destination.icon, contentDescription = contentDescription) },
+        label = { Text(label) },
+      )
+    }
+  }
+}
+
+@Composable
 private fun jellyNavigationItemColors(colorScheme: ColorScheme) =
   NavigationBarItemDefaults.colors(
     selectedIconColor = colorScheme.primary,
@@ -366,6 +405,7 @@ private fun indicatorRight(index: Int, tabWidth: Dp, horizontalInset: Dp): Dp =
 private const val IndicatorHorizontalInsetFraction = 0.32f
 private const val FastEdgeDurationMillis = 170
 private const val SlowEdgeDurationMillis = 430
+private val NavigationRailBreakpoint = 600.dp
 private val DrawerTopPadding = 12.dp
 private val DrawerItemHorizontalPadding = 12.dp
 private val IndicatorHeight = 5.dp
