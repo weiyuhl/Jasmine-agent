@@ -1,19 +1,5 @@
-import java.io.File
-import java.security.KeyStore
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-fun canReadKeystore(storeFile: File, storePassword: String, keyAlias: String): Boolean =
-  listOf(KeyStore.getDefaultType(), "JKS", "PKCS12").distinct().any { storeType ->
-    runCatching {
-        val keyStore = KeyStore.getInstance(storeType)
-        storeFile.inputStream().use { input ->
-          keyStore.load(input, storePassword.toCharArray())
-        }
-        keyStore.containsAlias(keyAlias)
-      }
-      .getOrDefault(false)
-  }
 
 plugins {
   alias(libs.plugins.android.application)
@@ -44,39 +30,18 @@ android {
     ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
   }
 
-  var releaseSigningAvailable = false
-
   signingConfigs {
     create("release") {
       val keystorePropertiesFile = rootProject.file("keystore.properties")
-      if (keystorePropertiesFile.exists()) {
-        val keystoreProperties = Properties().apply { load(keystorePropertiesFile.inputStream()) }
-        val configuredStoreFile = rootProject.file(keystoreProperties.getProperty("storeFile", ""))
-        val configuredStorePassword = keystoreProperties.getProperty("storePassword")
-        val configuredKeyAlias = keystoreProperties.getProperty("keyAlias")
-        val configuredKeyPassword = keystoreProperties.getProperty("keyPassword")
-
-        if (
-          configuredStoreFile.isFile &&
-            !configuredStorePassword.isNullOrBlank() &&
-            !configuredKeyAlias.isNullOrBlank() &&
-            !configuredKeyPassword.isNullOrBlank() &&
-            canReadKeystore(configuredStoreFile, configuredStorePassword, configuredKeyAlias)
-        ) {
-          storeFile = configuredStoreFile
-          storePassword = configuredStorePassword
-          keyAlias = configuredKeyAlias
-          keyPassword = configuredKeyPassword
-          releaseSigningAvailable = true
-        } else {
-          logger.warn(
-            "keystore.properties is present but does not match the configured keystore. " +
-              "Release APK will be unsigned."
-          )
+      val keystoreProperties =
+        Properties().apply {
+          keystorePropertiesFile.inputStream().use { input -> load(input) }
         }
-      } else {
-        logger.warn("keystore.properties not found. Release APK will be unsigned.")
-      }
+
+      storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+      storePassword = keystoreProperties.getProperty("storePassword")
+      keyAlias = keystoreProperties.getProperty("keyAlias")
+      keyPassword = keystoreProperties.getProperty("keyPassword")
     }
   }
 
@@ -85,9 +50,7 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      if (releaseSigningAvailable) {
-        signingConfig = signingConfigs.getByName("release")
-      }
+      signingConfig = signingConfigs.getByName("release")
     }
   }
 
