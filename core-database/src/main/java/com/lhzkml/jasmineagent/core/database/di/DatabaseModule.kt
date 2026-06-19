@@ -19,7 +19,7 @@ import java.security.SecureRandom
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import javax.inject.Singleton
-import net.sqlcipher.database.SupportFactory
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,8 +35,9 @@ class DatabaseModule {
     @ApplicationContext appContext: Context,
     encryptedPreferences: SharedPreferences,
   ): AppDatabase {
+    System.loadLibrary("sqlcipher")
     val passphrase = generatePassphrase(appContext, encryptedPreferences)
-    val factory = SupportFactory(passphrase)
+    val factory = SupportOpenHelperFactory(passphrase)
     return Room.databaseBuilder(appContext, AppDatabase::class.java, "Agent")
       .openHelperFactory(factory)
       .build()

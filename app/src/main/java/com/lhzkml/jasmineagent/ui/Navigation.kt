@@ -227,28 +227,40 @@ private fun DestinationPage(
 @Composable
 private fun DestinationNavHost(rootKey: NavKey) {
   val backStack = rememberNavBackStack(rootKey)
-  val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
-  val directive =
-    remember(windowAdaptiveInfo) {
-      calculatePaneScaffoldDirective(windowAdaptiveInfo).copy(horizontalPartitionSpacerSize = 0.dp)
-    }
-  val listDetailSceneStrategy = rememberListDetailSceneStrategy<NavKey>(directive = directive)
+  val entryProvider = entryProvider { AgentEntryProvider() }
 
   Box(modifier = Modifier.fillMaxSize()) {
-    NavDisplay(
-      backStack = backStack,
-      onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
-      sceneStrategies = listOf(listDetailSceneStrategy),
-      entryDecorators =
-        listOf(
-          rememberSaveableStateHolderNavEntryDecorator(),
-          rememberViewModelStoreNavEntryDecorator(),
-        ),
-      entryProvider =
-        entryProvider {
-          AgentEntryProvider()
-        },
-    )
+    if (rootKey == Main) {
+      val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+      val directive =
+        remember(windowAdaptiveInfo) {
+          calculatePaneScaffoldDirective(windowAdaptiveInfo).copy(horizontalPartitionSpacerSize = 0.dp)
+        }
+      val listDetailSceneStrategy = rememberListDetailSceneStrategy<NavKey>(directive = directive)
+
+      NavDisplay(
+        backStack = backStack,
+        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        sceneStrategies = listOf(listDetailSceneStrategy),
+        entryDecorators =
+          listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+          ),
+        entryProvider = entryProvider,
+      )
+    } else {
+      NavDisplay(
+        backStack = backStack,
+        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        entryDecorators =
+          listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+          ),
+        entryProvider = entryProvider,
+      )
+    }
   }
 }
 

@@ -1,7 +1,6 @@
 # SQLCipher bridge classes used by DatabaseModule.
--keep class net.sqlcipher.database.SQLiteDatabase { *; }
--keep class net.sqlcipher.database.SupportFactory { *; }
--dontwarn net.sqlcipher.**
+-keep class net.zetetic.database.sqlcipher.SupportOpenHelperFactory { *; }
+-dontwarn net.zetetic.database.sqlcipher.**
 
 # Security Crypto public entry points used by DatabaseModule.
 -keep class androidx.security.crypto.EncryptedSharedPreferences { *; }

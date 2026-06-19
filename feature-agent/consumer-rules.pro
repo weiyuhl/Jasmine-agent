@@ -1,2 +1,2 @@
-# Kotlin metadata used by reflection-aware tooling and diagnostics.
+# Kotlin metadata used by reflection-aware tooling.
 -keepattributes *Annotation*, InnerClasses
