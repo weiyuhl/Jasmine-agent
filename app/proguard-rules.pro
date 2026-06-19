@@ -1,40 +1,32 @@
-# SQLCipher - keep native methods and database classes
--keep class net.sqlcipher.** { *; }
--keep class net.sqlcipher.database.** { *; }
--dontwarn net.sqlcipher.database.**
+# SQLCipher - keep the bridge classes used by Room's openHelperFactory.
+-keep class net.sqlcipher.database.SQLiteDatabase { *; }
+-keep class net.sqlcipher.database.SupportFactory { *; }
+-dontwarn net.sqlcipher.**
 
 # Android Keystore alias for SQLCipher (if using KeyStore)
 -keepclassmembers class * extends javax.crypto.KeyGenerator {
     public <init>(...);
 }
 
-# Room
--keep class * extends androidx.room.RoomDatabase
--keep @androidx.room.Entity class *
-
-# Kotlinx Serialization
+# Kotlin metadata and serialization annotations used by Navigation 3 keys.
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
--keepclassmembers class kotlinx.serialization.json.** {
-    *** Companion;
-}
--keepclasseswithmembers class kotlinx.serialization.json.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
--keep,includedescriptorclasses class com.lhzkml.jasmineagent.**$$serializer { *; }
--keepclassmembers class com.lhzkml.jasmineagent.** {
-    *** Companion;
-}
--keepclasseswithmembers class com.lhzkml.jasmineagent.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
 
-# Navigation3
--keep class * extends androidx.navigation3.runtime.NavKey
+# Navigation3 serializable keys
+-keep,includedescriptorclasses class com.lhzkml.jasmineagent.feature.agent.navigation.keys.**$$serializer { *; }
+-keepclassmembers class com.lhzkml.jasmineagent.feature.agent.navigation.keys.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.lhzkml.jasmineagent.feature.agent.navigation.keys.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+-keep class com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main { *; }
+-keep class com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne { *; }
+-keep class com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankTwo { *; }
 
 # Security Crypto (EncryptedSharedPreferences / MasterKey)
--keep class androidx.security.crypto.** { *; }
--dontwarn androidx.security.crypto.**
+-keep class androidx.security.crypto.EncryptedSharedPreferences { *; }
+-keep class androidx.security.crypto.MasterKey { *; }
 -keepclassmembers class * extends com.google.crypto.tink.shaded.protobuf.GeneratedMessageLite {
     <fields>;
 }
@@ -42,4 +34,3 @@
 # Tink / Security Crypto internal annotations (errorprone)
 -dontwarn com.google.errorprone.annotations.**
 -dontwarn com.google.crypto.tink.**
--keep class com.google.crypto.tink.** { *; }

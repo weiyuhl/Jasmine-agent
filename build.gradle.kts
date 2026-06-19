@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.hilt.gradle) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.screenshot) apply false
     alias(libs.plugins.spotless) apply false
 }
 
@@ -50,6 +51,37 @@ subprojects {
         apply(plugin = "org.jetbrains.dokka")
     }
 
+    apply(plugin = "jacoco")
+
+    pluginManager.withPlugin("com.android.application") {
+        configure<com.android.build.api.dsl.ApplicationExtension> {
+            buildTypes {
+                getByName("debug") {
+                    enableUnitTestCoverage = true
+                    enableAndroidTestCoverage = true
+                }
+            }
+        }
+    }
+
+    pluginManager.withPlugin("com.android.library") {
+        configure<com.android.build.api.dsl.LibraryExtension> {
+            buildTypes {
+                getByName("debug") {
+                    enableUnitTestCoverage = true
+                    enableAndroidTestCoverage = true
+                }
+            }
+        }
+    }
+
+    tasks.withType<Test> {
+        configure<JacocoTaskExtension> {
+            isIncludeNoLocationClasses = true
+            excludes = listOf("jdk.internal.*")
+        }
+    }
+
     configurations.configureEach {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
@@ -84,5 +116,54 @@ subprojects {
                 }
             }
         }
+    }
+}
+
+tasks.register<JacocoReport>("jacocoRootReport") {
+    group = "verification"
+    description = "Generates an aggregated Jacoco coverage report across all modules."
+
+    dependsOn(subprojects.map { subproject ->
+        subproject.tasks.matching { it.name == "testDebugUnitTest" }
+    })
+
+    val coverageFiles = fileTree(rootDir) {
+        include("**/build/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+        include("**/build/outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
+    }
+    executionData.setFrom(coverageFiles)
+
+    val compiledClasses = fileTree(rootDir) {
+        include(
+            "**/build/intermediates/javac/debug/**/classes/**",
+            "**/build/tmp/kotlin-classes/debug/**",
+        )
+        exclude(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*",
+            "**/*_MembersInjector.*",
+            "**/*_Factory.*",
+            "**/*_HiltModules*.*",
+            "**/Dagger*.*",
+            "**/Hilt_*.*",
+            "**/*_Impl*.*",
+            "**/databinding/**",
+            "**/generated/**",
+        )
+    }
+    classDirectories.setFrom(compiledClasses)
+
+    val mainSources = fileTree(rootDir) {
+        include("**/src/main/java/**", "**/src/main/kotlin/**")
+    }
+    sourceDirectories.setFrom(mainSources)
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
     }
 }

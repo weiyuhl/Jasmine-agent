@@ -40,7 +40,7 @@ class NavigationTest {
   @Test
   fun mainScreen_showsAppBars() {
     composeTestRule.onNodeWithTag(NavigationSemantics.TOP_APP_BAR).assertExists()
-    composeTestRule.onNodeWithTag(NavigationSemantics.BOTTOM_NAVIGATION).assertExists()
+    composeTestRule.onNodeWithTag(NavigationSemantics.NAVIGATION_SUITE).assertExists()
     composeTestRule
       .onNodeWithText(
         composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_agents_label)
@@ -102,6 +102,6 @@ class NavigationTest {
       }
     }
 
-    composeTestRule.onNodeWithTag(NavigationSemantics.NAVIGATION_RAIL).assertExists()
+    composeTestRule.onNodeWithTag(NavigationSemantics.NAVIGATION_SUITE).assertExists()
   }
 }

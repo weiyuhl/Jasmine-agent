@@ -9,15 +9,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.style.MutableStyleState
+import androidx.compose.foundation.style.styleable
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.lhzkml.jasmineagent.core.ui.JasmineStyles
 import com.lhzkml.jasmineagent.feature.agent.R
 
 @OptIn(ExperimentalFlexBoxApi::class)
@@ -72,7 +73,7 @@ internal fun AddAgentForm(
       addAgentState = addAgentState,
       enabled = addAgentState !is AddAgentState.Adding && nameAgent.isNotBlank(),
       onSave = onSave,
-      modifier = Modifier.width(96.dp).flex { shrink(0f) },
+      modifier = Modifier.flex { shrink(0f) },
     )
   }
 }
@@ -119,38 +120,8 @@ private fun AgentNameField(
           )
         }
       },
-    colors = agentNameFieldColors(),
+    colors = JasmineStyles.agentNameFieldColors(),
     enabled = enabled,
-  )
-}
-
-@Composable
-private fun agentNameFieldColors(): TextFieldColors {
-  val colorScheme = MaterialTheme.colorScheme
-
-  return TextFieldDefaults.colors(
-    focusedTextColor = colorScheme.onSurface,
-    unfocusedTextColor = colorScheme.onSurface,
-    disabledTextColor = colorScheme.onSurfaceVariant,
-    errorTextColor = colorScheme.onSurface,
-    focusedContainerColor = colorScheme.surface,
-    unfocusedContainerColor = colorScheme.surface,
-    disabledContainerColor = colorScheme.surfaceVariant,
-    errorContainerColor = colorScheme.surface,
-    cursorColor = colorScheme.primary,
-    errorCursorColor = colorScheme.error,
-    focusedIndicatorColor = colorScheme.primary,
-    unfocusedIndicatorColor = colorScheme.outline,
-    disabledIndicatorColor = colorScheme.outlineVariant,
-    errorIndicatorColor = colorScheme.error,
-    focusedLabelColor = colorScheme.primary,
-    unfocusedLabelColor = colorScheme.onSurfaceVariant,
-    disabledLabelColor = colorScheme.onSurfaceVariant,
-    errorLabelColor = colorScheme.error,
-    focusedSupportingTextColor = colorScheme.onSurfaceVariant,
-    unfocusedSupportingTextColor = colorScheme.onSurfaceVariant,
-    disabledSupportingTextColor = colorScheme.onSurfaceVariant,
-    errorSupportingTextColor = colorScheme.error,
   )
 }
 
@@ -163,22 +134,20 @@ private fun SaveAgentButton(
   modifier: Modifier = Modifier,
 ) {
   val colorScheme = MaterialTheme.colorScheme
+  val styleState = remember { MutableStyleState(null) }
 
   Button(
     modifier =
-      modifier.testTag(AgentSemantics.SAVE_BUTTON).semantics {
-        role = Role.Button
-        contentDescription = saveLabel
-      },
+      modifier
+        .styleable(styleState, JasmineStyles.saveButtonSurface)
+        .testTag(AgentSemantics.SAVE_BUTTON)
+        .semantics {
+          role = Role.Button
+          contentDescription = saveLabel
+        },
     onClick = onSave,
     enabled = enabled,
-    colors =
-      ButtonDefaults.buttonColors(
-        containerColor = colorScheme.primary,
-        contentColor = colorScheme.onPrimary,
-        disabledContainerColor = colorScheme.primary.copy(alpha = DisabledContainerAlpha),
-        disabledContentColor = colorScheme.onPrimary.copy(alpha = DisabledContentAlpha),
-      ),
+    colors = JasmineStyles.primaryButtonColors(enabled),
   ) {
     if (addAgentState is AddAgentState.Adding) {
       CircularProgressIndicator(modifier = Modifier.width(24.dp), color = colorScheme.onPrimary)
@@ -194,5 +163,4 @@ private fun SaveAgentButton(
   }
 }
 
-private const val DisabledContainerAlpha = 0.38f
 private const val DisabledContentAlpha = 0.74f

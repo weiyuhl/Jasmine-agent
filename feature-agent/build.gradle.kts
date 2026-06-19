@@ -5,6 +5,7 @@ plugins {
   alias(libs.plugins.ksp)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.screenshot)
 
   alias(libs.plugins.detekt)
   alias(libs.plugins.spotless)
@@ -13,6 +14,7 @@ plugins {
 android {
   namespace = "com.lhzkml.jasmineagent.feature.agent"
   compileSdk = 37
+  experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
   defaultConfig {
     minSdk = 23
@@ -46,6 +48,7 @@ kotlin {
   compilerOptions {
     jvmTarget.set(JvmTarget.JVM_17)
     moduleName.set("jasmineagent_feature_agent")
+    freeCompilerArgs.add("-opt-in=androidx.compose.foundation.style.ExperimentalFoundationStyleApi")
   }
 }
 
@@ -80,9 +83,12 @@ dependencies {
 
   // Navigation
   implementation(libs.androidx.navigation3.runtime)
+  implementation(libs.androidx.compose.material3.adaptive.navigation3)
 
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)
+  screenshotTestImplementation(libs.androidx.compose.ui.tooling)
+  screenshotTestImplementation(libs.screenshot.validation.api)
   // Instrumented tests
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   debugImplementation(libs.androidx.compose.ui.test.manifest)

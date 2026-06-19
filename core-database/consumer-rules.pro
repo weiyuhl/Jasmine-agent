@@ -1,18 +1,9 @@
-# Room consumer rules
--keep class * extends androidx.room.RoomDatabase
--keep @androidx.room.Entity class *
--keep @androidx.room.Dao interface *
-
-# SQLCipher
--keep class net.sqlcipher.** { *; }
+# SQLCipher bridge classes used by DatabaseModule.
+-keep class net.sqlcipher.database.SQLiteDatabase { *; }
+-keep class net.sqlcipher.database.SupportFactory { *; }
 -dontwarn net.sqlcipher.**
 
-# Keep database entities and enums
--keep class com.lhzkml.jasmineagent.core.database.Agent { *; }
--keep class com.lhzkml.jasmineagent.core.database.AgentStatus { *; }
--keep interface com.lhzkml.jasmineagent.core.database.AgentDao { *; }
--keep class com.lhzkml.jasmineagent.core.database.AppDatabase { *; }
-
-# Security Crypto
--keep class androidx.security.crypto.** { *; }
+# Security Crypto public entry points used by DatabaseModule.
+-keep class androidx.security.crypto.EncryptedSharedPreferences { *; }
+-keep class androidx.security.crypto.MasterKey { *; }
 -dontwarn androidx.security.crypto.**

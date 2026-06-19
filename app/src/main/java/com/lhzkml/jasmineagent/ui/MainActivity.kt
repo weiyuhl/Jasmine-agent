@@ -1,5 +1,6 @@
 package com.lhzkml.jasmineagent.ui
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -17,8 +18,12 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+  /** Deep link URI extracted from the launch intent, if any. */
+  private var deepLinkUri: String? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     enableTransparentSystemBars()
+    extractDeepLink(intent)
     super.onCreate(savedInstanceState)
     setContent {
       JasmineTheme {
@@ -27,10 +32,19 @@ class MainActivity : ComponentActivity() {
           color = MaterialTheme.colorScheme.background,
           contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
-          MainNavigation()
+          MainNavigation(deepLinkUri = deepLinkUri)
         }
       }
     }
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    extractDeepLink(intent)
+  }
+
+  private fun extractDeepLink(intent: Intent?) {
+    deepLinkUri = intent?.data?.toString()
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {

@@ -42,6 +42,7 @@ kotlin {
   compilerOptions {
     jvmTarget.set(JvmTarget.JVM_17)
     moduleName.set("jasmineagent_core_ui")
+    freeCompilerArgs.add("-opt-in=androidx.compose.foundation.style.ExperimentalFoundationStyleApi")
   }
 }
 

@@ -61,4 +61,5 @@ dependencies {
 
   // Compose
   implementation(libs.androidx.compose.ui.test.junit4)
+  implementation(libs.androidx.test.uiautomator)
 }

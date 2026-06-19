@@ -10,13 +10,15 @@ import androidx.compose.foundation.layout.FlexDirection
 import androidx.compose.foundation.layout.FlexJustifyContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.style.MutableStyleState
+import androidx.compose.foundation.style.styleable
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
+import com.lhzkml.jasmineagent.core.ui.JasmineStyles
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
@@ -115,6 +118,8 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
     )
   }
 }
+
+private val AgentGridMinCellWidth = 280.dp
 
 @Composable
 private fun AgentEventHandler(
@@ -226,12 +231,12 @@ internal fun AgentContent(
   modifier: Modifier = Modifier,
 ) {
   val formContentDescription = stringResource(R.string.agent_form_content_description)
+  val formStyleState = remember { MutableStyleState(null) }
 
   Column(
     modifier
       .safeDrawingPadding()
-      .imePadding()
-      .padding(16.dp)
+      .styleable(formStyleState, JasmineStyles.agentFormContainer)
       .testTag(AgentSemantics.FORM)
       .semantics {
         contentDescription = formContentDescription
@@ -278,12 +283,14 @@ private fun AgentList(items: List<AgentRecord>, onDelete: (uid: Int, name: Strin
   val listContentDescription = stringResource(R.string.agent_list_content_description)
   val deleteLabel = stringResource(R.string.agent_action_delete)
 
-  LazyColumn(
+  LazyVerticalGrid(
+    columns = GridCells.Adaptive(AgentGridMinCellWidth),
     modifier =
       Modifier.testTag(AgentSemantics.LIST).semantics {
         contentDescription = listContentDescription
       },
     verticalArrangement = Arrangement.spacedBy(8.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
   ) {
     items(items, key = { it.uid }) { item ->
       AgentListItem(item, deleteLabel, onDelete)
