@@ -11,7 +11,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.lhzkml.jasmineagent.core.ui.JasmineTheme
+import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.BlankDestinationSemantics
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentSemantics

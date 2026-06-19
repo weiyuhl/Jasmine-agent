@@ -13,7 +13,6 @@ import androidx.compose.foundation.style.MutableStyleState
 import androidx.compose.foundation.style.styleable
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -30,6 +29,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.core.ui.JasmineStyles
 import com.lhzkml.jasmineagent.feature.agent.R
 
@@ -87,7 +87,8 @@ private fun AgentNameField(
   enabled: Boolean,
   modifier: Modifier = Modifier,
 ) {
-  val colorScheme = MaterialTheme.colorScheme
+  val colorScheme = JasmineTheme.colorScheme
+  val typography = JasmineTheme.typography
 
   TextField(
     modifier =
@@ -97,11 +98,11 @@ private fun AgentNameField(
       },
     value = nameAgent,
     onValueChange = onNameChange,
-    textStyle = MaterialTheme.typography.bodyLarge,
+    textStyle = typography.bodyLarge,
     label = {
       Text(
         agentNameLabel,
-        style = MaterialTheme.typography.labelLarge,
+        style = typography.labelLarge,
         color = colorScheme.onSurfaceVariant,
       )
     },
@@ -133,7 +134,8 @@ private fun SaveAgentButton(
   onSave: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  val colorScheme = MaterialTheme.colorScheme
+  val colorScheme = JasmineTheme.colorScheme
+  val typography = JasmineTheme.typography
   val styleState = remember { MutableStyleState(null) }
 
   Button(
@@ -157,7 +159,7 @@ private fun SaveAgentButton(
         color =
           if (enabled) colorScheme.onPrimary
           else colorScheme.onPrimary.copy(alpha = DisabledContentAlpha),
-        style = MaterialTheme.typography.labelLarge,
+        style = typography.labelLarge,
       )
     }
   }

@@ -8,12 +8,12 @@ import androidx.compose.foundation.style.contentPaddingVertical
 import androidx.compose.foundation.style.fillWidth
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.lhzkml.jasmine.theme.JasmineTheme
 
 /**
  * Provides reusable Material3 component styles for the Jasmine app.
@@ -38,7 +38,7 @@ object JasmineStyles {
   /** Creates [TextFieldColors] suitable for the agent name text field. */
   @Composable
   fun agentNameFieldColors(): TextFieldColors {
-    val colorScheme = MaterialTheme.colorScheme
+    val colorScheme = JasmineTheme.colorScheme
 
     return TextFieldDefaults.colors(
       focusedTextColor = colorScheme.onSurface,
@@ -69,7 +69,7 @@ object JasmineStyles {
   /** Creates [ButtonColors] suitable for the primary action button. */
   @Composable
   fun primaryButtonColors(enabled: Boolean): ButtonColors {
-    val colorScheme = MaterialTheme.colorScheme
+    val colorScheme = JasmineTheme.colorScheme
 
     return ButtonDefaults.buttonColors(
       containerColor = colorScheme.primary,
@@ -82,7 +82,7 @@ object JasmineStyles {
   /** Creates [ButtonColors] suitable for a secondary / text button. */
   @Composable
   fun secondaryButtonColors(): ButtonColors {
-    val colorScheme = MaterialTheme.colorScheme
+    val colorScheme = JasmineTheme.colorScheme
 
     return ButtonDefaults.buttonColors(
       containerColor = Color.Transparent,

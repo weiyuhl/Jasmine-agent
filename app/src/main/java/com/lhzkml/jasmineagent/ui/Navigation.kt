@@ -23,7 +23,6 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,6 +50,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.AgentEntryProvider
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
@@ -134,8 +134,8 @@ fun MainNavigation(deepLinkUri: String? = null) {
         onNavigationClick = { coroutineScope.launch { drawerState.open() } },
       )
     },
-    containerColor = MaterialTheme.colorScheme.background,
-    contentColor = MaterialTheme.colorScheme.onBackground,
+    containerColor = JasmineTheme.colorScheme.background,
+    contentColor = JasmineTheme.colorScheme.onBackground,
   ) { innerPadding ->
     NavigationSuiteScaffold(
       modifier = Modifier.padding(innerPadding).testTag(NavigationSemantics.NAVIGATION_SUITE),
@@ -285,8 +285,8 @@ private fun JasmineTopAppBar(showNavigationIcon: Boolean, onNavigationClick: () 
     },
     colors =
       TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surface,
-        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        containerColor = JasmineTheme.colorScheme.surface,
+        titleContentColor = JasmineTheme.colorScheme.onSurface,
       ),
   )
 }

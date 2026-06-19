@@ -9,10 +9,9 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.lhzkml.jasmineagent.core.ui.JasmineTheme
+import com.lhzkml.jasmine.theme.JasmineTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -29,8 +28,8 @@ class MainActivity : ComponentActivity() {
       JasmineTheme {
         Surface(
           modifier = Modifier.fillMaxSize(),
-          color = MaterialTheme.colorScheme.background,
-          contentColor = MaterialTheme.colorScheme.onBackground,
+          color = JasmineTheme.colorScheme.background,
+          contentColor = JasmineTheme.colorScheme.onBackground,
         ) {
           MainNavigation(deepLinkUri = deepLinkUri)
         }

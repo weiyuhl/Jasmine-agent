@@ -2,7 +2,6 @@ package com.lhzkml.jasmineagent.feature.agent.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
@@ -13,6 +12,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankTwo
@@ -43,11 +43,14 @@ private fun BlankScreen(testTag: String) {
 
 @Composable
 private fun EmptyDetailPlaceholder() {
+  val colorScheme = JasmineTheme.colorScheme
+  val typography = JasmineTheme.typography
+
   Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     Text(
       text = stringResource(R.string.agent_empty_message),
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-      style = MaterialTheme.typography.bodyLarge,
+      color = colorScheme.onSurfaceVariant,
+      style = typography.bodyLarge,
     )
   }
 }

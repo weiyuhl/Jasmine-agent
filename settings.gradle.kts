@@ -19,6 +19,13 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
+includeBuild("jasmine-theme") {
+    dependencySubstitution {
+        substitute(module("com.lhzkml.jasmine:jasmine-theme")).using(project(":theme"))
+    }
+}
+
 rootProject.name = "Multimodule template"
 
 include(":app")

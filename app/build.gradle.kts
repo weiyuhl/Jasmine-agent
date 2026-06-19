@@ -97,9 +97,9 @@ dependencies {
   implementation(project(":core-data"))
   implementation(project(":core-database"))
   implementation(project(":core-domain"))
-  implementation(project(":core-ui"))
   implementation(project(":feature-agent"))
   implementation(project(":feature-agent-navigation"))
+  implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
 
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)

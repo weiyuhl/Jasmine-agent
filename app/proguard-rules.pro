@@ -1,7 +1,3 @@
-# SQLCipher - keep the bridge classes used by Room's openHelperFactory.
--keep class net.zetetic.database.sqlcipher.SupportOpenHelperFactory { *; }
--dontwarn net.zetetic.database.sqlcipher.**
-
 # Android Keystore alias for SQLCipher (if using KeyStore)
 -keepclassmembers class * extends javax.crypto.KeyGenerator {
     public <init>(...);
