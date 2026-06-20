@@ -616,8 +616,18 @@ object BottomSheetDefaults {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DragHandleWithTooltip(modifier: Modifier, content: @Composable (() -> Unit)) {
+    val dragHandleDescription = getString(Strings.BottomSheetDragHandleDescription)
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Box(modifier = modifier) { content() }
+        TooltipBox(
+            modifier = modifier,
+            positionProvider =
+                TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+            tooltip = {
+                PlainTooltipInternal(dragHandleDescription) { Text(dragHandleDescription) }
+            },
+            state = rememberTooltipState(),
+            content = content,
+        )
     }
 }
 

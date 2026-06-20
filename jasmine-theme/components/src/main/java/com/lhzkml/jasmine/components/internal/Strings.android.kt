@@ -278,6 +278,12 @@ internal value class Strings constructor(val value: Int) {
 
         inline val ButtonGroupMoreOptions
             get() = Strings(MaterialR.string.m3c_button_group_more_options)
+
+        inline val ShowPassword
+            get() = Strings(MaterialR.string.m3c_password_show_password)
+
+        inline val HidePassword
+            get() = Strings(MaterialR.string.m3c_password_hide_password)
     }
 }
 

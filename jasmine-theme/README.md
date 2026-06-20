@@ -55,6 +55,8 @@
 - `OutlinedTextField`
 - `SecureTextField`
 - `OutlinedSecureTextField`
+- `PasswordTextField`
+- `OutlinedPasswordTextField`
 - `CircularProgressIndicator`
 - `Snackbar`
 - `SnackbarHost`
@@ -63,6 +65,7 @@
 - `FloatingActionButtonMenu`
 - `FloatingActionButtonMenuItem`
 - `ToggleFloatingActionButton`
+- `ToggleFloatingActionButton` 默认 Add/Close 图标重载
 - `PullToRefreshBox`
 - `pullToRefresh`
 - `PullToRefreshDefaults.Indicator`

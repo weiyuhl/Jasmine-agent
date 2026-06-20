@@ -31,17 +31,26 @@ import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import com.lhzkml.jasmine.components.OutlinedTextFieldDefaults.normalize as normalizeOutlined
 import com.lhzkml.jasmine.components.TextFieldDefaults.normalize
+import com.lhzkml.jasmine.components.internal.Icons
 import com.lhzkml.jasmine.components.internal.Strings
 import com.lhzkml.jasmine.components.internal.defaultErrorSemantics
 import com.lhzkml.jasmine.components.internal.getString
 import com.lhzkml.jasmine.components.internal.topPaddingForLabelCutout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -99,7 +108,7 @@ import androidx.compose.ui.unit.Density
  *   [KeyboardType] and [ImeAction]. This component by default configures [KeyboardOptions] for a
  *   secure text field by disabling auto correct and setting [KeyboardType] to
  *   [KeyboardType.Password]. If using [TextObfuscationMode.Visible], consider passing
- *   [KeyboardType.PasswordVisible] instead to indicate to the IME that the input is visible.
+ *   [KeyboardType.Text] instead to indicate to the IME that the input is visible.
  * @param onKeyboardAction called when the user presses the action button in the input method editor
  *   (IME), or by pressing the enter key on a hardware keyboard. By default this parameter is null,
  *   and would execute the default behavior for a received IME Action e.g., [ImeAction.Done] would
@@ -218,6 +227,83 @@ fun SecureTextField(
                 ),
         )
     }
+}
+
+/**
+ * Filled password text field with the visibility toggle used by the Material password sample.
+ *
+ * This is a convenience wrapper over [SecureTextField]. Use [SecureTextField] directly when a
+ * custom trailing icon or a custom obfuscation policy is required.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PasswordTextField(
+    state: TextFieldState,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    textStyle: TextStyle = LocalTextStyle.current,
+    labelPosition: TextFieldLabelPosition = TextFieldLabelPosition.Inside(),
+    label: @Composable (TextFieldLabelScope.() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
+    suffix: @Composable (() -> Unit)? = null,
+    supportingText: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    inputTransformation: InputTransformation? = null,
+    textObfuscationCharacter: Char = DefaultObfuscationCharacter,
+    onKeyboardAction: KeyboardActionHandler? = null,
+    onTextLayout: (Density.(getResult: () -> TextLayoutResult?) -> Unit)? = null,
+    shape: Shape = TextFieldDefaults.shape,
+    colors: TextFieldColors = TextFieldDefaults.colors(),
+    contentPadding: PaddingValues =
+        if (label == null || labelPosition is TextFieldLabelPosition.Above) {
+            TextFieldDefaults.contentPaddingWithoutLabel()
+        } else {
+            TextFieldDefaults.contentPaddingWithLabel()
+        },
+    interactionSource: MutableInteractionSource? = null,
+) {
+    var passwordHidden by rememberSaveable { mutableStateOf(true) }
+
+    SecureTextField(
+        state = state,
+        modifier = modifier,
+        enabled = enabled,
+        textStyle = textStyle,
+        labelPosition = labelPosition,
+        label = label,
+        placeholder = placeholder,
+        leadingIcon = leadingIcon,
+        trailingIcon = {
+            PasswordVisibilityToggle(
+                passwordHidden = passwordHidden,
+                onPasswordHiddenChange = { passwordHidden = it },
+                enabled = enabled,
+            )
+        },
+        prefix = prefix,
+        suffix = suffix,
+        supportingText = supportingText,
+        isError = isError,
+        inputTransformation = inputTransformation,
+        textObfuscationMode =
+            if (passwordHidden) TextObfuscationMode.RevealLastTyped
+            else TextObfuscationMode.Visible,
+        textObfuscationCharacter = textObfuscationCharacter,
+        keyboardOptions =
+            KeyboardOptions(
+                autoCorrectEnabled = false,
+                keyboardType =
+                    if (passwordHidden) KeyboardType.Password else KeyboardType.Text,
+            ),
+        onKeyboardAction = onKeyboardAction,
+        onTextLayout = onTextLayout,
+        shape = shape,
+        colors = colors,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+    )
 }
 
 /**
@@ -381,6 +467,116 @@ fun OutlinedSecureTextField(
                     },
                 ),
         )
+    }
+}
+
+/**
+ * Outlined password text field with the visibility toggle used by the Material password sample.
+ *
+ * This is a convenience wrapper over [OutlinedSecureTextField]. Use [OutlinedSecureTextField]
+ * directly when a custom trailing icon or a custom obfuscation policy is required.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OutlinedPasswordTextField(
+    state: TextFieldState,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    textStyle: TextStyle = LocalTextStyle.current,
+    labelPosition: TextFieldLabelPosition = TextFieldLabelPosition.Cutout(),
+    label: @Composable (TextFieldLabelScope.() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
+    suffix: @Composable (() -> Unit)? = null,
+    supportingText: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    inputTransformation: InputTransformation? = null,
+    textObfuscationCharacter: Char = DefaultObfuscationCharacter,
+    onKeyboardAction: KeyboardActionHandler? = null,
+    onTextLayout: (Density.(getResult: () -> TextLayoutResult?) -> Unit)? = null,
+    shape: Shape = OutlinedTextFieldDefaults.shape,
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
+    contentPadding: PaddingValues =
+        OutlinedTextFieldDefaults.defaultContentPadding(label, labelPosition),
+    interactionSource: MutableInteractionSource? = null,
+) {
+    var passwordHidden by rememberSaveable { mutableStateOf(true) }
+
+    OutlinedSecureTextField(
+        state = state,
+        modifier = modifier,
+        enabled = enabled,
+        textStyle = textStyle,
+        labelPosition = labelPosition,
+        label = label,
+        placeholder = placeholder,
+        leadingIcon = leadingIcon,
+        trailingIcon = {
+            PasswordVisibilityToggle(
+                passwordHidden = passwordHidden,
+                onPasswordHiddenChange = { passwordHidden = it },
+                enabled = enabled,
+            )
+        },
+        prefix = prefix,
+        suffix = suffix,
+        supportingText = supportingText,
+        isError = isError,
+        inputTransformation = inputTransformation,
+        textObfuscationMode =
+            if (passwordHidden) TextObfuscationMode.RevealLastTyped
+            else TextObfuscationMode.Visible,
+        textObfuscationCharacter = textObfuscationCharacter,
+        keyboardOptions =
+            KeyboardOptions(
+                autoCorrectEnabled = false,
+                keyboardType =
+                    if (passwordHidden) KeyboardType.Password else KeyboardType.Text,
+            ),
+        onKeyboardAction = onKeyboardAction,
+        onTextLayout = onTextLayout,
+        shape = shape,
+        colors = colors,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+    )
+}
+
+@Composable
+private fun PasswordVisibilityToggle(
+    passwordHidden: Boolean,
+    onPasswordHiddenChange: (Boolean) -> Unit,
+    enabled: Boolean,
+) {
+    val description =
+        getString(if (passwordHidden) Strings.ShowPassword else Strings.HidePassword)
+    TooltipBox(
+        positionProvider =
+            TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = {
+            PlainTooltip(
+                modifier =
+                    Modifier.semantics {
+                        liveRegion = LiveRegionMode.Assertive
+                        paneTitle = description
+                    }
+            ) {
+                Text(description)
+            }
+        },
+        state = rememberTooltipState(),
+    ) {
+        IconButton(
+            onClick = { onPasswordHiddenChange(!passwordHidden) },
+            enabled = enabled,
+        ) {
+            Icon(
+                imageVector =
+                    if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                contentDescription = description,
+            )
+        }
     }
 }
 

@@ -247,12 +247,23 @@ fun Snackbar(
         if (snackbarData.visuals.withDismissAction) {
             @Composable {
                 val contentDescription = getString(Strings.SnackbarDismiss)
-                IconButton(
-                    onClick = { snackbarData.dismiss() },
-                    content = {
-                        Icon(Icons.Filled.Close, contentDescription = contentDescription)
+                TooltipBox(
+                    positionProvider =
+                        TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Above
+                        ),
+                    tooltip = {
+                        PlainTooltipInternal(contentDescription) { Text(contentDescription) }
                     },
-                )
+                    state = rememberTooltipState(),
+                ) {
+                    IconButton(
+                        onClick = { snackbarData.dismiss() },
+                        content = {
+                            Icon(Icons.Filled.Close, contentDescription = contentDescription)
+                        },
+                    )
+                }
             }
         } else {
             null

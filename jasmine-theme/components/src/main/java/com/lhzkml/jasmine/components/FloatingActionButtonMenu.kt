@@ -33,6 +33,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.verticalScroll
+import com.lhzkml.jasmine.components.internal.Icons
 import com.lhzkml.jasmine.components.tokens.FabBaselineTokens
 import com.lhzkml.jasmine.components.tokens.FabLargeTokens
 import com.lhzkml.jasmine.components.tokens.FabMediumTokens
@@ -442,6 +443,37 @@ fun ToggleFloatingActionButton(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    containerColor: (Float) -> Color = ToggleFloatingActionButtonDefaults.containerColor(),
+    contentAlignment: Alignment = Alignment.TopEnd,
+    containerSize: (Float) -> Dp = ToggleFloatingActionButtonDefaults.containerSize(),
+    containerCornerRadius: (Float) -> Dp =
+        ToggleFloatingActionButtonDefaults.containerCornerRadius(),
+) =
+    ToggleFloatingActionButton(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        containerColor = containerColor,
+        contentAlignment = contentAlignment,
+        containerSize = containerSize,
+        containerCornerRadius = containerCornerRadius,
+    ) {
+        Icon(
+            imageVector = if (checkedProgress > 0.5f) Icons.Filled.Close else Icons.Filled.Add,
+            contentDescription = contentDescription,
+            modifier =
+                with(ToggleFloatingActionButtonDefaults) {
+                    Modifier.animateIcon({ checkedProgress })
+                },
+        )
+    }
+
+@Composable
+fun ToggleFloatingActionButton(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
     containerColor: (Float) -> Color = ToggleFloatingActionButtonDefaults.containerColor(),
     contentAlignment: Alignment = Alignment.TopEnd,
     containerSize: (Float) -> Dp = ToggleFloatingActionButtonDefaults.containerSize(),
@@ -565,7 +597,10 @@ private fun ToggleFloatingActionButton(
                             get() = checkedProgress()
                     }
                 }
-            content(scope)
+            val contentColor = ToggleFloatingActionButtonDefaults.iconColor()
+            CompositionLocalProvider(LocalContentColor provides contentColor(checkedProgress())) {
+                content(scope)
+            }
         }
     }
 }

@@ -136,6 +136,35 @@ internal object Icons {
 
         private var _check: ImageVector? = null
 
+        internal val Add: ImageVector
+            get() {
+                if (_add != null) {
+                    return _add!!
+                }
+                _add =
+                    materialIcon(name = "Filled.Add") {
+                        materialPath {
+                            moveTo(19.0f, 13.0f)
+                            horizontalLineToRelative(-6.0f)
+                            verticalLineToRelative(6.0f)
+                            horizontalLineToRelative(-2.0f)
+                            verticalLineToRelative(-6.0f)
+                            horizontalLineTo(5.0f)
+                            verticalLineToRelative(-2.0f)
+                            horizontalLineToRelative(6.0f)
+                            verticalLineTo(5.0f)
+                            horizontalLineToRelative(2.0f)
+                            verticalLineToRelative(6.0f)
+                            horizontalLineToRelative(6.0f)
+                            verticalLineToRelative(2.0f)
+                            close()
+                        }
+                    }
+                return _add!!
+            }
+
+        private var _add: ImageVector? = null
+
         internal val Edit: ImageVector
             get() {
                 if (_edit != null) {
@@ -274,6 +303,90 @@ internal object Icons {
             }
 
         private var _moreVert: ImageVector? = null
+
+        internal val Visibility: ImageVector
+            get() {
+                if (_visibility != null) {
+                    return _visibility!!
+                }
+                _visibility =
+                    materialIcon(name = "Filled.Visibility") {
+                        materialPath {
+                            moveTo(12.0f, 4.5f)
+                            curveTo(7.0f, 4.5f, 2.73f, 7.61f, 1.0f, 12.0f)
+                            curveToRelative(1.73f, 4.39f, 6.0f, 7.5f, 11.0f, 7.5f)
+                            reflectiveCurveToRelative(9.27f, -3.11f, 11.0f, -7.5f)
+                            curveToRelative(-1.73f, -4.39f, -6.0f, -7.5f, -11.0f, -7.5f)
+                            close()
+                            moveTo(12.0f, 17.0f)
+                            curveToRelative(-2.76f, 0.0f, -5.0f, -2.24f, -5.0f, -5.0f)
+                            reflectiveCurveToRelative(2.24f, -5.0f, 5.0f, -5.0f)
+                            reflectiveCurveToRelative(5.0f, 2.24f, 5.0f, 5.0f)
+                            reflectiveCurveToRelative(-2.24f, 5.0f, -5.0f, 5.0f)
+                            close()
+                            moveTo(12.0f, 9.0f)
+                            curveToRelative(-1.66f, 0.0f, -3.0f, 1.34f, -3.0f, 3.0f)
+                            reflectiveCurveToRelative(1.34f, 3.0f, 3.0f, 3.0f)
+                            reflectiveCurveToRelative(3.0f, -1.34f, 3.0f, -3.0f)
+                            reflectiveCurveToRelative(-1.34f, -3.0f, -3.0f, -3.0f)
+                            close()
+                        }
+                    }
+                return _visibility!!
+            }
+
+        private var _visibility: ImageVector? = null
+
+        internal val VisibilityOff: ImageVector
+            get() {
+                if (_visibilityOff != null) {
+                    return _visibilityOff!!
+                }
+                _visibilityOff =
+                    materialIcon(name = "Filled.VisibilityOff") {
+                        materialPath {
+                            moveTo(12.0f, 6.5f)
+                            curveToRelative(3.79f, 0.0f, 7.17f, 2.13f, 8.82f, 5.5f)
+                            curveToRelative(-0.7f, 1.43f, -1.79f, 2.61f, -3.07f, 3.45f)
+                            lineToRelative(1.43f, 1.43f)
+                            curveToRelative(1.71f, -1.41f, 3.07f, -3.08f, 3.82f, -4.88f)
+                            curveToRelative(-1.73f, -4.39f, -6.0f, -7.5f, -11.0f, -7.5f)
+                            curveToRelative(-1.4f, 0.0f, -2.74f, 0.25f, -3.98f, 0.7f)
+                            lineToRelative(1.65f, 1.65f)
+                            curveToRelative(0.74f, -0.22f, 1.52f, -0.35f, 2.33f, -0.35f)
+                            close()
+                            moveTo(2.01f, 3.87f)
+                            lineToRelative(2.68f, 2.68f)
+                            curveTo(3.06f, 7.83f, 1.77f, 9.7f, 1.0f, 12.0f)
+                            curveToRelative(1.73f, 4.39f, 6.0f, 7.5f, 11.0f, 7.5f)
+                            curveToRelative(1.52f, 0.0f, 2.98f, -0.29f, 4.32f, -0.82f)
+                            lineToRelative(3.42f, 3.42f)
+                            lineToRelative(1.41f, -1.41f)
+                            lineTo(3.42f, 2.45f)
+                            lineTo(2.01f, 3.87f)
+                            close()
+                            moveTo(7.53f, 9.39f)
+                            lineToRelative(1.55f, 1.55f)
+                            curveToRelative(-0.05f, 0.34f, -0.08f, 0.7f, -0.08f, 1.06f)
+                            curveToRelative(0.0f, 1.66f, 1.34f, 3.0f, 3.0f, 3.0f)
+                            curveToRelative(0.36f, 0.0f, 0.71f, -0.06f, 1.04f, -0.18f)
+                            lineToRelative(1.55f, 1.55f)
+                            curveToRelative(-0.77f, 0.39f, -1.64f, 0.63f, -2.59f, 0.63f)
+                            curveToRelative(-2.76f, 0.0f, -5.0f, -2.24f, -5.0f, -5.0f)
+                            curveToRelative(0.0f, -0.95f, 0.24f, -1.82f, 0.63f, -2.61f)
+                            close()
+                            moveTo(11.84f, 9.02f)
+                            lineToRelative(3.15f, 3.15f)
+                            lineToRelative(0.02f, -0.16f)
+                            curveToRelative(0.0f, -1.66f, -1.34f, -3.0f, -3.0f, -3.0f)
+                            lineToRelative(-0.17f, 0.01f)
+                            close()
+                        }
+                    }
+                return _visibilityOff!!
+            }
+
+        private var _visibilityOff: ImageVector? = null
     }
 
     internal object Outlined {

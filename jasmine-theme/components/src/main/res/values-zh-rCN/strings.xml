@@ -67,6 +67,8 @@
     <string name="m3c_floating_toolbar_more_options" msgid="5546418917311349543">"更多选项"</string>
     <string name="m3c_tooltip_pane_description" msgid="5460405025248574620">"提示"</string>
     <string name="m3c_tooltip_long_press_label" msgid="1805687647081129904">"显示提示"</string>
+    <string name="m3c_password_show_password">"显示密码"</string>
+    <string name="m3c_password_hide_password">"隐藏密码"</string>
     <string name="m3c_time_picker_pm" msgid="6616362054113087709">"下午"</string>
     <string name="m3c_time_picker_am" msgid="2786685010796619560">"上午"</string>
     <string name="m3c_time_picker_period_toggle_description" msgid="5865171949528594571">"选择上午或下午"</string>
