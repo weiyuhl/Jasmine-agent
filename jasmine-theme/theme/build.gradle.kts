@@ -36,7 +36,7 @@ kotlin {
 dependencies {
     implementation(libs.androidx.core.ktx)
     api(platform(libs.compose.bom))
-    api(libs.compose.material3)
+    api(libs.compose.foundation)
     api(libs.compose.ui)
     api(libs.compose.runtime)
 }
@@ -53,7 +53,7 @@ afterEvaluate {
 
                 pom {
                     name.set("Jasmine Theme")
-                    description.set("A Compose Material3-based Jasmine application theme library.")
+                    description.set("A Compose Jasmine application theme library.")
                     licenses {
                         license {
                             name.set("The Apache License, Version 2.0")

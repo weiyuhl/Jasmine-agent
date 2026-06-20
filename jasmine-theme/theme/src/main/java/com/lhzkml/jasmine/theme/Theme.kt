@@ -1,7 +1,6 @@
 package com.lhzkml.jasmine.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
@@ -15,14 +14,12 @@ fun JasmineTheme(
     val colorScheme = if (darkTheme) JasmineDarkColorScheme else JasmineLightColorScheme
 
     CompositionLocalProvider(
+        LocalJasmineColorScheme provides colorScheme,
+        LocalJasmineTypography provides DefaultJasmineTypography,
+        LocalJasmineShapes provides DefaultJasmineShapes,
         LocalJasmineSpacing provides spacing,
         LocalJasmineSizing provides sizing,
     ) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = JasmineTypography,
-            shapes = JasmineShapes,
-            content = content,
-        )
+        content()
     }
 }

@@ -5,18 +5,13 @@ import androidx.compose.foundation.layout.FlexAlignItems
 import androidx.compose.foundation.layout.FlexBox
 import androidx.compose.foundation.layout.FlexDirection
 import androidx.compose.foundation.layout.FlexWrap
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.style.MutableStyleState
-import androidx.compose.foundation.style.styleable
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
@@ -29,6 +24,10 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.lhzkml.jasmine.components.Button
+import com.lhzkml.jasmine.components.CircularProgressIndicator
+import com.lhzkml.jasmine.components.Text
+import com.lhzkml.jasmine.components.TextField
 import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.core.ui.JasmineStyles
 import com.lhzkml.jasmineagent.feature.agent.R
@@ -136,12 +135,11 @@ private fun SaveAgentButton(
 ) {
   val colorScheme = JasmineTheme.colorScheme
   val typography = JasmineTheme.typography
-  val styleState = remember { MutableStyleState(null) }
 
   Button(
     modifier =
       modifier
-        .styleable(styleState, JasmineStyles.saveButtonSurface)
+        .width(96.dp)
         .testTag(AgentSemantics.SAVE_BUTTON)
         .semantics {
           role = Role.Button
@@ -149,7 +147,9 @@ private fun SaveAgentButton(
         },
     onClick = onSave,
     enabled = enabled,
+    shape = RoundedCornerShape(8.dp),
     colors = JasmineStyles.primaryButtonColors(enabled),
+    contentPadding = PaddingValues(0.dp),
   ) {
     if (addAgentState is AddAgentState.Adding) {
       CircularProgressIndicator(modifier = Modifier.width(24.dp), color = colorScheme.onPrimary)

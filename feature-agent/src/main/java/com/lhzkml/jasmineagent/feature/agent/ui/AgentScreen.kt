@@ -17,17 +17,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.style.MutableStyleState
-import androidx.compose.foundation.style.styleable
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,6 +37,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lhzkml.jasmine.components.Button
+import com.lhzkml.jasmine.components.ButtonDefaults
+import com.lhzkml.jasmine.components.CircularProgressIndicator
+import com.lhzkml.jasmine.components.Snackbar
+import com.lhzkml.jasmine.components.SnackbarHost
+import com.lhzkml.jasmine.components.SnackbarHostState
+import com.lhzkml.jasmine.components.Surface
+import com.lhzkml.jasmine.components.Text
+import com.lhzkml.jasmine.components.TextButton
 import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.core.ui.JasmineStyles
@@ -234,12 +232,12 @@ internal fun AgentContent(
   modifier: Modifier = Modifier,
 ) {
   val formContentDescription = stringResource(R.string.agent_form_content_description)
-  val formStyleState = remember { MutableStyleState(null) }
 
   Column(
     modifier
       .safeDrawingPadding()
-      .styleable(formStyleState, JasmineStyles.agentFormContainer)
+      .fillMaxWidth()
+      .padding(16.dp)
       .testTag(AgentSemantics.FORM)
       .semantics {
         contentDescription = formContentDescription

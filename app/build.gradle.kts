@@ -99,6 +99,7 @@ dependencies {
   implementation(project(":core-domain"))
   implementation(project(":feature-agent"))
   implementation(project(":feature-agent-navigation"))
+  implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
   implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
 
   // Core Android dependencies
@@ -122,10 +123,6 @@ dependencies {
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.compose.material.icons.core)
-  implementation(libs.androidx.compose.material3)
-  implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
-  implementation(libs.androidx.compose.material3.adaptive)
-  implementation(libs.androidx.compose.material3.adaptive.navigation3)
 
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)

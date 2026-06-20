@@ -1,7 +1,6 @@
 package com.lhzkml.jasmine.theme
 
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 object JasmineColors {
@@ -16,8 +15,42 @@ object JasmineColors {
     val Error = Color(0xFFBA1A1A)
 }
 
+@Immutable
+data class JasmineColorScheme(
+    val primary: Color,
+    val onPrimary: Color,
+    val primaryContainer: Color,
+    val onPrimaryContainer: Color,
+    val secondary: Color,
+    val onSecondary: Color,
+    val secondaryContainer: Color,
+    val onSecondaryContainer: Color,
+    val tertiary: Color,
+    val onTertiary: Color,
+    val tertiaryContainer: Color,
+    val onTertiaryContainer: Color,
+    val error: Color,
+    val background: Color,
+    val onBackground: Color,
+    val surface: Color,
+    val onSurface: Color,
+    val surfaceDim: Color,
+    val surfaceBright: Color,
+    val surfaceContainerLowest: Color,
+    val surfaceContainerLow: Color,
+    val surfaceContainer: Color,
+    val surfaceContainerHigh: Color,
+    val surfaceContainerHighest: Color,
+    val surfaceVariant: Color,
+    val onSurfaceVariant: Color,
+    val outline: Color,
+    val outlineVariant: Color,
+    val inverseSurface: Color,
+    val inverseOnSurface: Color,
+)
+
 val JasmineLightColorScheme =
-    lightColorScheme(
+    JasmineColorScheme(
         primary = JasmineColors.Ink,
         onPrimary = Color.White,
         primaryContainer = Color(0xFFF2F2F2),
@@ -51,7 +84,7 @@ val JasmineLightColorScheme =
     )
 
 val JasmineDarkColorScheme =
-    darkColorScheme(
+    JasmineColorScheme(
         primary = JasmineColors.White,
         onPrimary = JasmineColors.Ink,
         primaryContainer = Color(0xFF2A2A2A),

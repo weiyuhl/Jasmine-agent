@@ -1,13 +1,22 @@
 package com.lhzkml.jasmine.theme
 
-import androidx.compose.material3.Typography
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val JasmineTypography =
-    Typography(
+@Immutable
+data class JasmineTypography(
+    val displayLarge: TextStyle,
+    val headlineMedium: TextStyle,
+    val titleLarge: TextStyle,
+    val bodyLarge: TextStyle,
+    val labelLarge: TextStyle,
+)
+
+val DefaultJasmineTypography =
+    JasmineTypography(
         displayLarge =
             TextStyle(
                 fontFamily = FontFamily.Default,

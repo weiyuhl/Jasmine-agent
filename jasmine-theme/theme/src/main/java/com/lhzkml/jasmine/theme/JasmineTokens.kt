@@ -1,9 +1,5 @@
 package com.lhzkml.jasmine.theme
 
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -31,16 +27,19 @@ data class JasmineSizing(
 
 val LocalJasmineSpacing = staticCompositionLocalOf { JasmineSpacing() }
 val LocalJasmineSizing = staticCompositionLocalOf { JasmineSizing() }
+val LocalJasmineColorScheme = staticCompositionLocalOf { JasmineLightColorScheme }
+val LocalJasmineTypography = staticCompositionLocalOf { DefaultJasmineTypography }
+val LocalJasmineShapes = staticCompositionLocalOf { DefaultJasmineShapes }
 
 object JasmineTheme {
-    val colorScheme: ColorScheme
-        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme
+    val colorScheme: JasmineColorScheme
+        @Composable @ReadOnlyComposable get() = LocalJasmineColorScheme.current
 
-    val typography: Typography
-        @Composable @ReadOnlyComposable get() = MaterialTheme.typography
+    val typography: JasmineTypography
+        @Composable @ReadOnlyComposable get() = LocalJasmineTypography.current
 
-    val shapes: Shapes
-        @Composable @ReadOnlyComposable get() = MaterialTheme.shapes
+    val shapes: JasmineShapes
+        @Composable @ReadOnlyComposable get() = LocalJasmineShapes.current
 
     val spacing: JasmineSpacing
         @Composable @ReadOnlyComposable get() = LocalJasmineSpacing.current

@@ -1,40 +1,21 @@
 package com.lhzkml.jasmineagent.core.ui
 
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.style.Style
-import androidx.compose.foundation.style.contentPadding
-import androidx.compose.foundation.style.contentPaddingHorizontal
-import androidx.compose.foundation.style.contentPaddingVertical
-import androidx.compose.foundation.style.fillWidth
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import com.lhzkml.jasmine.components.ButtonColors
+import com.lhzkml.jasmine.components.ButtonDefaults
+import com.lhzkml.jasmine.components.TextFieldColors
+import com.lhzkml.jasmine.components.TextFieldDefaults
 import com.lhzkml.jasmine.theme.JasmineTheme
 
 /**
- * Provides reusable Material3 component styles for the Jasmine app.
+ * Provides reusable Jasmine component styles for the Jasmine app.
  *
  * These styles centralize the color definitions for custom components such as [AgentNameField] and
  * [SaveAgentButton], so that the same appearance can be applied consistently without duplicating
  * color logic in each composable.
  */
 object JasmineStyles {
-  val agentFormContainer: Style = Style {
-    contentPadding(16.dp)
-    fillWidth()
-  }
-
-  val saveButtonSurface: Style = Style {
-    shape(RoundedCornerShape(8.dp))
-    width(96.dp)
-    contentPaddingHorizontal(0.dp)
-    contentPaddingVertical(0.dp)
-  }
-
   /** Creates [TextFieldColors] suitable for the agent name text field. */
   @Composable
   fun agentNameFieldColors(): TextFieldColors {

@@ -48,7 +48,6 @@ kotlin {
   compilerOptions {
     jvmTarget.set(JvmTarget.JVM_17)
     moduleName.set("jasmineagent_feature_agent")
-    freeCompilerArgs.add("-opt-in=androidx.compose.foundation.style.ExperimentalFoundationStyleApi")
   }
 }
 
@@ -60,6 +59,7 @@ val rustHostLibraryName =
 dependencies {
   implementation(project(":core-domain"))
   implementation(project(":core-ui"))
+  implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
   implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
@@ -78,13 +78,12 @@ dependencies {
   implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
   // Compose
+  implementation(libs.androidx.compose.foundation)
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
-  implementation(libs.androidx.compose.material3)
 
   // Navigation
   implementation(libs.androidx.navigation3.runtime)
-  implementation(libs.androidx.compose.material3.adaptive.navigation3)
 
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)

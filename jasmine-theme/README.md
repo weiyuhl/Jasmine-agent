@@ -1,57 +1,66 @@
-# Jasmine Theme 使用说明
+# Jasmine 使用说明
 
-`Jasmine` 是一个独立的 Compose App 自定义主题库，不是 Material3 源码 fork。
+`Jasmine` 是给 App 使用的 Compose 设计系统库，当前拆成两个制品：
 
-父级工作区里的 Material3 组件库只作为学习和结构参考。本主题库通过 Maven 依赖桥接官方 Material3，然后对 App 暴露自己的 `JasmineTheme`、设计 token 和少量组件包装。
+- `com.lhzkml.jasmine:jasmine-theme:0.1.0`：Jasmine 自定义主题、颜色、字体、圆角、间距 token。
+- `com.lhzkml.jasmine:jasmine-components:0.1.0`：Jasmine 组件库，从当前工作区的 AndroidX Material3 / Material3 Adaptive 源码复刻整理，不桥接官方 `androidx.compose.material3:material3`。
 
-默认风格：
+父级工作区里的 Material3 项目是源码参考。Jasmine 组件源码保留 AndroidX Apache 2.0 许可头，包名改为 `com.lhzkml.jasmine.components`。
+
+## 风格
 
 - 简约、干净、偏应用工具型。
 - 主背景和 Surface 以白色为主。
 - 主要操作色是接近黑色的中性色。
 - 辅助线、边框、禁用态使用灰色。
-- 不使用紫色、紫蓝渐变、AI 风格渐变。
-- 字体使用系统默认字体，也就是 Compose/Material3 默认的系统字体路线，没有内置第三方字体文件。
+- 不使用紫色、紫蓝渐变或 AI 风格渐变。
+- 字体使用 Compose 默认系统字体路线，没有内置第三方字体文件。
 
-## 当前产物坐标
+## 已复刻的 App 关注组件
 
-默认 Maven 坐标是：
+普通组件：
 
-```text
-com.lhzkml.jasmine:jasmine-theme:0.1.0
-```
+- `Surface`
+- `Scaffold`
+- `TopAppBar`
+- `IconButton`
+- `Icon`
+- `Text`
+- `DismissibleNavigationDrawer`
+- `DismissibleDrawerSheet`
+- `NavigationDrawerItem`
+- `NavigationSuiteScaffold`
+- `Button`
+- `TextButton`
+- `TextField`
+- `CircularProgressIndicator`
+- `Snackbar`
+- `SnackbarHost`
 
-正式给你的 App 使用前，建议先修改 `theme/build.gradle.kts` 里的：
+Adaptive / Navigation3 相关能力：
 
-```kotlin
-group = "com.lhzkml.jasmine"
-version = "0.1.0"
-```
+- `currentWindowAdaptiveInfoV2`
+- `calculatePaneScaffoldDirective`
+- `rememberListDetailSceneStrategy`
+- `rememberNavigationSuiteScaffoldState`
 
-例如可以改成你自己的包名：
+状态和配置：
 
-```kotlin
-group = "com.yourcompany.jasmine"
-version = "0.1.0"
-```
+- `DrawerState`
+- `DrawerValue`
+- `rememberDrawerState`
+- `TopAppBarDefaults`
+- `ButtonDefaults`
+- `ButtonColors`
+- `TextFieldDefaults`
+- `TextFieldColors`
+- `SnackbarHostState`
 
-同时也可以把 namespace 从：
+组件库内部还保留了一些支撑 API，例如颜色、排版、形状、ripple、navigation bar/rail、adaptive layout 等。这些是为了让上面的组件完整工作，不是官方 Material3 依赖桥接。
 
-```kotlin
-namespace = "com.lhzkml.jasmine.theme"
-```
+## 本地构建环境
 
-改成你自己的：
-
-```kotlin
-namespace = "com.yourcompany.jasmine.theme"
-```
-
-如果改包名，还需要同步修改源码里的 `package com.lhzkml.jasmine.theme`。
-
-## 本地发布
-
-本项目 Gradle Wrapper 使用 `9.5.1`。本机已验证可用的环境是：
+本项目 Gradle Wrapper 使用 `9.5.1`。本机已验证可用环境：
 
 ```powershell
 $env:JAVA_HOME="D:\jdk-17.0.2"
@@ -60,37 +69,25 @@ $env:ANDROID_SDK_ROOT=$env:ANDROID_HOME
 $env:PATH="$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:PATH"
 ```
 
+构建检查：
+
+```powershell
+.\gradlew.bat :theme:assembleRelease :components:assembleRelease
+```
+
+## 发布到本机 Maven
+
 在 `jasmine-theme` 目录执行：
 
 ```powershell
-.\gradlew.bat :theme:publishToMavenLocal
+.\gradlew.bat :theme:publishToMavenLocal :components:publishToMavenLocal
 ```
 
-发布成功后，它会进入你电脑本机的 Maven Local 仓库。你的 App 项目可以直接从本机引入。
+发布成功后，App 项目通过 `mavenLocal()` 引入。
 
-如果只想检查能不能构建：
+## App 引入
 
-```powershell
-.\gradlew.bat :theme:assembleRelease
-```
-
-## 作为 includeBuild 接入主项目
-
-如果主项目用 `includeBuild("../jasmine-theme")` 这类方式接入 Jasmine，需要注意两个点：
-
-- 同一个 Gradle 构建里 Android Gradle Plugin 版本要统一。当前 Jasmine 已对齐主项目，使用 `9.3.0-alpha12`。
-- included build 不会自动读取主项目的 `local.properties`。构建前需要设置 Android SDK 环境变量：
-
-```powershell
-$env:ANDROID_HOME="D:\Android\Sdk"
-$env:ANDROID_SDK_ROOT=$env:ANDROID_HOME
-```
-
-如果不想处理 included build 的插件版本统一问题，可以改用 `publishToMavenLocal`，然后主项目通过 `mavenLocal()` 和 Maven 坐标引入。
-
-## App 里怎么引入
-
-在 App 项目的仓库配置里加入 `mavenLocal()`：
+在 App 项目的仓库配置里加入：
 
 ```kotlin
 repositories {
@@ -100,17 +97,18 @@ repositories {
 }
 ```
 
-然后在 App 模块依赖里加入：
+App 模块依赖：
 
 ```kotlin
 dependencies {
     implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
+    implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
 }
 ```
 
-如果你已经改了 `group` 或 `version`，这里也要跟着改。
+如果你改了 `group` 或 `version`，这里也要同步修改。
 
-## App 里怎么使用主题
+## App 使用
 
 在 `setContent` 最外层包一层 `JasmineTheme`：
 
@@ -124,16 +122,28 @@ setContent {
 }
 ```
 
-之后 App 里的页面、组件都在这个主题下面运行。
+业务页面使用 Jasmine 组件：
 
-## 使用主题颜色、字体、间距
+```kotlin
+import com.lhzkml.jasmine.components.Scaffold
+import com.lhzkml.jasmine.components.Text
+import com.lhzkml.jasmine.components.TopAppBar
 
-业务代码里优先使用这个库暴露的 `JasmineTheme`：
+Scaffold(
+    topBar = {
+        TopAppBar(title = { Text("Jasmine") })
+    },
+) { paddingValues ->
+    Text("Hello Jasmine")
+}
+```
+
+主题 token：
 
 ```kotlin
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import com.lhzkml.jasmine.components.Text
 import com.lhzkml.jasmine.theme.JasmineTheme
 
 Text(
@@ -144,44 +154,24 @@ Text(
 )
 ```
 
-这样后面你要统一改颜色、字体、圆角、间距时，只改主题库即可。
-
-## 使用 Jasmine 组件包装
-
-库里已经提供了一个示例按钮包装：
+Adaptive / Navigation Suite 示例导入：
 
 ```kotlin
-import androidx.compose.material3.Text
-import com.lhzkml.jasmine.theme.components.JasminePrimaryButton
-
-JasminePrimaryButton(onClick = onContinue) {
-    Text("Continue")
-}
+import com.lhzkml.jasmine.components.adaptive.currentWindowAdaptiveInfoV2
+import com.lhzkml.jasmine.components.adaptive.layout.calculatePaneScaffoldDirective
+import com.lhzkml.jasmine.components.adaptive.navigation3.rememberListDetailSceneStrategy
+import com.lhzkml.jasmine.components.adaptive.navigationsuite.NavigationSuiteScaffold
+import com.lhzkml.jasmine.components.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 ```
 
-以后如果你想统一 Button、TextField、TopBar、Card、Dialog 的默认样式，可以继续在 `theme/src/main/java/com/lhzkml/jasmine/theme/components/` 下面添加包装组件。
+## includeBuild 接入
 
-## 还能不能直接用 Material3 组件
+如果主项目用 `includeBuild("../jasmine-theme")` 接入，需要注意：
 
-可以。
+- 同一个 Gradle 构建里 Android Gradle Plugin 版本要统一。当前 Jasmine 使用 `9.3.0-alpha12`。
+- included build 不会自动读取主项目的 `local.properties`，构建前需要设置 `ANDROID_HOME` / `ANDROID_SDK_ROOT`。
 
-这个库内部已经用官方 `MaterialTheme` 承接了颜色、字体和形状，所以在 `JasmineTheme` 里面直接使用 Material3 组件也会吃到你的自定义主题：
-
-```kotlin
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-
-Button(onClick = onSave) {
-    Text("Save")
-}
-```
-
-推荐规则：
-
-- 普通业务页面：优先用 `JasmineTheme` 和你自己的 `JasminePrimaryButton` 这类包装组件。
-- 临时页面或还没封装的组件：可以直接用官方 Material3 组件。
-- 主题库内部：可以直接桥接 `MaterialTheme`。
-- App 业务层：尽量不要到处直接依赖 `MaterialTheme`，避免以后全局改主题时不好统一。
+不想处理 included build 插件版本统一问题时，推荐先 `publishToMavenLocal`，再由 App 通过 Maven 坐标引入。
 
 ## 上传到哪里
 
@@ -192,63 +182,28 @@ Button(onClick = onSave) {
 
 团队或多项目共用时：
 
-- 可以上传到私有 Maven 仓库。
-- 可以上传到 GitHub Packages。
-- 也可以放到公司自己的制品库，例如 Nexus、Artifactory。
+- 上传到私有 Maven 仓库。
+- 上传到 GitHub Packages。
+- 上传到公司制品库，例如 Nexus 或 Artifactory。
 
-不建议把这个主题上传回 Material3 源码项目。它应该是你自己的 App 设计系统库，Material3 只是底层依赖。
+不建议上传回 Material3 源码项目。Jasmine 应该作为你自己的 App 设计系统库发布和维护。
 
-## 许可证说明
+## 许可证
 
-当前主题库没有复制 Material3 源码，只是通过依赖使用官方 Material3。因此这个自定义主题库可以使用你自己的许可证策略。
+`jasmine-components` 复制并改造了 AndroidX Material3 / Material3 Adaptive 源码，所以需要遵守 Apache License 2.0：
 
-需要注意：
+- 保留复制源码文件里的 Apache 2.0 copyright header。
+- 发布组件库时保留 Apache 2.0 许可说明。
+- 如果公开分发，建议附带 NOTICE / LICENSE 说明来源为 AndroidX Material3。
 
-- 官方 Material3 / AndroidX 依赖本身是 Apache License 2.0。
-- 如果你公开发布这个库，建议保留依赖许可证说明。
-- 如果只在自己的 App 或团队内部使用，可以按你项目自己的规则处理。
-- 当前没有内置第三方字体文件，所以没有额外字体文件许可证问题。
+`jasmine-theme` 是自定义主题代码，没有复制官方 Material3 组件实现；当前 POM 也按 Apache License 2.0 发布，方便和组件库统一。
 
-`theme/build.gradle.kts` 里的 POM 目前写的是 Apache License 2.0：
+## 主要文件
 
-```kotlin
-licenses {
-    license {
-        name.set("The Apache License, Version 2.0")
-        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-    }
-}
-```
-
-如果你不想公开开源，可以在正式发布前改成你自己的许可证或移除公开发布信息。
-
-## 主要文件怎么改
-
-- `Color.kt`：改亮色、暗色主题颜色。
-- `Type.kt`：改字体和字号。
-- `Shape.kt`：改圆角。
-- `JasmineTokens.kt`：改自定义间距、尺寸 token。
-- `Theme.kt`：Jasmine 主题入口，桥接官方 Material3。
-- `components/`：放你自己的组件包装。
-
-## 推荐使用方式
-
-App 以后只认 Jasmine：
-
-```kotlin
-JasmineTheme {
-    YourApp()
-}
-```
-
-页面内部使用：
-
-```kotlin
-JasmineTheme.colorScheme
-JasmineTheme.typography
-JasmineTheme.shapes
-JasmineTheme.spacing
-JasmineTheme.sizing
-```
-
-这样 Material3 可以继续升级，但你的 App 风格由 Jasmine 这个独立主题库统一控制。
+- `theme/src/main/java/com/lhzkml/jasmine/theme/Color.kt`：Jasmine 颜色。
+- `theme/src/main/java/com/lhzkml/jasmine/theme/Type.kt`：字体和字号。
+- `theme/src/main/java/com/lhzkml/jasmine/theme/Shape.kt`：圆角。
+- `theme/src/main/java/com/lhzkml/jasmine/theme/JasmineTokens.kt`：间距、尺寸 token。
+- `theme/src/main/java/com/lhzkml/jasmine/theme/Theme.kt`：Jasmine 主题入口。
+- `components/src/main/java/com/lhzkml/jasmine/components/`：Jasmine 普通组件。
+- `components/src/main/java/com/lhzkml/jasmine/components/adaptive/`：Jasmine adaptive / navigation suite 组件。

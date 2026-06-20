@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "JasmineTheme"
 include(":theme")
+include(":components")

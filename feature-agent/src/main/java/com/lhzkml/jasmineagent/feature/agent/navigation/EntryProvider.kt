@@ -2,9 +2,6 @@ package com.lhzkml.jasmineagent.feature.agent.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,6 +9,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.lhzkml.jasmine.components.Text
+import com.lhzkml.jasmine.components.adaptive.ExperimentalMaterial3AdaptiveApi
+import com.lhzkml.jasmine.components.adaptive.navigation3.ListDetailSceneStrategy
 import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
