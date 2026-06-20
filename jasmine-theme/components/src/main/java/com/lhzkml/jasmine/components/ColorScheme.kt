@@ -642,10 +642,14 @@ class ColorScheme(
     internal var defaultOutlinedButtonColorsCached: ButtonColors? = null
     internal var defaultTextButtonColorsCached: ButtonColors? = null
 
+    internal var defaultCheckboxColorsCached: CheckboxColors? = null
+
     internal var defaultTextFieldColorsCached: TextFieldColors? = null
     internal var tonalTextFieldColorsCached: TextFieldColors? = null
     internal var defaultOutlinedTextFieldColorsCached: TextFieldColors? = null
     internal var tonalOutlinedTextFieldColorsCached: TextFieldColors? = null
+
+    internal var defaultSwitchColorsCached: SwitchColors? = null
 
     internal var defaultIconButtonColorsCached: IconButtonColors? = null
     internal var defaultIconButtonVibrantColorsCached: IconButtonColors? = null
@@ -666,6 +670,13 @@ class ColorScheme(
     internal var defaultNavigationRailItemColorsCached: NavigationRailItemColors? = null
     internal var defaultWideWideNavigationRailColorsCached: WideNavigationRailColors? = null
     internal var defaultWideNavigationRailItemColorsCached: NavigationItemColors? = null
+
+    internal var defaultMenuItemColorsCached: MenuItemColors? = null
+    internal var defaultMenuSelectableItemColorsCached: MenuItemColors? = null
+    internal var defaultMenuSelectableItemVibrantColorsCached: MenuItemColors? = null
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    internal var defaultRichTooltipColorsCached: RichTooltipColors? = null
 
     @Deprecated(
         level = DeprecationLevel.WARNING,

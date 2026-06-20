@@ -21,8 +21,22 @@
 普通组件：
 
 - `Surface`
+- `BadgedBox`
+- `Badge`
 - `Scaffold`
 - `TopAppBar`
+- `CenterAlignedTopAppBar`
+- `MediumTopAppBar`
+- `MediumFlexibleTopAppBar`
+- `LargeTopAppBar`
+- `LargeFlexibleTopAppBar`
+- `TwoRowsTopAppBar`
+- `AppBarRow`
+- `AppBarColumn`
+- `AppBarOverflowIndicator`
+- `TooltipBox`
+- `PlainTooltip`
+- `RichTooltip`
 - `IconButton`
 - `Icon`
 - `Text`
@@ -31,11 +45,47 @@
 - `NavigationDrawerItem`
 - `NavigationSuiteScaffold`
 - `Button`
+- `ElevatedButton`
+- `FilledTonalButton`
+- `OutlinedButton`
 - `TextButton`
+- `Checkbox`
+- `TriStateCheckbox`
 - `TextField`
+- `OutlinedTextField`
+- `SecureTextField`
+- `OutlinedSecureTextField`
 - `CircularProgressIndicator`
 - `Snackbar`
 - `SnackbarHost`
+- `AlertDialog`
+- `BasicAlertDialog`
+- `FloatingActionButtonMenu`
+- `FloatingActionButtonMenuItem`
+- `ToggleFloatingActionButton`
+- `PullToRefreshBox`
+- `pullToRefresh`
+- `PullToRefreshDefaults.Indicator`
+- `PullToRefreshDefaults.LoadingIndicator`
+- `LoadingIndicator`
+- `ContainedLoadingIndicator`
+- `LinearWavyProgressIndicator`
+- `CircularWavyProgressIndicator`
+- `DropdownMenu`
+- `DropdownMenuItem`
+- `DropdownMenuPopup`
+- `DropdownMenuGroup`
+- `ExposedDropdownMenuBox`
+- `BottomSheet`
+- `BottomSheetScaffold`
+- `ModalBottomSheet`
+- `Switch`
+- `SearchBar`
+- `DockedSearchBar`
+- `TopSearchBar`
+- `ExpandedFullScreenSearchBar`
+- `ExpandedDockedSearchBar`
+- `HorizontalDivider`
 
 Adaptive / Navigation3 相关能力：
 
@@ -46,15 +96,76 @@ Adaptive / Navigation3 相关能力：
 
 状态和配置：
 
+- `BadgeDefaults`
 - `DrawerState`
 - `DrawerValue`
 - `rememberDrawerState`
 - `TopAppBarDefaults`
+- `TopAppBarColors`
+- `TopAppBarScrollBehavior`
+- `TopAppBarState`
+- `rememberTopAppBarState`
+- `AppBarScope`
+- `AppBarRowScope`
+- `AppBarColumnScope`
+- `AppBarMenuState`
+- `TooltipDefaults`
+- `TooltipState`
+- `TooltipScope`
+- `TooltipAnchorPosition`
+- `rememberTooltipState`
+- `RichTooltipColors`
 - `ButtonDefaults`
 - `ButtonColors`
+- `ButtonElevation`
+- `ButtonShapes`
+- `CheckboxDefaults`
+- `CheckboxColors`
 - `TextFieldDefaults`
+- `OutlinedTextFieldDefaults`
 - `TextFieldColors`
+- `TextFieldLabelScope`
 - `SnackbarHostState`
+- `AlertDialogDefaults`
+- `FloatingActionButtonMenuScope`
+- `ToggleFloatingActionButtonDefaults`
+- `ToggleFloatingActionButtonScope`
+- `PullToRefreshState`
+- `rememberPullToRefreshState`
+- `PullToRefreshDefaults`
+- `LoadingIndicatorDefaults`
+- `WavyProgressIndicatorDefaults`
+- `MaterialShapes`
+- `MenuDefaults`
+- `MenuItemColors`
+- `MenuItemShapes`
+- `MenuGroupShapes`
+- `MenuAnchorPosition`
+- `DropdownMenuPopupPositionProvider`
+- `ExposedDropdownMenuDefaults`
+- `ExposedDropdownMenuBoxScope`
+- `ExposedDropdownMenuAnchorType`
+- `SheetState`
+- `SheetValue`
+- `BottomSheetScaffoldState`
+- `rememberBottomSheetState`
+- `rememberBottomSheetScaffoldState`
+- `rememberStandardBottomSheetState`
+- `rememberModalBottomSheetState`
+- `BottomSheetDefaults`
+- `ModalBottomSheetDefaults`
+- `ModalBottomSheetProperties`
+- `SwitchDefaults`
+- `SwitchColors`
+- `SearchBarState`
+- `SearchBarValue`
+- `rememberSearchBarState`
+- `rememberContainedSearchBarState`
+- `rememberSearchBarWithGapState`
+- `SearchBarDefaults`
+- `SearchBarColors`
+- `SearchBarScrollBehavior`
+- `DividerDefaults`
 
 组件库内部还保留了一些支撑 API，例如颜色、排版、形状、ripple、navigation bar/rail、adaptive layout 等。这些是为了让上面的组件完整工作，不是官方 Material3 依赖桥接。
 

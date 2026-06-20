@@ -18,6 +18,7 @@ package com.lhzkml.jasmine.components
 
 import android.view.View
 import android.view.WindowManager
+import androidx.compose.ui.window.SecureFlagPolicy
 
 internal fun View.isFlagSecureEnabled(): Boolean {
     val windowParams = rootView.layoutParams as? WindowManager.LayoutParams
@@ -25,4 +26,12 @@ internal fun View.isFlagSecureEnabled(): Boolean {
         return (windowParams.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0
     }
     return false
+}
+
+internal fun SecureFlagPolicy.shouldApplySecureFlag(isSecureFlagSetOnParent: Boolean): Boolean {
+    return when (this) {
+        SecureFlagPolicy.SecureOff -> false
+        SecureFlagPolicy.SecureOn -> true
+        SecureFlagPolicy.Inherit -> isSecureFlagSetOnParent
+    }
 }

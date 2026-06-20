@@ -247,6 +247,14 @@ class Shapes(
     internal var defaultIconButtonShapesCached: IconButtonShapes? = null
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     internal var defaultButtonShapesCached: ButtonShapes? = null
+    internal var defaultMenuStandaloneItemShapesCached: MenuItemShapes? = null
+    internal var defaultMenuLeadingItemShapesCached: MenuItemShapes? = null
+    internal var defaultMenuMiddleItemShapesCached: MenuItemShapes? = null
+    internal var defaultMenuTrailingItemShapesCached: MenuItemShapes? = null
+    internal var defaultMenuStandaloneGroupShapesCached: MenuGroupShapes? = null
+    internal var defaultMenuLeadingGroupShapesCached: MenuGroupShapes? = null
+    internal var defaultMenuMiddleGroupShapesCached: MenuGroupShapes? = null
+    internal var defaultMenuTrailingGroupShapesCached: MenuGroupShapes? = null
 }
 
 /** Contains the default values used by [Shapes] */

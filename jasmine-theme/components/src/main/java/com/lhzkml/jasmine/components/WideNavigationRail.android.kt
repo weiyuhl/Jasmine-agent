@@ -71,14 +71,6 @@ import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import java.util.UUID
 
-private fun SecureFlagPolicy.shouldApplySecureFlag(isSecureFlagSetOnParent: Boolean): Boolean {
-    return when (this) {
-        SecureFlagPolicy.SecureOff -> false
-        SecureFlagPolicy.SecureOn -> true
-        SecureFlagPolicy.Inherit -> isSecureFlagSetOnParent
-    }
-}
-
 // Logic forked from androidx.compose.ui.window.DialogProperties. Removed dismissOnClickOutside
 // and usePlatformDefaultWidth as they are not relevant for fullscreen experience.
 /**
