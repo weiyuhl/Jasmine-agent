@@ -59,8 +59,6 @@ val rustHostLibraryName =
 dependencies {
   implementation(project(":core:domain"))
   implementation(project(":core:ui"))
-  implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
-  implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   androidTestImplementation(composeBom)
@@ -79,6 +77,7 @@ dependencies {
 
   // Compose
   implementation(libs.androidx.compose.foundation)
+  implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
 

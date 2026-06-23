@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.tools.screenshot.PreviewTest
-import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
+import com.lhzkml.jasmineagent.core.ui.theme.AgentMaterialTheme
 
 @Preview(name = "Phone", device = Devices.PHONE, showBackground = true)
 @Preview(name = "Foldable", device = Devices.FOLDABLE, showBackground = true)
@@ -18,7 +18,7 @@ private annotation class AgentScreenshotFormFactors
 @AgentScreenshotFormFactors
 @Composable
 private fun AgentContentDefaultScreenshot() {
-  JasmineTheme {
+  AgentMaterialTheme {
     AgentContent(
       items = screenshotAgents("Compose", "Room", "Kotlin"),
       agentName = "",
@@ -34,7 +34,7 @@ private fun AgentContentDefaultScreenshot() {
 @AgentScreenshotFormFactors
 @Composable
 private fun AgentContentEmptyScreenshot() {
-  JasmineTheme {
+  AgentMaterialTheme {
     AgentContent(
       items = emptyList(),
       agentName = "",
@@ -50,7 +50,7 @@ private fun AgentContentEmptyScreenshot() {
 @Preview(name = "Phone large font", showBackground = true, fontScale = 1.5f)
 @Composable
 private fun AgentContentErrorLargeFontScreenshot() {
-  JasmineTheme {
+  AgentMaterialTheme {
     AgentContent(
       items = screenshotAgents("Compose"),
       agentName = "",

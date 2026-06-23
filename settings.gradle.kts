@@ -20,13 +20,6 @@ dependencyResolutionManagement {
     }
 }
 
-includeBuild("jasmine-theme") {
-    dependencySubstitution {
-        substitute(module("com.lhzkml.jasmine:jasmine-theme")).using(project(":theme"))
-        substitute(module("com.lhzkml.jasmine:jasmine-components")).using(project(":components"))
-    }
-}
-
 rootProject.name = "Multimodule template"
 
 include(":app")

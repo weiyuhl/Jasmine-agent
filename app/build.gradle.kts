@@ -96,11 +96,10 @@ kotlin {
 dependencies {
   implementation(project(":core:database"))
   implementation(project(":core:domain"))
+  implementation(project(":core:ui"))
   implementation(project(":data:agent"))
   implementation(project(":feature:agent:api"))
   implementation(project(":feature:agent:impl"))
-  implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
-  implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
 
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)
@@ -121,6 +120,7 @@ dependencies {
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   implementation(libs.androidx.compose.ui)
+  implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.compose.material.icons.core)
 

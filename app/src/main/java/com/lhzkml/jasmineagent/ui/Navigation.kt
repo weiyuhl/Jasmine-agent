@@ -16,9 +16,24 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DismissibleDrawerSheet
+import androidx.compose.material3.DismissibleNavigationDrawer
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -31,26 +46,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.lhzkml.jasmine.components.DismissibleDrawerSheet
-import com.lhzkml.jasmine.components.DismissibleNavigationDrawer
-import com.lhzkml.jasmine.components.DrawerState
-import com.lhzkml.jasmine.components.DrawerValue
-import com.lhzkml.jasmine.components.ExperimentalMaterial3Api
-import com.lhzkml.jasmine.components.Icon
-import com.lhzkml.jasmine.components.IconButton
-import com.lhzkml.jasmine.components.NavigationBar
-import com.lhzkml.jasmine.components.NavigationBarItem
-import com.lhzkml.jasmine.components.NavigationDrawerItem
-import com.lhzkml.jasmine.components.Scaffold
-import com.lhzkml.jasmine.components.Text
-import com.lhzkml.jasmine.components.TopAppBar
-import com.lhzkml.jasmine.components.TopAppBarDefaults
-import com.lhzkml.jasmine.components.adaptive.ExperimentalMaterial3AdaptiveApi
-import com.lhzkml.jasmine.components.adaptive.currentWindowAdaptiveInfoV2
-import com.lhzkml.jasmine.components.adaptive.layout.calculatePaneScaffoldDirective
-import com.lhzkml.jasmine.components.adaptive.navigation3.rememberListDetailSceneStrategy
-import com.lhzkml.jasmine.components.rememberDrawerState
-import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.AgentEntryProvider
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
@@ -98,7 +93,7 @@ object NavigationSemantics {
   const val PAGER = "main_navigation_pager"
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavigation(deepLinkUri: String? = null) {
   val pagerState = rememberPagerState(pageCount = { appDestinations.size })
@@ -128,13 +123,13 @@ fun MainNavigation(deepLinkUri: String? = null) {
 
   Scaffold(
     topBar = {
-      JasmineTopAppBar(
+      AgentTopAppBar(
         showNavigationIcon = selectedDestination.key == Main,
         onNavigationClick = { coroutineScope.launch { drawerState.open() } },
       )
     },
     bottomBar = {
-      JasmineBottomNavigation(
+      AgentBottomNavigation(
         selectedDestination = selectedDestination,
         onDestinationSelected = { destination ->
           val page = appDestinations.indexOfFirst { it.key == destination.key }
@@ -144,8 +139,8 @@ fun MainNavigation(deepLinkUri: String? = null) {
         },
       )
     },
-    containerColor = JasmineTheme.colorScheme.background,
-    contentColor = JasmineTheme.colorScheme.onBackground,
+    containerColor = MaterialTheme.colorScheme.background,
+    contentColor = MaterialTheme.colorScheme.onBackground,
   ) { innerPadding ->
     HorizontalPager(
       state = pagerState,
@@ -171,7 +166,7 @@ fun MainNavigation(deepLinkUri: String? = null) {
 }
 
 @Composable
-private fun JasmineBottomNavigation(
+private fun AgentBottomNavigation(
   selectedDestination: AppDestination,
   onDestinationSelected: (AppDestination) -> Unit,
 ) {
@@ -204,7 +199,6 @@ private fun DestinationPage(
       gesturesEnabled = drawerState.isOpen,
       drawerContent = {
         DismissibleDrawerSheet(
-          drawerState = drawerState,
           modifier = Modifier.testTag(NavigationSemantics.DRAWER),
         ) {
           Column(Modifier.verticalScroll(rememberScrollState())) {
@@ -230,50 +224,28 @@ private fun DestinationPage(
   }
 }
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun DestinationNavHost(rootKey: NavKey) {
   val backStack = rememberNavBackStack(rootKey)
   val entryProvider = entryProvider { AgentEntryProvider() }
 
   Box(modifier = Modifier.fillMaxSize()) {
-    if (rootKey == Main) {
-      val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
-      val directive =
-        remember(windowAdaptiveInfo) {
-          calculatePaneScaffoldDirective(windowAdaptiveInfo).copy(horizontalPartitionSpacerSize = 0.dp)
-        }
-      val listDetailSceneStrategy = rememberListDetailSceneStrategy<NavKey>(directive = directive)
-
-      NavDisplay(
-        backStack = backStack,
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
-        sceneStrategies = listOf(listDetailSceneStrategy),
-        entryDecorators =
-          listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
-          ),
-        entryProvider = entryProvider,
-      )
-    } else {
-      NavDisplay(
-        backStack = backStack,
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
-        entryDecorators =
-          listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
-          ),
-        entryProvider = entryProvider,
-      )
-    }
+    NavDisplay(
+      backStack = backStack,
+      onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+      entryDecorators =
+        listOf(
+          rememberSaveableStateHolderNavEntryDecorator(),
+          rememberViewModelStoreNavEntryDecorator(),
+        ),
+      entryProvider = entryProvider,
+    )
   }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun JasmineTopAppBar(showNavigationIcon: Boolean, onNavigationClick: () -> Unit) {
+private fun AgentTopAppBar(showNavigationIcon: Boolean, onNavigationClick: () -> Unit) {
   TopAppBar(
     modifier = Modifier.testTag(NavigationSemantics.TOP_APP_BAR),
     title = { Text(text = stringResource(R.string.app_name)) },
@@ -292,8 +264,8 @@ private fun JasmineTopAppBar(showNavigationIcon: Boolean, onNavigationClick: () 
     },
     colors =
       TopAppBarDefaults.topAppBarColors(
-        containerColor = JasmineTheme.colorScheme.surface,
-        titleContentColor = JasmineTheme.colorScheme.onSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
       ),
   )
 }

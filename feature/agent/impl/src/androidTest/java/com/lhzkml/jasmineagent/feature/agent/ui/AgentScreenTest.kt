@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
+import com.lhzkml.jasmineagent.core.ui.theme.AgentMaterialTheme
 import com.lhzkml.jasmineagent.feature.agent.R
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals
@@ -42,7 +42,7 @@ class AgentScreenTest {
   @Before
   fun setup() {
     composeTestRule.setContent {
-      JasmineTheme {
+      AgentMaterialTheme {
         AgentContent(
           items = FAKE_DATA,
           agentName = "",
@@ -96,7 +96,7 @@ class AgentScreenTest {
     val deleted = AtomicReference<Pair<Int, String>?>()
 
     composeTestRule.setContent {
-      JasmineTheme {
+      AgentMaterialTheme {
         AgentContent(
           items = FAKE_DATA,
           agentName = "",
@@ -118,7 +118,7 @@ class AgentScreenTest {
     val emptyMessage = context.getString(R.string.agent_empty_message)
 
     composeTestRule.setContent {
-      JasmineTheme {
+      AgentMaterialTheme {
         AgentContent(
           items = emptyList(),
           agentName = "",
@@ -139,7 +139,7 @@ class AgentScreenTest {
     val errorMessage = context.getString(R.string.agent_error_empty_name)
 
     composeTestRule.setContent {
-      JasmineTheme {
+      AgentMaterialTheme {
         AgentContent(
           items = FAKE_DATA,
           agentName = "",
@@ -161,7 +161,7 @@ class AgentScreenTest {
   fun rtlLayout_keepsPrimaryControlsDiscoverable() {
     composeTestRule.setContent {
       CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        JasmineTheme {
+        AgentMaterialTheme {
           AgentContent(
             items = FAKE_DATA,
             agentName = "",
@@ -185,7 +185,7 @@ class AgentScreenTest {
     composeTestRule.setContent {
       CompositionLocalProvider(LocalDensity provides Density(density = 1f, fontScale = 1.5f)) {
         Box(Modifier.requiredSize(900.dp, 700.dp)) {
-          JasmineTheme {
+          AgentMaterialTheme {
             AgentContent(
               items = FAKE_DATA,
               agentName = "",

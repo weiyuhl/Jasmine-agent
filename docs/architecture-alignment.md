@@ -17,7 +17,6 @@
 | Native Bridge | `native/bridge/` | 从 `core-rust` 移入，负责 Android Gradle + UniFFI 集成 |
 | Rust Workspace | `rust/` | 从 Android 模块内部移到根目录 |
 | 测试应用 | `test-app/` | 保留为 E2E / instrumented test app，并已作为 `:test-app` 纳入 Gradle |
-| Jasmine 主题与组件库 | `jasmine-theme/` | 作为 included build 接入，提供 `:theme` 与 `:components`，承接设计系统职责 |
 | Platform 适配层 | `platform/` | 已补占位结构 |
 | Sandbox 执行层 | `sandbox/` | 已补占位结构 |
 | CI | `ci/` | 已补占位结构 |
@@ -42,7 +41,7 @@
 | `:native:bridge` | `native/bridge/` |
 | `:test-app` | `test-app/` |
 
-`jasmine-theme/` 通过 `includeBuild("jasmine-theme")` 接入，不属于主工程 `include(...)` 模块列表；它内部提供 `:theme` 与 `:components`，并通过 dependency substitution 替换 `com.lhzkml.jasmine:jasmine-theme` 与 `com.lhzkml.jasmine:jasmine-components`。
+主题与组件已切回官方 Material 3：主工程通过 `:core:ui` 提供 `AgentMaterialTheme`，保留原简约黑白配色；UI 组件直接使用 `androidx.compose.material3` 官方组件。
 
 ## 已清理旧目录
 
@@ -63,7 +62,7 @@
 
 `Android端Agent应用架构深度研究报告.md` 中还包含若干面向完整 Agent 应用的推荐模块，例如 `core:common`、`core:model`、`core:network`、`core:datastore`、`core:designsystem`、`core:navigation`、更多 `data:*` / `feature:*` 切片，以及 `native:generated-bindings`。这些属于后续扩展目标，当前工作区没有实际源码模块，因此未写入 `settings.gradle.kts`。
 
-当前设计系统职责由 `jasmine-theme/` included build 承接，而不是单独落为主工程内的 `:core:designsystem` 模块。
+当前设计系统职责由主工程内的 `:core:ui` 承接，而不是单独落为 `:core:designsystem` 模块。
 
 ## 非模块目录
 
@@ -71,7 +70,7 @@
 
 | 路径 | 说明 |
 |---|---|
-| `release-apk/` | 发布 APK 归档目录 |
+| `release-apk/` | 发布 APK 归档目录，由 release 构建后同步产物 |
 | `build/`、`.gradle/`、`.kotlin/`、各模块 `build/` | 构建缓存和生成产物 |
 | `.agents/`、`.claude/`、`.trae/` | 本地工具配置目录，不纳入架构模块 |
 | `.git/`、`.github/` | 版本控制和 GitHub 配置 |

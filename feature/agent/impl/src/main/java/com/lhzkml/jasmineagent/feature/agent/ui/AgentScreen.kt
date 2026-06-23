@@ -17,6 +17,16 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,18 +47,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lhzkml.jasmine.components.Button
-import com.lhzkml.jasmine.components.ButtonDefaults
-import com.lhzkml.jasmine.components.CircularProgressIndicator
-import com.lhzkml.jasmine.components.Snackbar
-import com.lhzkml.jasmine.components.SnackbarHost
-import com.lhzkml.jasmine.components.SnackbarHostState
-import com.lhzkml.jasmine.components.Surface
-import com.lhzkml.jasmine.components.Text
-import com.lhzkml.jasmine.components.TextButton
-import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
-import com.lhzkml.jasmineagent.core.ui.JasmineStyles
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
@@ -103,9 +102,9 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
           .semantics {
             contentDescription = snackbarContentDescription
             liveRegion = LiveRegionMode.Polite
-          },
+      },
       snackbar = { snackbarData ->
-        val colorScheme = JasmineTheme.colorScheme
+        val colorScheme = MaterialTheme.colorScheme
         Snackbar(
           snackbarData = snackbarData,
           containerColor = colorScheme.inverseSurface,
@@ -155,7 +154,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
       },
     contentAlignment = Alignment.Center,
   ) {
-    CircularProgressIndicator(color = JasmineTheme.colorScheme.primary)
+    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
   }
 }
 
@@ -171,8 +170,8 @@ private fun ErrorContent(
   val retryLabel = stringResource(R.string.agent_action_retry)
   val errorContentDescription = stringResource(R.string.agent_error_content_description)
   val resolvedMessage = message ?: fallbackMessage
-  val colorScheme = JasmineTheme.colorScheme
-  val typography = JasmineTheme.typography
+  val colorScheme = MaterialTheme.colorScheme
+  val typography = MaterialTheme.typography
 
   Box(modifier = modifier.safeDrawingPadding(), contentAlignment = Alignment.Center) {
     FlexBox(
@@ -261,8 +260,8 @@ internal fun AgentContent(
 @Composable
 private fun EmptyAgents() {
   val emptyMessage = stringResource(R.string.agent_empty_message)
-  val colorScheme = JasmineTheme.colorScheme
-  val typography = JasmineTheme.typography
+  val colorScheme = MaterialTheme.colorScheme
+  val typography = MaterialTheme.typography
 
   Box(
     modifier =
@@ -312,8 +311,8 @@ private fun AgentListItem(
     stringResource(R.string.agent_list_item_content_description, item.name)
   val deleteContentDescription =
     stringResource(R.string.agent_action_delete_content_description, item.name)
-  val colorScheme = JasmineTheme.colorScheme
-  val typography = JasmineTheme.typography
+  val colorScheme = MaterialTheme.colorScheme
+  val typography = MaterialTheme.typography
 
   Surface(
     modifier =

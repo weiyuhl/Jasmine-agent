@@ -3,17 +3,10 @@ package com.lhzkml.jasmineagent.feature.agent.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.lhzkml.jasmine.components.Text
-import com.lhzkml.jasmine.components.adaptive.ExperimentalMaterial3AdaptiveApi
-import com.lhzkml.jasmine.components.adaptive.navigation3.ListDetailSceneStrategy
-import com.lhzkml.jasmine.theme.JasmineTheme
-import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankTwo
 import com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main
@@ -24,14 +17,9 @@ object BlankDestinationSemantics {
   const val BLANK_TWO = "blank_two_screen"
 }
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun EntryProviderScope<NavKey>.AgentEntryProvider() {
-  entry<Main>(
-    metadata = ListDetailSceneStrategy.listPane(detailPlaceholder = { EmptyDetailPlaceholder() })
-  ) {
-    AgentScreen()
-  }
+  entry<Main> { AgentScreen() }
   entry<BlankOne> { BlankScreen(BlankDestinationSemantics.BLANK_ONE) }
   entry<BlankTwo> { BlankScreen(BlankDestinationSemantics.BLANK_TWO) }
 }
@@ -39,18 +27,4 @@ fun EntryProviderScope<NavKey>.AgentEntryProvider() {
 @Composable
 private fun BlankScreen(testTag: String) {
   Box(modifier = Modifier.fillMaxSize().testTag(testTag))
-}
-
-@Composable
-private fun EmptyDetailPlaceholder() {
-  val colorScheme = JasmineTheme.colorScheme
-  val typography = JasmineTheme.typography
-
-  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-    Text(
-      text = stringResource(R.string.agent_empty_message),
-      color = colorScheme.onSurfaceVariant,
-      style = typography.bodyLarge,
-    )
-  }
 }

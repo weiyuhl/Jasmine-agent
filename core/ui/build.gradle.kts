@@ -52,10 +52,9 @@ dependencies {
 
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)
-  implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
-  implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
 
   // Compose
+  api(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
   // Tooling
