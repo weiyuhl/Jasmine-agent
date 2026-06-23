@@ -17,14 +17,14 @@ plugins {
 val documentedProjects =
     setOf(
         "app",
-        "core-data",
-        "core-database",
-        "core-domain",
-        "core-rust",
-        "core-testing",
-        "core-ui",
-        "feature-agent-navigation",
-        "feature-agent",
+        "core:database",
+        "core:domain",
+        "core:testing",
+        "core:ui",
+        "data:agent",
+        "feature:agent:api",
+        "feature:agent:impl",
+        "native:bridge",
         "test-app",
     )
 

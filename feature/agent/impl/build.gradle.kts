@@ -57,16 +57,16 @@ val rustHostLibraryName =
   else "libjasmine_core.so"
 
 dependencies {
-  implementation(project(":core-domain"))
-  implementation(project(":core-ui"))
+  implementation(project(":core:domain"))
+  implementation(project(":core:ui"))
   implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
   implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   androidTestImplementation(composeBom)
-  implementation(project(":feature-agent-navigation"))
+  implementation(project(":feature:agent:api"))
 
-  androidTestImplementation(project(":core-testing"))
+  androidTestImplementation(project(":core:testing"))
 
   // Core Android dependencies
   implementation(libs.androidx.activity.compose)
@@ -114,15 +114,18 @@ dependencies {
 }
 
 tasks.withType<Test>().configureEach {
-  dependsOn(":core-rust:buildRustHost")
+  dependsOn(":native:bridge:buildRustHost")
   systemProperty(
     "jna.library.path",
-    rootProject.layout.projectDirectory.dir("core-rust/build/rustHost/release").asFile.absolutePath,
+    rootProject.layout.projectDirectory
+      .dir("native/bridge/build/rustHost/release")
+      .asFile
+      .absolutePath,
   )
   systemProperty(
     "uniffi.component.jasmine_core.libraryOverride",
     rootProject.layout.projectDirectory
-      .file("core-rust/build/rustHost/release/$rustHostLibraryName")
+      .file("native/bridge/build/rustHost/release/$rustHostLibraryName")
       .asFile
       .absolutePath,
   )

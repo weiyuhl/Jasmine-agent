@@ -7,7 +7,7 @@ plugins {
   alias(libs.plugins.spotless)
 }
 
-val rustDir = layout.projectDirectory.dir("rust")
+val rustDir = rootProject.layout.projectDirectory.dir("rust")
 val generatedKotlinDir = layout.buildDirectory.dir("generated/uniffi/kotlin")
 val generatedJniLibsDir = layout.buildDirectory.dir("generated/rustJniLibs")
 val hostRustTargetDir = layout.buildDirectory.dir("rustHost")

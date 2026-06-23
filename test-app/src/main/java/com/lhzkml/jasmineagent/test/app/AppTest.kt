@@ -70,8 +70,8 @@ class AppTest {
   }
 
   @Test
-  fun navigationSuite_isVisible() {
-    composeTestRule.onNodeWithTag(NavigationSemantics.NAVIGATION_SUITE).assertExists()
+  fun bottomNavigation_isVisible() {
+    composeTestRule.onNodeWithTag(NavigationSemantics.BOTTOM_NAVIGATION).assertExists()
   }
 
   @Test

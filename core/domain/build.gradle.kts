@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-  namespace = "com.lhzkml.jasmineagent.core.data"
+  namespace = "com.lhzkml.jasmineagent.core.domain"
   compileSdk = 37
 
   defaultConfig {
@@ -21,8 +21,6 @@ android {
     buildConfig = false
     shaders = false
   }
-
-  testFixtures { enable = true }
 
   lint {
     abortOnError = true
@@ -41,23 +39,37 @@ android {
 kotlin {
   compilerOptions {
     jvmTarget.set(JvmTarget.JVM_17)
-    moduleName.set("jasmineagent_core_data")
+    moduleName.set("jasmineagent_core_domain")
   }
 }
 
+val rustHostLibraryName =
+  if (System.getProperty("os.name").startsWith("Windows")) "jasmine_core.dll"
+  else if (System.getProperty("os.name").startsWith("Mac")) "libjasmine_core.dylib"
+  else "libjasmine_core.so"
+
 dependencies {
-  implementation(project(":core-domain"))
-  api(project(":core-database"))
+  implementation(project(":native:bridge"))
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
   implementation(libs.kotlinx.coroutines.android)
 
-  testImplementation(project(":core-domain"))
-  testFixturesApi(project(":core-database"))
-  testFixturesApi(project(":core-domain"))
-  testFixturesApi(libs.hilt.android)
-  testFixturesApi(libs.kotlinx.coroutines.android)
-
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
+  testRuntimeOnly(libs.kotlin.jna)
+}
+
+tasks.withType<Test>().configureEach {
+  dependsOn(":core-rust:buildRustHost")
+  systemProperty(
+    "jna.library.path",
+    rootProject.layout.projectDirectory.dir("core-rust/build/rustHost/release").asFile.absolutePath,
+  )
+  systemProperty(
+    "uniffi.component.jasmine_core.libraryOverride",
+    rootProject.layout.projectDirectory
+      .file("core-rust/build/rustHost/release/$rustHostLibraryName")
+      .asFile
+      .absolutePath,
+  )
 }

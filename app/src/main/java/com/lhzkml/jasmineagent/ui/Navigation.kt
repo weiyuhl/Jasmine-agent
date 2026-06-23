@@ -38,6 +38,8 @@ import com.lhzkml.jasmine.components.DrawerValue
 import com.lhzkml.jasmine.components.ExperimentalMaterial3Api
 import com.lhzkml.jasmine.components.Icon
 import com.lhzkml.jasmine.components.IconButton
+import com.lhzkml.jasmine.components.NavigationBar
+import com.lhzkml.jasmine.components.NavigationBarItem
 import com.lhzkml.jasmine.components.NavigationDrawerItem
 import com.lhzkml.jasmine.components.Scaffold
 import com.lhzkml.jasmine.components.Text
@@ -47,8 +49,6 @@ import com.lhzkml.jasmine.components.adaptive.ExperimentalMaterial3AdaptiveApi
 import com.lhzkml.jasmine.components.adaptive.currentWindowAdaptiveInfoV2
 import com.lhzkml.jasmine.components.adaptive.layout.calculatePaneScaffoldDirective
 import com.lhzkml.jasmine.components.adaptive.navigation3.rememberListDetailSceneStrategy
-import com.lhzkml.jasmine.components.adaptive.navigationsuite.NavigationSuiteScaffold
-import com.lhzkml.jasmine.components.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import com.lhzkml.jasmine.components.rememberDrawerState
 import com.lhzkml.jasmine.theme.JasmineTheme
 import com.lhzkml.jasmineagent.R
@@ -94,7 +94,7 @@ object NavigationSemantics {
   const val DRAWER_ITEM_AGENTS = "main_navigation_drawer_item_agents"
   const val DRAWER_ITEM_BLANK_ONE = "main_navigation_drawer_item_blank_one"
   const val DRAWER_ITEM_BLANK_TWO = "main_navigation_drawer_item_blank_two"
-  const val NAVIGATION_SUITE = "main_navigation_suite"
+  const val BOTTOM_NAVIGATION = "main_bottom_navigation"
   const val PAGER = "main_navigation_pager"
 }
 
@@ -105,7 +105,6 @@ fun MainNavigation(deepLinkUri: String? = null) {
   val coroutineScope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
   val selectedDestination = appDestinations[pagerState.currentPage]
-  val navSuiteState = rememberNavigationSuiteScaffoldState()
 
   // Handle deep links on first composition
   LaunchedEffect(deepLinkUri) {
@@ -134,53 +133,61 @@ fun MainNavigation(deepLinkUri: String? = null) {
         onNavigationClick = { coroutineScope.launch { drawerState.open() } },
       )
     },
+    bottomBar = {
+      JasmineBottomNavigation(
+        selectedDestination = selectedDestination,
+        onDestinationSelected = { destination ->
+          val page = appDestinations.indexOfFirst { it.key == destination.key }
+          if (page >= 0 && page != pagerState.currentPage) {
+            coroutineScope.launch { pagerState.animateScrollToPage(page) }
+          }
+        },
+      )
+    },
     containerColor = JasmineTheme.colorScheme.background,
     contentColor = JasmineTheme.colorScheme.onBackground,
   ) { innerPadding ->
-    NavigationSuiteScaffold(
-      modifier = Modifier.padding(innerPadding).testTag(NavigationSemantics.NAVIGATION_SUITE),
-      state = navSuiteState,
-      navigationSuiteItems = {
-        appDestinations.forEach { destination ->
-          item(
-            selected = selectedDestination.key == destination.key,
-            onClick = {
-              val page = appDestinations.indexOfFirst { it.key == destination.key }
-              if (page >= 0 && page != pagerState.currentPage) {
-                coroutineScope.launch { pagerState.animateScrollToPage(page) }
-              }
-            },
-            icon = {
-              Icon(
-                imageVector = destination.icon,
-                contentDescription = stringResource(destination.contentDescriptionResId),
-              )
-            },
-            label = { Text(stringResource(destination.labelResId)) },
-          )
-        }
-      },
-    ) {
-      HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxSize().testTag(NavigationSemantics.PAGER),
-      ) { page ->
-        DestinationPage(
-          destination = appDestinations[page],
-          drawerState = drawerState,
-          onDrawerDestinationSelected = { destination ->
-            val destinationPage = appDestinations.indexOfFirst { it.key == destination }
-            if (destinationPage >= 0) {
-              coroutineScope.launch {
-                drawerState.close()
-                if (destinationPage != pagerState.currentPage) {
-                  pagerState.animateScrollToPage(destinationPage)
-                }
+    HorizontalPager(
+      state = pagerState,
+      modifier = Modifier.padding(innerPadding).fillMaxSize().testTag(NavigationSemantics.PAGER),
+    ) { page ->
+      DestinationPage(
+        destination = appDestinations[page],
+        drawerState = drawerState,
+        onDrawerDestinationSelected = { destination ->
+          val destinationPage = appDestinations.indexOfFirst { it.key == destination }
+          if (destinationPage >= 0) {
+            coroutineScope.launch {
+              drawerState.close()
+              if (destinationPage != pagerState.currentPage) {
+                pagerState.animateScrollToPage(destinationPage)
               }
             }
-          },
-        )
-      }
+          }
+        },
+      )
+    }
+  }
+}
+
+@Composable
+private fun JasmineBottomNavigation(
+  selectedDestination: AppDestination,
+  onDestinationSelected: (AppDestination) -> Unit,
+) {
+  NavigationBar(modifier = Modifier.testTag(NavigationSemantics.BOTTOM_NAVIGATION)) {
+    appDestinations.forEach { destination ->
+      NavigationBarItem(
+        selected = selectedDestination.key == destination.key,
+        onClick = { onDestinationSelected(destination) },
+        icon = {
+          Icon(
+            imageVector = destination.icon,
+            contentDescription = stringResource(destination.contentDescriptionResId),
+          )
+        },
+        label = { Text(stringResource(destination.labelResId)) },
+      )
     }
   }
 }

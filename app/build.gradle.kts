@@ -94,11 +94,11 @@ kotlin {
 }
 
 dependencies {
-  implementation(project(":core-data"))
-  implementation(project(":core-database"))
-  implementation(project(":core-domain"))
-  implementation(project(":feature-agent"))
-  implementation(project(":feature-agent-navigation"))
+  implementation(project(":core:database"))
+  implementation(project(":core:domain"))
+  implementation(project(":data:agent"))
+  implementation(project(":feature:agent:api"))
+  implementation(project(":feature:agent:impl"))
   implementation("com.lhzkml.jasmine:jasmine-components:0.1.0")
   implementation("com.lhzkml.jasmine:jasmine-theme:0.1.0")
 
@@ -136,7 +136,7 @@ dependencies {
 
   // Instrumented tests
   androidTestImplementation(composeBom)
-  androidTestImplementation(project(":core-testing"))
+  androidTestImplementation(project(":core:testing"))
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.androidx.test.ext.junit)

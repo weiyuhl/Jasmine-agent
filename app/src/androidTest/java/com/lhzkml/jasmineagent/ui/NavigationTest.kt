@@ -40,7 +40,7 @@ class NavigationTest {
   @Test
   fun mainScreen_showsAppBars() {
     composeTestRule.onNodeWithTag(NavigationSemantics.TOP_APP_BAR).assertExists()
-    composeTestRule.onNodeWithTag(NavigationSemantics.NAVIGATION_SUITE).assertExists()
+    composeTestRule.onNodeWithTag(NavigationSemantics.BOTTOM_NAVIGATION).assertExists()
     composeTestRule
       .onNodeWithText(
         composeTestRule.activity.getString(com.lhzkml.jasmineagent.R.string.nav_agents_label)
@@ -95,13 +95,13 @@ class NavigationTest {
   }
 
   @Test
-  fun expandedWidth_usesNavigationRail() {
+  fun expandedWidth_keepsBottomNavigation() {
     composeTestRule.setContent {
       Box(Modifier.requiredSize(900.dp, 700.dp)) {
         JasmineTheme { MainNavigation() }
       }
     }
 
-    composeTestRule.onNodeWithTag(NavigationSemantics.NAVIGATION_SUITE).assertExists()
+    composeTestRule.onNodeWithTag(NavigationSemantics.BOTTOM_NAVIGATION).assertExists()
   }
 }
