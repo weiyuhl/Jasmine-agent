@@ -80,12 +80,13 @@
 
 | 组件 | 当前版本 |
 |---|---:|
-| Gradle Wrapper | `9.5.1` |
+| Gradle Wrapper | `9.6.0` |
 | Android Gradle Plugin | `9.2.1` |
 | Kotlin | `2.4.0` |
 | KSP | `2.3.9` |
 | Hilt | `2.59.2` |
 | AndroidX Hilt | `1.3.0` |
+| UIAutomator | `2.3.0` |
 | Compose BOM | `2026.06.00` |
 | Compose UI explicit modules | `1.11.3` |
 | Activity Compose | `1.13.0` |
@@ -97,6 +98,10 @@
 | Jetpack Security Crypto | `1.1.0` |
 | UniFFI | `0.31.2` |
 | JNA | `5.19.1` |
+| Detekt | `1.23.8` |
+| Dokka | `2.2.0` |
+| Spotless | `8.7.0` |
+| Compose Preview Screenshot Testing | `0.0.1-alpha15`（官方暂无稳定版） |
 
 ## 验证命令
 

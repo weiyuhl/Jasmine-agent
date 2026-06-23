@@ -92,8 +92,8 @@ subprojects {
     }
 
     afterEvaluate {
-        if (plugins.hasPlugin("dev.detekt")) {
-            configure<dev.detekt.gradle.extensions.DetektExtension> {
+        if (plugins.hasPlugin("io.gitlab.arturbosch.detekt")) {
+            configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
                 buildUponDefaultConfig = true
                 allRules = false
                 config.setFrom(rootProject.file("detekt-config.yml"))

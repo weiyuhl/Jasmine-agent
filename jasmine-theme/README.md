@@ -174,7 +174,7 @@ Adaptive / Navigation3 相关能力：
 
 ## 本地构建环境
 
-本项目 Gradle Wrapper 使用 `9.5.1`。本机已验证可用环境：
+本项目 Gradle Wrapper 使用 `9.6.0`。本机已验证可用环境：
 
 ```powershell
 $env:JAVA_HOME="D:\jdk-17.0.2"
