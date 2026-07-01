@@ -3,7 +3,7 @@ package com.lhzkml.jasmineagent.core.domain.usecase
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
-import com.lhzkml.jasmineagent.core.domain.validation.AgentNameValidator
+import com.lhzkml.jasmineagent.core.domain.validation.AgentNamePolicy
 import com.lhzkml.jasmineagent.core.domain.validation.ValidationError
 import com.lhzkml.jasmineagent.core.domain.validation.ValidationResult
 import javax.inject.Inject
@@ -25,12 +25,17 @@ enum class AddAgentRepositoryError {
 }
 
 /** Validates, normalizes, and persists a new agent name. */
-class AddAgentUseCase @Inject constructor(private val repository: AgentRepository) {
+class AddAgentUseCase
+@Inject
+constructor(
+  private val repository: AgentRepository,
+  private val namePolicy: AgentNamePolicy,
+) {
 
   /** Adds an agent and maps validation or storage failures into domain results. */
   public suspend operator fun invoke(name: String): AddAgentResult {
-    val normalizedName = AgentNameValidator.normalize(name)
-    val validationResult = AgentNameValidator.validate(name)
+    val normalizedName = namePolicy.normalize(name)
+    val validationResult = namePolicy.validate(name)
 
     if (validationResult is ValidationResult.Invalid) {
       return AddAgentResult.ValidationFailure(validationResult.error)

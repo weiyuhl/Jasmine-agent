@@ -8,16 +8,16 @@
 -dontnote kotlinx.serialization.AnnotationsKt
 
 # Navigation3 serializable keys
--keep,includedescriptorclasses class com.lhzkml.jasmineagent.feature.agent.navigation.keys.**$$serializer { *; }
--keepclassmembers class com.lhzkml.jasmineagent.feature.agent.navigation.keys.** {
+-keep,includedescriptorclasses class com.lhzkml.jasmineagent.core.navigation.**$$serializer { *; }
+-keepclassmembers class com.lhzkml.jasmineagent.core.navigation.** {
     *** Companion;
 }
--keepclasseswithmembers class com.lhzkml.jasmineagent.feature.agent.navigation.keys.** {
+-keepclasseswithmembers class com.lhzkml.jasmineagent.core.navigation.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--keep class com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main { *; }
--keep class com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne { *; }
--keep class com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankTwo { *; }
+-keep class com.lhzkml.jasmineagent.core.navigation.Main { *; }
+-keep class com.lhzkml.jasmineagent.core.navigation.BlankOne { *; }
+-keep class com.lhzkml.jasmineagent.core.navigation.BlankTwo { *; }
 
 # Security Crypto (EncryptedSharedPreferences / MasterKey)
 -keep class androidx.security.crypto.EncryptedSharedPreferences { *; }

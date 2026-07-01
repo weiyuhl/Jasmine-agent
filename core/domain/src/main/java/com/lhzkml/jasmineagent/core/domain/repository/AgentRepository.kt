@@ -1,5 +1,7 @@
 package com.lhzkml.jasmineagent.core.domain.repository
 
+import com.lhzkml.jasmineagent.core.model.AgentRecord
+import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
 import kotlinx.coroutines.flow.Flow
 
 /** Repository boundary for reading and mutating Agent records. */
@@ -31,21 +33,6 @@ interface AgentRepository {
   companion object {
     const val DEFAULT_AGENT_LIMIT = 10
   }
-}
-
-data class AgentRecord(
-  val uid: Int,
-  val name: String,
-  val createdAt: Long,
-  val updatedAt: Long,
-  val status: AgentRecordStatus,
-  val description: String?,
-)
-
-enum class AgentRecordStatus {
-  ACTIVE,
-  INACTIVE,
-  ARCHIVED,
 }
 
 enum class AgentRepositoryFailure {

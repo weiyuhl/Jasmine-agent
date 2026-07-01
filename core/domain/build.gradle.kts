@@ -43,36 +43,12 @@ kotlin {
   }
 }
 
-val rustHostLibraryName =
-  if (System.getProperty("os.name").startsWith("Windows")) "jasmine_core.dll"
-  else if (System.getProperty("os.name").startsWith("Mac")) "libjasmine_core.dylib"
-  else "libjasmine_core.so"
-
 dependencies {
-  implementation(project(":native:bridge"))
+  api(project(":core:model"))
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
   implementation(libs.kotlinx.coroutines.android)
 
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
-  testRuntimeOnly(libs.kotlin.jna)
-}
-
-tasks.withType<Test>().configureEach {
-  dependsOn(":native:bridge:buildRustHost")
-  systemProperty(
-    "jna.library.path",
-    rootProject.layout.projectDirectory
-      .dir("native/bridge/build/rustHost/release")
-      .asFile
-      .absolutePath,
-  )
-  systemProperty(
-    "uniffi.component.jasmine_core.libraryOverride",
-    rootProject.layout.projectDirectory
-      .file("native/bridge/build/rustHost/release/$rustHostLibraryName")
-      .asFile
-      .absolutePath,
-  )
 }

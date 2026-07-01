@@ -47,7 +47,8 @@ kotlin {
 
 dependencies {
   implementation(project(":core:domain"))
-  api(project(":core:database"))
+  implementation(project(":core:database"))
+  implementation(project(":native:bridge"))
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
   implementation(libs.kotlinx.coroutines.android)

@@ -2,14 +2,15 @@ package com.lhzkml.jasmineagent.feature.agent.ui
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.DeleteAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
+import com.lhzkml.jasmineagent.core.domain.validation.AgentNameValidator
+import com.lhzkml.jasmineagent.core.model.AgentRecord
+import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -52,7 +53,7 @@ class AgentViewModelTest {
     testDispatcher = StandardTestDispatcher()
     Dispatchers.setMain(testDispatcher)
     fakeRepository = FakeAgentRepository()
-    addAgentUseCase = AddAgentUseCase(fakeRepository)
+    addAgentUseCase = AddAgentUseCase(fakeRepository, AgentNameValidator)
     deleteAgentUseCase = DeleteAgentUseCase(fakeRepository)
     getAgentsUseCase = GetAgentsUseCase(fakeRepository)
     viewModel =

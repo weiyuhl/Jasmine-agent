@@ -1,7 +1,9 @@
 package com.lhzkml.jasmineagent.core.data.di
 
 import com.lhzkml.jasmineagent.core.data.DefaultAgentRepository
+import com.lhzkml.jasmineagent.core.data.RustAgentNamePolicy
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
+import com.lhzkml.jasmineagent.core.domain.validation.AgentNamePolicy
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,4 +17,6 @@ interface DataModule {
   @Singleton
   @Binds
   fun bindsAgentRepository(agentRepository: DefaultAgentRepository): AgentRepository
+
+  @Singleton @Binds fun bindsAgentNamePolicy(policy: RustAgentNamePolicy): AgentNamePolicy
 }

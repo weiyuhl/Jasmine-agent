@@ -51,14 +51,11 @@ kotlin {
   }
 }
 
-val rustHostLibraryName =
-  if (System.getProperty("os.name").startsWith("Windows")) "jasmine_core.dll"
-  else if (System.getProperty("os.name").startsWith("Mac")) "libjasmine_core.dylib"
-  else "libjasmine_core.so"
-
 dependencies {
+  implementation(project(":data:agent"))
   implementation(project(":core:domain"))
-  implementation(project(":core:ui"))
+  implementation(project(":core:designsystem"))
+  implementation(project(":core:navigation"))
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   androidTestImplementation(composeBom)
@@ -105,28 +102,9 @@ dependencies {
   // Local tests: jUnit, coroutines, Android runner
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
-  testRuntimeOnly(libs.kotlin.jna)
 
   // Instrumented tests: jUnit rules and runners
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.rules)
-}
-
-tasks.withType<Test>().configureEach {
-  dependsOn(":native:bridge:buildRustHost")
-  systemProperty(
-    "jna.library.path",
-    rootProject.layout.projectDirectory
-      .dir("native/bridge/build/rustHost/release")
-      .asFile
-      .absolutePath,
-  )
-  systemProperty(
-    "uniffi.component.jasmine_core.libraryOverride",
-    rootProject.layout.projectDirectory
-      .file("native/bridge/build/rustHost/release/$rustHostLibraryName")
-      .asFile
-      .absolutePath,
-  )
 }

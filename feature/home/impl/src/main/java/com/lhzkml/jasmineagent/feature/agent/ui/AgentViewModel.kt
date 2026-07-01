@@ -3,12 +3,12 @@ package com.lhzkml.jasmineagent.feature.agent.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentResult
 import com.lhzkml.jasmineagent.core.domain.usecase.AddAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.DeleteAgentResult
 import com.lhzkml.jasmineagent.core.domain.usecase.DeleteAgentUseCase
 import com.lhzkml.jasmineagent.core.domain.usecase.GetAgentsUseCase
+import com.lhzkml.jasmineagent.core.model.AgentRecord
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Error
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Loading
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentUiState.Success

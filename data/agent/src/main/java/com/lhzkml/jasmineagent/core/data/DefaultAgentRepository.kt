@@ -5,11 +5,11 @@ import android.database.sqlite.SQLiteException
 import com.lhzkml.jasmineagent.core.database.Agent
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import com.lhzkml.jasmineagent.core.database.AgentStatus
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
+import com.lhzkml.jasmineagent.core.model.AgentRecord
+import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch

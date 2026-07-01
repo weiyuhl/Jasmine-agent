@@ -17,9 +17,13 @@ plugins {
 val documentedProjects =
     setOf(
         "app",
+        "core:common",
         "core:database",
         "core:datastore",
+        "core:designsystem",
         "core:domain",
+        "core:model",
+        "core:navigation",
         "core:network",
         "core:testing",
         "core:ui",
@@ -27,13 +31,16 @@ val documentedProjects =
         "feature:home:api",
         "feature:home:impl",
         "native:bridge",
+        "benchmark",
         "test-app",
     )
 
 val kotlinVersion = libs.versions.kotlin.get()
 
 dependencies {
-    documentedProjects.forEach { moduleName -> dokka(project(":$moduleName")) }
+    documentedProjects.forEach { moduleName ->
+        dokka(dependencies.project(path = ":$moduleName"))
+    }
 }
 
 tasks.register("apiDocs") {

@@ -48,10 +48,10 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.lhzkml.jasmineagent.R
-import com.lhzkml.jasmineagent.feature.agent.navigation.AgentEntryProvider
-import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankOne
-import com.lhzkml.jasmineagent.feature.agent.navigation.keys.BlankTwo
-import com.lhzkml.jasmineagent.feature.agent.navigation.keys.Main
+import com.lhzkml.jasmineagent.core.navigation.BlankOne
+import com.lhzkml.jasmineagent.core.navigation.BlankTwo
+import com.lhzkml.jasmineagent.core.navigation.Main
+import com.lhzkml.jasmineagent.core.navigation.NavigationEntryRegistrar
 import kotlinx.coroutines.launch
 
 private data class AppDestination(
@@ -96,7 +96,10 @@ object NavigationSemantics {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainNavigation(deepLinkUri: String? = null) {
+fun MainNavigation(
+  navigationEntryRegistrars: Set<NavigationEntryRegistrar>,
+  deepLinkUri: String? = null,
+) {
   val pagerState = rememberPagerState(pageCount = { appDestinations.size })
   val coroutineScope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -132,6 +135,7 @@ fun MainNavigation(deepLinkUri: String? = null) {
       DestinationPage(
         destination = appDestinations[page],
         drawerState = drawerState,
+        navigationEntryRegistrars = navigationEntryRegistrars,
         onDrawerDestinationSelected = { destination ->
           val destinationPage = appDestinations.indexOfFirst { it.key == destination }
           if (destinationPage >= 0) {
@@ -206,6 +210,7 @@ private fun AgentBottomNavigation(
 private fun DestinationPage(
   destination: AppDestination,
   drawerState: DrawerState,
+  navigationEntryRegistrars: Set<NavigationEntryRegistrar>,
   onDrawerDestinationSelected: (NavKey) -> Unit,
 ) {
   if (destination.key == Main) {
@@ -230,17 +235,24 @@ private fun DestinationPage(
           }
         }
       },
-      content = { DestinationNavHost(destination.key) },
+      content = { DestinationNavHost(destination.key, navigationEntryRegistrars) },
     )
   } else {
-    DestinationNavHost(destination.key)
+    DestinationNavHost(destination.key, navigationEntryRegistrars)
   }
 }
 
 @Composable
-private fun DestinationNavHost(rootKey: NavKey) {
+private fun DestinationNavHost(
+  rootKey: NavKey,
+  navigationEntryRegistrars: Set<NavigationEntryRegistrar>,
+) {
   val backStack = rememberNavBackStack(rootKey)
-  val entryProvider = entryProvider { AgentEntryProvider() }
+  val entryProvider = entryProvider {
+    navigationEntryRegistrars.forEach { registrar ->
+      with(registrar) { registerEntries() }
+    }
+  }
 
   Box(modifier = Modifier.fillMaxSize()) {
     NavDisplay(

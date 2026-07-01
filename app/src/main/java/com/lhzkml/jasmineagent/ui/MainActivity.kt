@@ -15,11 +15,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.lhzkml.jasmineagent.core.ui.theme.AgentMaterialTheme
+import com.lhzkml.jasmineagent.core.designsystem.theme.AgentMaterialTheme
+import com.lhzkml.jasmineagent.core.navigation.NavigationEntryRegistrar
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+  @Inject
+  lateinit var navigationEntryRegistrars: Set<@JvmSuppressWildcards NavigationEntryRegistrar>
 
   /** Deep link URI extracted from the launch intent, if any. */
   private var deepLinkUri by mutableStateOf<String?>(null)
@@ -35,7 +39,10 @@ class MainActivity : ComponentActivity() {
           color = MaterialTheme.colorScheme.background,
           contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
-          MainNavigation(deepLinkUri = deepLinkUri)
+          MainNavigation(
+            navigationEntryRegistrars = navigationEntryRegistrars,
+            deepLinkUri = deepLinkUri,
+          )
         }
       }
     }

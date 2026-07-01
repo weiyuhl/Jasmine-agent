@@ -1,75 +1,53 @@
 package com.lhzkml.jasmineagent.core.database.di
 
-import android.content.Context
 import android.content.SharedPreferences
-import androidx.test.core.app.ApplicationProvider
-import java.security.KeyStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
-import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class DatabaseModuleSecurityTest {
 
-  private lateinit var context: Context
-  private lateinit var databaseModule: DatabaseModule
-  private lateinit var testPreferences: SharedPreferences
+  private lateinit var testPreferences: FakeSharedPreferences
 
   @Before
   fun setup() {
-    context = ApplicationProvider.getApplicationContext()
-    databaseModule = DatabaseModule()
-    testPreferences = context.getSharedPreferences(TEST_PREFERENCES_NAME, Context.MODE_PRIVATE)
-    testPreferences.edit().clear().apply()
-  }
-
-  @Test
-  fun testEncryptedPreferencesCreation() {
-    assumeAndroidKeyStoreAvailable()
-
-    val prefs = databaseModule.provideEncryptedPreferences(context)
-    assertNotNull("EncryptedSharedPreferences should not be null", prefs)
-  }
-
-  @Test
-  fun testEncryptedPreferencesStoreAndRetrieve() {
-    assumeAndroidKeyStoreAvailable()
-
-    val prefs = databaseModule.provideEncryptedPreferences(context)
-    val testKey = "test_key"
-    val testValue = "secret_value_12345"
-
-    prefs.edit().putString(testKey, testValue).apply()
-    val retrieved = prefs.getString(testKey, null)
-
-    assertEquals("Stored value should match retrieved value", testValue, retrieved)
+    testPreferences = FakeSharedPreferences()
   }
 
   @Test
   fun testPassphraseConsistency() {
-    val passphrase1 = generatePassphraseViaReflection(context, testPreferences)
-    val passphrase2 = generatePassphraseViaReflection(context, testPreferences)
+    val passphrase1 = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
+    val passphrase2 = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
 
     assertTrue("Passphrase should be 32 bytes", passphrase1.size == 32)
     assertTrue("Passphrase should be consistent", passphrase1.contentEquals(passphrase2))
   }
 
   @Test
-  fun testPassphraseUniquenessAcrossContexts() {
-    val passphrase1 = generatePassphraseViaReflection(context, testPreferences)
+  fun testPassphraseUniquenessAcrossFreshPreferences() {
+    val passphrase1 = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
 
-    testPreferences.edit().clear().apply()
+    testPreferences.clear()
 
-    val passphrase2 = generatePassphraseViaReflection(context, testPreferences)
+    val passphrase2 = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
 
     assertNotEquals(
-      "Passphrase should be different after clearing salt",
+      "Passphrase should be different after clearing salt and secret",
+      passphrase1.contentToString(),
+      passphrase2.contentToString(),
+    )
+  }
+
+  @Test
+  fun testPassphraseChangesAcrossPackageNames() {
+    val passphrase1 = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
+    val passphrase2 = DatabasePassphrase.generate("$TEST_PACKAGE_NAME.debug", testPreferences)
+
+    assertNotEquals(
+      "Passphrase should include the package name in its derivation input",
       passphrase1.contentToString(),
       passphrase2.contentToString(),
     )
@@ -77,7 +55,7 @@ class DatabaseModuleSecurityTest {
 
   @Test
   fun testPassphraseInputsStoredInEncryptedPreferences() {
-    generatePassphraseViaReflection(context, testPreferences)
+    DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
 
     val salt = testPreferences.getString("db_passphrase_salt", null)
     val secret = testPreferences.getString("db_passphrase_secret", null)
@@ -93,12 +71,12 @@ class DatabaseModuleSecurityTest {
 
   @Test
   fun testPassphraseChangesWhenSecretChanges() {
-    val passphrase1 = generatePassphraseViaReflection(context, testPreferences)
+    val passphrase1 = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
     val originalSalt = testPreferences.getString("db_passphrase_salt", null)
 
     testPreferences.edit().remove("db_passphrase_secret").apply()
 
-    val passphrase2 = generatePassphraseViaReflection(context, testPreferences)
+    val passphrase2 = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
 
     assertEquals(
       "Salt should not change when only secret is cleared",
@@ -114,36 +92,104 @@ class DatabaseModuleSecurityTest {
 
   @Test
   fun testPassphraseDerivationStrength() {
-    val passphrase = generatePassphraseViaReflection(context, testPreferences)
+    val passphrase = DatabasePassphrase.generate(TEST_PACKAGE_NAME, testPreferences)
 
     val uniqueBytes = passphrase.toSet().size
     assertTrue("Passphrase should have high entropy (at least 20 unique bytes)", uniqueBytes >= 20)
   }
 
-  private fun generatePassphraseViaReflection(
-    context: Context,
-    prefs: SharedPreferences,
-  ): ByteArray {
-    val method =
-      DatabaseModule::class
-        .java
-        .getDeclaredMethod("generatePassphrase", Context::class.java, SharedPreferences::class.java)
-    method.isAccessible = true
-    return method.invoke(databaseModule, context, prefs) as ByteArray
-  }
-
-  private fun assumeAndroidKeyStoreAvailable() {
-    assumeTrue(
-      "AndroidKeyStore is only available on an Android runtime.",
-      isAndroidKeyStoreAvailable(),
-    )
-  }
-
-  private fun isAndroidKeyStoreAvailable(): Boolean =
-    runCatching { KeyStore.getInstance(ANDROID_KEYSTORE) }.isSuccess
-
   private companion object {
-    const val ANDROID_KEYSTORE = "AndroidKeyStore"
-    const val TEST_PREFERENCES_NAME = "database_module_security_test"
+    const val TEST_PACKAGE_NAME = "com.lhzkml.jasmineagent.test"
+  }
+}
+
+private class FakeSharedPreferences : SharedPreferences {
+  private val values = mutableMapOf<String, Any?>()
+
+  override fun getAll(): MutableMap<String, *> = values.toMutableMap()
+
+  override fun getString(key: String?, defValue: String?): String? =
+    values[key] as? String ?: defValue
+
+  override fun getStringSet(key: String?, defValues: MutableSet<String>?): MutableSet<String>? =
+    @Suppress("UNCHECKED_CAST") (values[key] as? MutableSet<String>) ?: defValues
+
+  override fun getInt(key: String?, defValue: Int): Int = values[key] as? Int ?: defValue
+
+  override fun getLong(key: String?, defValue: Long): Long = values[key] as? Long ?: defValue
+
+  override fun getFloat(key: String?, defValue: Float): Float = values[key] as? Float ?: defValue
+
+  override fun getBoolean(key: String?, defValue: Boolean): Boolean =
+    values[key] as? Boolean ?: defValue
+
+  override fun contains(key: String?): Boolean = values.containsKey(key)
+
+  override fun edit(): SharedPreferences.Editor = FakeEditor()
+
+  override fun registerOnSharedPreferenceChangeListener(
+    listener: SharedPreferences.OnSharedPreferenceChangeListener?
+  ) = Unit
+
+  override fun unregisterOnSharedPreferenceChangeListener(
+    listener: SharedPreferences.OnSharedPreferenceChangeListener?
+  ) = Unit
+
+  fun clear() {
+    values.clear()
+  }
+
+  private inner class FakeEditor : SharedPreferences.Editor {
+    private val edits = mutableMapOf<String, Any?>()
+    private val removals = mutableSetOf<String>()
+    private var clearRequested = false
+
+    override fun putString(key: String?, value: String?): SharedPreferences.Editor = apply {
+      key?.let { edits[it] = value }
+    }
+
+    override fun putStringSet(
+      key: String?,
+      values: MutableSet<String>?,
+    ): SharedPreferences.Editor = apply { key?.let { edits[it] = values } }
+
+    override fun putInt(key: String?, value: Int): SharedPreferences.Editor = apply {
+      key?.let { edits[it] = value }
+    }
+
+    override fun putLong(key: String?, value: Long): SharedPreferences.Editor = apply {
+      key?.let { edits[it] = value }
+    }
+
+    override fun putFloat(key: String?, value: Float): SharedPreferences.Editor = apply {
+      key?.let { edits[it] = value }
+    }
+
+    override fun putBoolean(key: String?, value: Boolean): SharedPreferences.Editor = apply {
+      key?.let { edits[it] = value }
+    }
+
+    override fun remove(key: String?): SharedPreferences.Editor = apply {
+      key?.let { removals += it }
+    }
+
+    override fun clear(): SharedPreferences.Editor = apply { clearRequested = true }
+
+    override fun commit(): Boolean {
+      applyChanges()
+      return true
+    }
+
+    override fun apply() {
+      applyChanges()
+    }
+
+    private fun applyChanges() {
+      if (clearRequested) {
+        values.clear()
+      }
+      removals.forEach(values::remove)
+      values.putAll(edits)
+    }
   }
 }

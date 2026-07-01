@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-  namespace = "com.lhzkml.jasmineagent.feature.agent.navigation.keys"
+  namespace = "com.lhzkml.jasmineagent.feature.home.api"
   compileSdk = 37
   defaultConfig {
     minSdk = 26
@@ -42,7 +42,5 @@ kotlin {
 }
 
 dependencies {
-  implementation(libs.kotlinx.serialization.core)
-  implementation(libs.kotlinx.serialization.json)
-  implementation(libs.androidx.navigation3.runtime)
+  api(project(":core:navigation"))
 }

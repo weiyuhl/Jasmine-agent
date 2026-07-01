@@ -1,8 +1,8 @@
 package com.lhzkml.jasmineagent.core.data.di
 
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
+import com.lhzkml.jasmineagent.core.model.AgentRecord
+import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow

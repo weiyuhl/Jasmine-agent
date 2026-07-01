@@ -1,7 +1,7 @@
 package com.lhzkml.jasmineagent.core.domain.usecase
 
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
+import com.lhzkml.jasmineagent.core.model.AgentRecord
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 

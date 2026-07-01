@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
-import com.lhzkml.jasmineagent.core.ui.theme.AgentMaterialTheme
+import com.lhzkml.jasmineagent.core.designsystem.theme.AgentMaterialTheme
+import com.lhzkml.jasmineagent.core.model.AgentRecord
+import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
 import com.lhzkml.jasmineagent.feature.agent.R
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals

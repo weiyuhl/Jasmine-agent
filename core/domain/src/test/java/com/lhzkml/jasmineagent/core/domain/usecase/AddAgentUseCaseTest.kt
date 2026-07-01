@@ -1,11 +1,12 @@
 package com.lhzkml.jasmineagent.core.domain.usecase
 
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecord
-import com.lhzkml.jasmineagent.core.domain.repository.AgentRecordStatus
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepository
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
+import com.lhzkml.jasmineagent.core.domain.validation.AgentNameValidator
 import com.lhzkml.jasmineagent.core.domain.validation.ValidationError
+import com.lhzkml.jasmineagent.core.model.AgentRecord
+import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,7 +27,7 @@ class AddAgentUseCaseTest {
   @Before
   fun setup() {
     fakeRepository = FakeAgentRepository()
-    useCase = AddAgentUseCase(fakeRepository)
+    useCase = AddAgentUseCase(fakeRepository, AgentNameValidator)
   }
 
   @Test

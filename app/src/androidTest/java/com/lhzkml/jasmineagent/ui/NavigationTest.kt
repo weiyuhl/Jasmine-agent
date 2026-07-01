@@ -1,8 +1,11 @@
 package com.lhzkml.jasmineagent.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -10,8 +13,14 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.lhzkml.jasmineagent.core.ui.theme.AgentMaterialTheme
+import com.lhzkml.jasmineagent.core.designsystem.theme.AgentMaterialTheme
+import com.lhzkml.jasmineagent.core.navigation.BlankOne
+import com.lhzkml.jasmineagent.core.navigation.BlankTwo
+import com.lhzkml.jasmineagent.core.navigation.Main
+import com.lhzkml.jasmineagent.core.navigation.NavigationEntryRegistrar
 import com.lhzkml.jasmineagent.feature.agent.R
 import com.lhzkml.jasmineagent.feature.agent.navigation.BlankDestinationSemantics
 import com.lhzkml.jasmineagent.feature.agent.ui.AgentSemantics
@@ -98,10 +107,25 @@ class NavigationTest {
   fun expandedWidth_keepsBottomNavigation() {
     composeTestRule.setContent {
       Box(Modifier.requiredSize(900.dp, 700.dp)) {
-        AgentMaterialTheme { MainNavigation() }
+        AgentMaterialTheme {
+          MainNavigation(navigationEntryRegistrars = setOf(TestNavigationEntryRegistrar()))
+        }
       }
     }
 
     composeTestRule.onNodeWithTag(NavigationSemantics.BOTTOM_NAVIGATION).assertExists()
+  }
+}
+
+private class TestNavigationEntryRegistrar : NavigationEntryRegistrar {
+  @Composable
+  override fun EntryProviderScope<NavKey>.registerEntries() {
+    entry<Main> { Box(Modifier.fillMaxSize()) }
+    entry<BlankOne> {
+      Box(Modifier.fillMaxSize().testTag(BlankDestinationSemantics.BLANK_ONE))
+    }
+    entry<BlankTwo> {
+      Box(Modifier.fillMaxSize().testTag(BlankDestinationSemantics.BLANK_TWO))
+    }
   }
 }

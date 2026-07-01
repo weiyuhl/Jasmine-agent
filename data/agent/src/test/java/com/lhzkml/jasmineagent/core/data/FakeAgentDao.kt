@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/** Test-only fake DAO for core-data layer tests. */
+/** Test-only fake DAO for data:agent layer tests. */
 class FakeAgentDao : AgentDao {
 
   private val mutex = Mutex()

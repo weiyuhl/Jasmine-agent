@@ -105,12 +105,8 @@ kotlin {
 }
 
 dependencies {
-  implementation(project(":core:database"))
-  implementation(project(":core:datastore"))
-  implementation(project(":core:domain"))
-  implementation(project(":core:network"))
-  implementation(project(":core:ui"))
-  implementation(project(":data:agent"))
+  implementation(project(":core:designsystem"))
+  implementation(project(":core:navigation"))
   implementation(project(":feature:home:api"))
   implementation(project(":feature:home:impl"))
 
@@ -121,6 +117,9 @@ dependencies {
 
   // Hilt Dependency Injection
   implementation(libs.hilt.android)
+  compileOnly(libs.error.prone.annotations)
+  testCompileOnly(libs.error.prone.annotations)
+  androidTestCompileOnly(libs.error.prone.annotations)
   ksp(libs.hilt.compiler)
   kspAndroidTest(libs.hilt.compiler)
   kspTest(libs.hilt.compiler)
@@ -142,7 +141,6 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling.data)
 
   // Navigation
-  implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.navigation3.ui)
   implementation(libs.profileinstaller)
   implementation(libs.startup.runtime)
