@@ -15,7 +15,7 @@ android {
   targetProjectPath = ":app"
 
   defaultConfig {
-    minSdk = 23
+    minSdk = 26
     targetSdk = 37
 
     testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
@@ -28,14 +28,14 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
   }
 }
 
 kotlin {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
+    jvmTarget.set(JvmTarget.JVM_26)
     moduleName.set("jasmineagent_test_app")
   }
 }
@@ -48,11 +48,12 @@ dependencies {
   implementation(project(":core:testing"))
   implementation(project(":data:agent"))
   implementation(testFixtures(project(":data:agent")))
-  implementation(project(":feature:agent:api"))
-  implementation(project(":feature:agent:impl"))
+  implementation(project(":feature:home:api"))
+  implementation(project(":feature:home:impl"))
 
   // Testing
   implementation(libs.androidx.test.core)
+  implementation(libs.androidx.test.rules)
 
   // Hilt and instrumented tests.
   implementation(libs.hilt.android)

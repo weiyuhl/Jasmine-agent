@@ -1,17 +1,5 @@
-[package]
-name = "jasmine_core"
-version = "0.1.0"
-edition = "2024"
-
-[lib]
-crate-type = ["cdylib", "lib"]
-
-[[bin]]
-name = "uniffi-bindgen"
-path = "uniffi-bindgen.rs"
-
-[dependencies]
-uniffi = "0.31.2"
-
-[build-dependencies]
-uniffi = { version = "0.31.2", features = ["build"] }
+[workspace]
+members = [
+    "crates/ffi_entry",
+]
+resolver = "3"

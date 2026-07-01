@@ -13,7 +13,7 @@ android {
   compileSdk = 37
 
   defaultConfig {
-    minSdk = 23
+    minSdk = 26
     consumerProguardFiles("consumer-rules.pro")
   }
 
@@ -32,8 +32,8 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
   }
 }
 
@@ -41,7 +41,7 @@ ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 
 kotlin {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
+    jvmTarget.set(JvmTarget.JVM_26)
     moduleName.set("jasmineagent_core_database")
   }
 }
@@ -51,6 +51,8 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation(libs.androidx.room.ktx)
   implementation(libs.sqlcipher)
+  implementation(libs.sqldelight.runtime)
+  implementation(libs.sqldelight.android.driver)
   ksp(libs.androidx.room.compiler)
   implementation(libs.androidx.core.ktx)
   implementation(libs.security.crypto)

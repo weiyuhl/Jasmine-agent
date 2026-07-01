@@ -16,23 +16,24 @@ JasmineAgent is a Kotlin-first Android sample that demonstrates a modular archit
 
 ## Requirements
 
-- JDK 17
+- JDK 26
 - Android SDK with API 37
 - Gradle wrapper from this repository
 
-This workspace has been validated with `JAVA_HOME=D:\jdk-17.0.2`.
+This workspace targets `JAVA_HOME=D:\jdk-26`. JDK 17 can start Gradle, but it cannot compile
+modules because the project now uses Java/Kotlin target 26.
 
 ## Common Commands
 
 ```powershell
-$env:JAVA_HOME='D:\jdk-17.0.2'
+$env:JAVA_HOME='D:\jdk-26'
 .\gradlew.bat testDebugUnitTest detekt spotlessCheck --warning-mode all
 ```
 
 Generate aggregated API documentation from Kotlin KDoc and Java Javadoc comments:
 
 ```powershell
-$env:JAVA_HOME='D:\jdk-17.0.2'
+$env:JAVA_HOME='D:\jdk-26'
 .\gradlew.bat :apiDocs --warning-mode all
 ```
 
@@ -41,7 +42,7 @@ The generated Dokka HTML entry point is `build/dokka/html/index.html`.
 Build a signed release APK with the local temporary signing properties:
 
 ```powershell
-$env:JAVA_HOME='D:\jdk-17.0.2'
+$env:JAVA_HOME='D:\jdk-26'
 $store = Join-Path (Get-Location) 'build\local-signing\release-temp.p12'
 .\gradlew.bat :app:assembleRelease `
   "-Pandroid.injected.signing.store.file=$store" `

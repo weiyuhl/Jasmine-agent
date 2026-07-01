@@ -10,7 +10,7 @@ Thank you for improving JasmineAgent. Keep changes small, testable, and aligned 
 4. Run formatting before review:
 
 ```powershell
-$env:JAVA_HOME='D:\jdk-17.0.2'
+$env:JAVA_HOME='D:\jdk-26'
 .\gradlew.bat spotlessApply
 ```
 

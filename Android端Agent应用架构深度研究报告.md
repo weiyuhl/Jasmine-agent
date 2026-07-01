@@ -4,7 +4,7 @@
 
 本报告面向一款“最新、完整的 Android 手机端 Agent 应用”的工程设计：应用采用 **MVVM + 多模块**，UI 使用 **Jetpack Compose**，核心能力部分由 **Rust + Mozilla UniFFI** 提供，且需要集成多种工具能力，并包含面向工具执行的 **Linux 沙盒运行环境**。基于当前 Android 官方架构建议，推荐采用**分层架构 + 纵向功能模块 + 横向核心基础设施模块**的组织方式：至少保持 **UI 层** 与 **Data 层** 明确分离，按需增加 **Domain/UseCase 层**；UI 层通过状态持有者（通常是 `ViewModel`）驱动 Compose，遵循**单向数据流**与**单一事实来源**；Data 层以 **Repository** 作为唯一入口，不允许 UI 或 UseCase 直接依赖底层 data source。多模块化方面，应避免“按技术栈切得过碎”与“单体 feature 模块过胖”这两种极端，建议使用“**core/platform/native/sandbox 横向模块** + **feature 垂直切片模块**”的混合模式。
 
-在技术选型上，当前 Android 官方文档建议 Compose-first，且当前稳定的 Compose BOM 为 **2026.06.00**；Activity Compose 已到 **1.13.0**，Lifecycle 到 **2.11.0**，Navigation Compose 到 **2.9.8**，同时 **Navigation 3 1.1.3** 已进入稳定通道，适合强 Compose-first 的新项目评估。数据层建议默认采用 **Room 2.8.4 + DataStore 1.2.1**；后台与可靠任务调度建议用 **WorkManager 2.11.2**；安全与密钥保护建议以 **Android Keystore/Jetpack Security** 为基础；DI 首选 **Dagger/Hilt 2.59.2 + androidx.hilt 1.3.0**。工具链方面，AGP 当前稳定补丁可落到 **9.2.1**，Gradle 官方当前稳定版为 **9.6.0**，Android 构建仍以 **JDK 17** 作为稳妥基线。Kotlin 官方当前稳定版为 **2.4.0**，KSP 当前稳定版为 **2.3.9**；由于 **KSP** 与部分注解处理链经常滞后于 Kotlin 主版本，生产上应把“当前最新稳定”与“当前最稳落地组合”区分开来管理。
+在技术选型上，当前 Android 官方文档建议 Compose-first，且当前稳定的 Compose BOM 为 **2026.06.00**；Activity Compose 已到 **1.13.0**，Lifecycle 到 **2.11.0**，Navigation Compose 到 **2.9.8**，同时 **Navigation 3 1.1.3** 已进入稳定通道，适合强 Compose-first 的新项目评估。数据层建议默认采用 **Room 2.8.4 + DataStore 1.2.1**；后台与可靠任务调度建议用 **WorkManager 2.11.2**；安全与密钥保护建议以 **Android Keystore/Jetpack Security** 为基础；DI 首选 **Dagger/Hilt 2.60 + androidx.hilt 1.3.0**。工具链方面，AGP 当前稳定补丁可落到 **9.2.1**，Gradle 官方当前稳定版为 **9.6.1**；本项目不按最低运行基线锁定 JDK，而是采用当前最高稳定 feature 线 **JDK 26** 作为工具链目标。JDK 25 是最新 LTS，可作为保守替代；JDK 27 当前尚不在 Gradle 9.6.1 支持范围内。Kotlin 官方当前稳定版为 **2.4.0**，KSP 当前稳定版为 **2.3.9**；由于 **KSP** 与部分注解处理链经常滞后于 Kotlin 主版本，生产上应把“当前最新稳定”与“当前最稳落地组合”区分开来管理。
 对 **Rust + UniFFI**，本报告的结论是：在 Android 上，**Rust 负责“高价值、可复用、性能/安全敏感”的核心引擎**，例如 Agent orchestration core、工具协议适配、规则引擎、会话压缩、计划执行图、沙盒命令规范化等；**Kotlin 负责 Android 生命周期、权限、系统 API、通知、WorkManager、前台服务、UI、导航与本地存储接入**。UniFFI 非常适合将 Rust 逻辑暴露给 Kotlin：它官方支持 Kotlin，支持 async 到 Kotlin `suspend` 的映射，支持 records/enums/errors/custom types/external types，但它**只负责生成绑定，不负责帮你完成平台构建与分发**；同时，Kotlin 侧对 Rust 暴露对象的生命周期回收通常仍应显式 `close()`，不能假设 JVM GC 会自动可靠清理底层 Rust 资源。
 
 对“**Linux 沙盒运行环境**”，本报告给出的核心判断是：**若目标包含 Play Store 合规发布，推荐把“安全执行环境”设计为 Android 应用沙盒内的隔离执行服务，而不是在量产手机上追求完整 Linux 容器栈**。Android 已提供应用沙盒；`isolatedProcess=true` 的 Service 可运行在隔离进程中，且“没有自己的权限”；这是在 stock Android 上最现实、最可审计、最接近 Play 审核预期的本地隔离方案。相反，`chroot` 需要 `CAP_SYS_CHROOT`，完整 namespace/container 方案通常还需要更高的内核能力、cgroups、daemon、overlayfs 等宿主级能力；**gVisor / containerd / 真正 OCI 容器**在普通手机应用进程中基本不具备可操作性，除非是企业专用设备、root、定制 ROM，或干脆不走 Play 分发。更关键的是，Google Play 的 Device & Network Abuse / Malware 规则明确限制应用从 Google Play 之外下载可执行代码（包括 dex/JAR/.so）；只有运行在解释器/虚拟机中、且仅**间接**访问 Android API 的代码存在政策例外。因此，若必须上架 Play，推荐的本地“沙盒”应优先选择 **isolated process + Binder IPC + 文件/能力白名单 + 资源限额 + 审计日志** 的 Android-native 方案；若业务真需要“完整 Linux 用户态 + 动态安装包 + ELF 执行”，则更适合私有分发、企业分发或远端执行。
@@ -15,7 +15,7 @@
 
 你已明确说明以下事项均为**未指定**：**最低 SDK、目标 API 级别、支持 CPU 架构、是否上 Play Store、是否需要离线模型推理、是否需要端侧 ML 加速**。本报告保留这些状态，并给出工程上更稳妥的默认建议。
 
-建议把“当前最新稳定版本”与“当前生产锁定版本”分开管理。原因很现实：Android 生态中的 **AGP / Kotlin / KSP / Hilt / Room / Compose Compiler** 并不总是同步发布；即使单个组件“最新稳定”，也不意味着整个组合是**最快稳态**。例如 AGP 9.2.1 已稳定，Kotlin 2.4.0 已是官方当前稳定版，但 KSP 的版本线与 Kotlin 主版本常常需要单独校验；因此应在版本目录中同时维护 `latestStable` 与 `prodLocked` 两组锚点。
+建议把“当前最新稳定版本”与“当前生产锁定版本”分开管理。原因很现实：Android 生态中的 **AGP / Kotlin / KSP / Hilt / Room / Compose Compiler** 并不总是同步发布；即使单个组件“最新稳定”，也不意味着整个组合是**最快稳态**。例如 AGP 9.2.1 已稳定，Kotlin 2.4.0 与 KSP 2.3.9 当前可形成稳定组合，Gradle 9.6.1 也应优先于 9.6.0 补丁前版本；本项目 JDK 基线采用当前最高稳定 feature 线 JDK 26，而不是 AGP 默认的最低运行基线 JDK 17。JDK 27 需要等 Gradle/AGP 明确支持后再评估。因此应在版本目录中同时维护 `latestStable` 与 `prodLocked` 两组锚点。
 
 ### 推荐的默认约束
 
@@ -186,14 +186,14 @@ flowchart TD
 
 ### 版本表
 
-下表把“**当前已查证的稳定版本**”与“**生产落地建议**”分开写，目的是降低升级链断裂的风险。对大多数 Android 项目而言，真正要追求的是“**整套组合稳定**”，而不是“每个组件都取到自己最新”。
+下表把“**当前已查证的稳定版本**”与“**生产落地建议**”分开写，目的是降低升级链断裂的风险。对大多数 Android 项目而言，真正要追求的是“**整套组合稳定**”，而不是“每个组件都取到自己最新”。本轮版本校验日期为 **2026-07-01**；表中“当前已查证稳定版本”优先取官方稳定/GA，不把 alpha、beta、RC 当作生产稳定。
 
 | 组件 | 当前已查证稳定版本 | 生产落地建议 | 替代选项 | 说明 |
 |---|---:|---|---|---|
-| JDK | 17 | 17 | 21 仅在工具链完全验证后使用 | AGP 9.2 兼容矩阵要求/默认 JDK 17。 |
+| JDK | 26（当前最高稳定 feature），25（最新 LTS） | 26 | 25 LTS 保守替代；17 仅作为 AGP 默认最低运行基线回退；暂不使用 27 | 本项目不以最低 JDK 为目标；采用 JDK 26。Gradle 9.6.1 可运行在 JVM 17-26，JDK 27 当前未支持；AGP 9.2 兼容矩阵默认 JDK 17，但这不是本项目的推荐锁定值。 |
 | Android Gradle Plugin | 9.2.1 | 9.2.1 | 9.1.1 保守回退 | 9.2.0 页面已列出 9.2.1 修复；Android Studio 同步发布 9.2.1。 |
-| Gradle | 9.6.0 | 9.6.0 | 按 AGP 兼容矩阵下调 | Gradle 官方当前稳定版；本项目 Wrapper 已锁到 9.6.0。 |
-| Kotlin | 2.4.0 | 若 KSP 链未就绪，可先锁 2.3.21 分支 | 2.3.21 | Kotlin 官方当前稳定版为 2.4.0；但 Compose 编译插件与 KSP 要跟矩阵走。 |
+| Gradle | 9.6.1 | 9.6.1 | 按 AGP 兼容矩阵下调 | Gradle 官方当前稳定补丁版，修复 9.6.0 回归；项目 Wrapper 已对齐 9.6.1。 |
+| Kotlin | 2.4.0 | 2.4.0；KSP 使用 2.3.9 并做注解处理验收 | 2.3.21 | Kotlin 官方当前稳定版为 2.4.0；2.4.10-RC 与 2.4.20-Beta1 不列入生产稳定。 |
 | Compose Compiler Gradle Plugin | 与 Kotlin 同版 | 与 Kotlin 精确对齐 | — | 官方文档明确该插件版本与 Kotlin 版本匹配。 |
 | Compose BOM | 2026.06.00 | 2026.06.00 | 2026.04.01 | 官方文档要求“始终使用最新 BOM”；当前文档示例为 2026.06.00。 |
 | Compose Core | BOM 对应 1.11.x 稳定线 | 跟随 BOM | 直接手工锁定子库版本 | 2026.04 稳定版引入 Compose 1.11；稳定通道已到 1.11.3。 |
@@ -201,9 +201,9 @@ flowchart TD
 | Lifecycle | 2.11.0 | 2.11.0 | — | 官方稳定版，含 Compose scoped ViewModelStore 改进。 |
 | Navigation Compose | 2.9.8 | 2.9.8 | Navigation 3 1.1.3 | 2.9.8 是成熟默认；Navigation 3 已稳定，建议 greenfield 评估。 |
 | Coroutines / Flow | 1.11.0 | 1.11.0，但需做 Kotlin 版本兼容验收 | — | 当前最新稳定为 1.11.0。 |
-| Dagger / Hilt | 2.59.2 | 2.59.2 | Koin | 2.59 增加 AGP 9 支持，2.59.2 为最新稳定补丁。 |
+| Dagger / Hilt | 2.60 | 2.60 | Koin | Hilt Android 与 Hilt Gradle Plugin 坐标均已到 2.60；升级后需跑 Hilt 聚合与注解处理验收。 |
 | `androidx.hilt` | 1.3.0 | 1.3.0 | 手写 ViewModelFactory | Compose 的 `hiltViewModel()` 已迁到 `hilt-lifecycle-viewmodel-compose`。 |
-| KSP | 2.3.9 | 2.3.9，且每次 Kotlin 升级后单独验收 | kapt | 当前稳定版；AGP 9 迁移要求 KSP 至少 2.3.6，本项目已满足。 |
+| KSP | 2.3.9 | 2.3.9，且每次 Kotlin 升级后单独验收 | kapt | 当前稳定版；Kotlin 官方 KSP quickstart 已使用 Kotlin 2.4.0 + KSP 2.3.9 组合。 |
 | Room | 2.8.4 | 2.8.4 | SQLDelight 2.3.2 | 结构化本地存储默认首选，Repository + DAO 生态最成熟。 |
 | DataStore | 1.2.1 | 1.2.1 | MMKV / EncryptedSharedPreferences | 轻量配置、偏好与 flags 首选。 |
 | WorkManager | 2.11.2 | 2.11.2 | Foreground Service 仅限用户可见长任务 | 可靠后台任务首选；2.11 以后 `minSdk` 为 23。 |
@@ -215,12 +215,14 @@ flowchart TD
 | ProfileInstaller | 1.4.1 | 1.4.1 | — | Baseline Profile 落地的稳定搭档。 |
 | Detekt | 1.23.8 | 1.23.8 | Android Lint / ktlint | Detekt 2.x 插件线仍为 alpha；生产锁定使用 1.23.8 稳定插件坐标。 |
 | Dokka | 2.2.0 | 2.2.0 | 人工 KDoc 导出 | API 文档生成工具。 |
-| Spotless | 8.7.0 | 8.7.0 | ktlint Gradle 插件 | 代码格式化与格式检查。 |
-| Retrofit | 3.0.0 | 3.0.0 | Ktor Client 3.5.0 | 生态成熟、上手成本低，适合传统 REST。 |
-| Ktor Client | 3.5.0 | 3.5.0 | Retrofit | 更适合统一多平台网络栈或更活跃自定义管线。 |
+| Spotless | 8.8.0 | 8.8.0 | ktlint Gradle 插件 | 代码格式化与格式检查。 |
+| Retrofit | 3.0.0 | 3.0.0 | Ktor Client 3.5.1 | 生态成熟、上手成本低，适合传统 REST。 |
+| Ktor Client | 3.5.1 | 3.5.1 | Retrofit | 更适合统一多平台网络栈或更活跃自定义管线。 |
 | SQLDelight | 2.3.2 | 2.3.2 | Room | 若未来考虑更强跨平台数据库共享，可替代 Room。 |
-| Rust toolchain | 1.96.0 | 跟稳定版；UniFFI 升级前先做 ABI 回归 | 旧稳定版冻结 | Rust 官方最新稳定发布。 |
-| UniFFI | 0.31.2 | 0.31.2，且绑定生成应纳入 CI | `jni-rs` 手写绑定 | 官方 Kotlin 支持成熟，但仍是 0.x 线，需控制升级节奏。 |
+| Rust toolchain | 1.96.1 | 跟稳定版；UniFFI 升级前先做 ABI 回归 | 旧稳定版冻结 | Rust 官方最新稳定点版本，包含 Cargo HTTP 与 libssh2 CVE 修复。 |
+| UniFFI | 0.32.0 | 0.32.0，且绑定生成应纳入 CI | `jni-rs` 手写绑定 | 官方 Kotlin 支持成熟，但仍是 0.x 线，需控制升级节奏。 |
+
+项目当前已将版本目录与上述表格对齐：Hilt、Spotless、Gradle Wrapper、UniFFI 均升级到表内版本；同时新增 `:core:datastore`、`:core:network`、`:benchmark` 模块承载 DataStore、Retrofit/Ktor、Macrobenchmark 等报告组件。Android 模块的 `minSdk`、Java `sourceCompatibility/targetCompatibility` 与 Kotlin `jvmTarget` 均以 **26** 为目标。
 
 ### 默认推荐与替代关系
 

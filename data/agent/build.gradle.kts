@@ -12,7 +12,7 @@ android {
   compileSdk = 37
 
   defaultConfig {
-    minSdk = 23
+    minSdk = 26
     consumerProguardFiles("consumer-rules.pro")
   }
 
@@ -33,14 +33,14 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
   }
 }
 
 kotlin {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
+    jvmTarget.set(JvmTarget.JVM_26)
     moduleName.set("jasmineagent_core_data")
   }
 }

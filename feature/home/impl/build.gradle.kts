@@ -17,7 +17,7 @@ android {
   experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
   defaultConfig {
-    minSdk = 23
+    minSdk = 26
 
     testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
     consumerProguardFiles("consumer-rules.pro")
@@ -39,15 +39,15 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
   }
 }
 
 kotlin {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
-    moduleName.set("jasmineagent_feature_agent")
+    jvmTarget.set(JvmTarget.JVM_26)
+    moduleName.set("jasmineagent_feature_home")
   }
 }
 
@@ -62,7 +62,7 @@ dependencies {
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   androidTestImplementation(composeBom)
-  implementation(project(":feature:agent:api"))
+  implementation(project(":feature:home:api"))
 
   androidTestImplementation(project(":core:testing"))
 
@@ -110,6 +110,7 @@ dependencies {
   // Instrumented tests: jUnit rules and runners
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.androidx.test.rules)
 }
 
 tasks.withType<Test>().configureEach {

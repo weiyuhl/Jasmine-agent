@@ -7,7 +7,10 @@ plugins {
   alias(libs.plugins.spotless)
 }
 
-val rustDir = rootProject.layout.projectDirectory.dir("rust")
+val rustWorkspaceDir = rootProject.layout.projectDirectory.dir("rust")
+val ffiEntryCrateDir = rustWorkspaceDir.dir("crates/ffi_entry")
+val ffiEntryCargoManifest = ffiEntryCrateDir.file("Cargo.toml")
+val ffiEntryUdlFile = ffiEntryCrateDir.file("src/jasmine_core.udl")
 val generatedKotlinDir = layout.buildDirectory.dir("generated/uniffi/kotlin")
 val generatedJniLibsDir = layout.buildDirectory.dir("generated/rustJniLibs")
 val hostRustTargetDir = layout.buildDirectory.dir("rustHost")
@@ -47,7 +50,7 @@ android {
   compileSdk = 37
 
   defaultConfig {
-    minSdk = 23
+    minSdk = 26
     consumerProguardFiles("consumer-rules.pro")
   }
 
@@ -72,14 +75,14 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
   }
 }
 
 kotlin {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
+    jvmTarget.set(JvmTarget.JVM_26)
     moduleName.set("jasmineagent_core_rust")
   }
 }
@@ -88,7 +91,7 @@ val buildRustAndroid =
   tasks.register<Exec>("buildRustAndroid") {
     group = "build"
     description = "Builds the Rust UniFFI shared library for Android ABIs."
-    workingDir = rustDir.asFile
+    workingDir = ffiEntryCrateDir.asFile
     environment("ANDROID_NDK_HOME", androidNdkDir().absolutePath)
     environment("ANDROID_NDK_ROOT", androidNdkDir().absolutePath)
     commandLine(
@@ -106,7 +109,7 @@ val buildRustAndroid =
       "--lib",
       "--release",
     )
-    inputs.dir(rustDir)
+    inputs.dir(ffiEntryCrateDir)
     outputs.dir(generatedJniLibsDir)
   }
 
@@ -115,7 +118,7 @@ val generateUniFfiKotlin =
     group = "build"
     description = "Generates Kotlin bindings from the Rust UniFFI shared library."
     dependsOn(buildRustAndroid)
-    workingDir = rustDir.asFile
+    workingDir = ffiEntryCrateDir.asFile
     outputDirectory.set(generatedKotlinDir)
     doFirst {
       outputDirectory.get().asFile.deleteRecursively()
@@ -125,7 +128,7 @@ val generateUniFfiKotlin =
       cargoExecutable(),
       "run",
       "--manifest-path",
-      rustDir.file("Cargo.toml").asFile.absolutePath,
+      ffiEntryCargoManifest.asFile.absolutePath,
       "--features=uniffi/cli",
       "--bin",
       "uniffi-bindgen",
@@ -134,13 +137,13 @@ val generateUniFfiKotlin =
       "--no-format",
       "--language",
       "kotlin",
-      rustDir.file("src/jasmine_core.udl").asFile.absolutePath,
+      ffiEntryUdlFile.asFile.absolutePath,
       "--crate",
       "jasmine_core",
       "--out-dir",
       outputDirectory.get().asFile.absolutePath,
     )
-    inputs.file(rustDir.file("src/jasmine_core.udl"))
+    inputs.file(ffiEntryUdlFile)
     doLast {
       outputDirectory
         .get()
@@ -179,18 +182,18 @@ val buildRustHost =
   tasks.register<Exec>("buildRustHost") {
     group = "verification"
     description = "Builds the host Rust UniFFI library for JVM unit tests."
-    workingDir = rustDir.asFile
+    workingDir = ffiEntryCrateDir.asFile
     commandLine(
       cargoExecutable(),
       "build",
       "--manifest-path",
-      rustDir.file("Cargo.toml").asFile.absolutePath,
+      ffiEntryCargoManifest.asFile.absolutePath,
       "--lib",
       "--release",
       "--target-dir",
       hostRustTargetDir.get().asFile.absolutePath,
     )
-    inputs.dir(rustDir)
+    inputs.dir(ffiEntryCrateDir)
     outputs.file(hostRustTargetDir.map { it.file("release/$hostLibraryName") })
   }
 

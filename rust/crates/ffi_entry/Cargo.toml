@@ -1,0 +1,17 @@
+[package]
+name = "jasmine_core"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+
+[dependencies]
+uniffi = "0.32.0"
+
+[build-dependencies]
+uniffi = { version = "0.32.0", features = ["build"] }

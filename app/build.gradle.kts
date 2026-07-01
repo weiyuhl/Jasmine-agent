@@ -31,7 +31,7 @@ android {
 
   defaultConfig {
     applicationId = "com.lhzkml.jasmineagent"
-    minSdk = 23
+    minSdk = 26
     targetSdk = 37
     versionCode = 1
     versionName = "1.0"
@@ -66,8 +66,8 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
   }
 
   buildFeatures {
@@ -99,18 +99,20 @@ ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 // Migrate from kotlinOptions to compilerOptions
 kotlin {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
+    jvmTarget.set(JvmTarget.JVM_26)
     moduleName.set("jasmineagent_app")
   }
 }
 
 dependencies {
   implementation(project(":core:database"))
+  implementation(project(":core:datastore"))
   implementation(project(":core:domain"))
+  implementation(project(":core:network"))
   implementation(project(":core:ui"))
   implementation(project(":data:agent"))
-  implementation(project(":feature:agent:api"))
-  implementation(project(":feature:agent:impl"))
+  implementation(project(":feature:home:api"))
+  implementation(project(":feature:home:impl"))
 
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)
@@ -140,15 +142,18 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling.data)
 
   // Navigation
+  implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.navigation3.ui)
   implementation(libs.profileinstaller)
   implementation(libs.startup.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+  implementation(libs.androidx.work.runtime.ktx)
 
   // Instrumented tests
   androidTestImplementation(composeBom)
   androidTestImplementation(project(":core:testing"))
   androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.androidx.test.rules)
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)

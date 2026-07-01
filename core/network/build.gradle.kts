@@ -8,12 +8,14 @@ plugins {
 }
 
 android {
-  namespace = "com.lhzkml.jasmineagent.feature.agent.navigation.keys"
+  namespace = "com.lhzkml.jasmineagent.core.network"
   compileSdk = 37
+
   defaultConfig {
-    minSdk = 23
+    minSdk = 26
     consumerProguardFiles("consumer-rules.pro")
   }
+
   buildFeatures {
     aidl = false
     buildConfig = false
@@ -29,20 +31,25 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_26
   }
 }
 
 kotlin {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
-    moduleName.set("jasmineagent_feature_agent_navigation")
+    jvmTarget.set(JvmTarget.JVM_26)
+    moduleName.set("jasmineagent_core_network")
   }
 }
 
 dependencies {
-  implementation(libs.kotlinx.serialization.core)
+  api(libs.retrofit)
+  api(libs.ktor.client.core)
+  implementation(libs.ktor.client.okhttp)
+  implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.serialization.json)
-  implementation(libs.androidx.navigation3.runtime)
+
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlinx.coroutines.test)
 }

@@ -12,10 +12,10 @@
 | Core Database | `core/database/` | 从 `core-database` 移入 |
 | Core Testing | `core/testing/` | 从 `core-testing` 移入 |
 | Data Repository 层 | `data/agent/` | 从 `core-data` 移入，因为它包含 `DefaultAgentRepository` |
-| Feature API | `feature/agent/api/` | 从 `feature-agent-navigation` 移入 |
-| Feature 实现层 | `feature/agent/impl/` | 从 `feature-agent` 移入 |
+| Feature Home API | `feature/home/api/` | 从 `feature-agent-navigation` 移入，先承接现有 Agent 首页能力 |
+| Feature Home 实现层 | `feature/home/impl/` | 从 `feature-agent` 移入，包名后续再按业务语义重命名 |
 | Native Bridge | `native/bridge/` | 从 `core-rust` 移入，负责 Android Gradle + UniFFI 集成 |
-| Rust Workspace | `rust/` | 从 Android 模块内部移到根目录 |
+| Rust Workspace | `rust/` | 根目录为 Cargo workspace，当前 FFI 入口位于 `rust/crates/ffi_entry/` |
 | 测试应用 | `test-app/` | 保留为 E2E / instrumented test app，并已作为 `:test-app` 纳入 Gradle |
 | Platform 适配层 | `platform/` | 已补占位结构 |
 | Sandbox 执行层 | `sandbox/` | 已补占位结构 |
@@ -36,8 +36,8 @@
 | `:core:testing` | `core/testing/` |
 | `:core:ui` | `core/ui/` |
 | `:data:agent` | `data/agent/` |
-| `:feature:agent:api` | `feature/agent/api/` |
-| `:feature:agent:impl` | `feature/agent/impl/` |
+| `:feature:home:api` | `feature/home/api/` |
+| `:feature:home:impl` | `feature/home/impl/` |
 | `:native:bridge` | `native/bridge/` |
 | `:test-app` | `test-app/` |
 
@@ -54,13 +54,13 @@
 | `core-database/` | `core/database/` |
 | `core-testing/` | `core/testing/` |
 | `core-data/` | `data/agent/` |
-| `feature-agent-navigation/` | `feature/agent/api/` |
-| `feature-agent/` | `feature/agent/impl/` |
-| `core-rust/` | `native/bridge/` + `rust/` |
+| `feature-agent-navigation/` | `feature/home/api/` |
+| `feature-agent/` | `feature/home/impl/` |
+| `core-rust/` | `native/bridge/` + `rust/crates/ffi_entry/` |
 
 ## 规划但未落地模块
 
-`Android端Agent应用架构深度研究报告.md` 中还包含若干面向完整 Agent 应用的推荐模块，例如 `core:common`、`core:model`、`core:network`、`core:datastore`、`core:designsystem`、`core:navigation`、更多 `data:*` / `feature:*` 切片，以及 `native:generated-bindings`。这些属于后续扩展目标，当前工作区没有实际源码模块，因此未写入 `settings.gradle.kts`。
+`Android端Agent应用架构深度研究报告.md` 中还包含若干面向完整 Agent 应用的推荐模块，例如 `core:common`、`core:model`、`core:network`、`core:datastore`、`core:designsystem`、`core:navigation`、更多 `data:*` / `feature:*` 切片，以及 `native:generated-bindings`。这些目录已经作为架构骨架落地；其中尚无源码的目录暂不写入 `settings.gradle.kts`，避免创建空 Gradle 模块拉长构建图。
 
 当前设计系统职责由主工程内的 `:core:ui` 承接，而不是单独落为 `:core:designsystem` 模块。
 

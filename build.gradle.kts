@@ -18,12 +18,14 @@ val documentedProjects =
     setOf(
         "app",
         "core:database",
+        "core:datastore",
         "core:domain",
+        "core:network",
         "core:testing",
         "core:ui",
         "data:agent",
-        "feature:agent:api",
-        "feature:agent:impl",
+        "feature:home:api",
+        "feature:home:impl",
         "native:bridge",
         "test-app",
     )
@@ -87,7 +89,7 @@ subprojects {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
                 useVersion(kotlinVersion)
-                because("Hilt 2.59.2 brings older kotlin-metadata-jvm versions that cannot read Kotlin 2.4 metadata.")
+                because("Keep kotlin-metadata-jvm aligned so annotation processors can read Kotlin 2.4 metadata.")
             }
         }
     }
