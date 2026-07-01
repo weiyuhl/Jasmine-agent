@@ -12,6 +12,19 @@ plugins {
   alias(libs.plugins.spotless)
 }
 
+val releaseKeystorePropertiesFile = rootProject.file("keystore.properties")
+val releaseKeystoreProperties =
+  Properties().apply {
+    if (releaseKeystorePropertiesFile.isFile) {
+      releaseKeystorePropertiesFile.inputStream().use { input -> load(input) }
+    }
+  }
+
+fun Properties.hasReleaseSigningConfig(): Boolean =
+  listOf("storeFile", "storePassword", "keyAlias", "keyPassword").all {
+    !getProperty(it).isNullOrBlank()
+  }
+
 android {
   namespace = "com.lhzkml.jasmineagent"
   compileSdk = 37
@@ -32,16 +45,12 @@ android {
 
   signingConfigs {
     create("release") {
-      val keystorePropertiesFile = rootProject.file("keystore.properties")
-      val keystoreProperties =
-        Properties().apply {
-          keystorePropertiesFile.inputStream().use { input -> load(input) }
-        }
-
-      storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
-      storePassword = keystoreProperties.getProperty("storePassword")
-      keyAlias = keystoreProperties.getProperty("keyAlias")
-      keyPassword = keystoreProperties.getProperty("keyPassword")
+      if (releaseKeystoreProperties.hasReleaseSigningConfig()) {
+        storeFile = rootProject.file(releaseKeystoreProperties.getProperty("storeFile"))
+        storePassword = releaseKeystoreProperties.getProperty("storePassword")
+        keyAlias = releaseKeystoreProperties.getProperty("keyAlias")
+        keyPassword = releaseKeystoreProperties.getProperty("keyPassword")
+      }
     }
   }
 
@@ -50,7 +59,9 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      if (releaseKeystoreProperties.hasReleaseSigningConfig()) {
+        signingConfig = signingConfigs.getByName("release")
+      }
     }
   }
 

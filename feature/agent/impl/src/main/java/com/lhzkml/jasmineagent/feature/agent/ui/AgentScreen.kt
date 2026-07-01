@@ -2,6 +2,7 @@ package com.lhzkml.jasmineagent.feature.agent.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalFlexBoxApi
 import androidx.compose.foundation.layout.FlexAlignItems
@@ -85,39 +86,56 @@ fun AgentScreen(modifier: Modifier = Modifier, viewModel: AgentViewModel = hiltV
         AgentContent(
           items = s.data,
           agentName = agentName,
-          onAgentNameChange = viewModel::onAgentNameChanged,
-          onSave = viewModel::addAgent,
-          onDelete = viewModel::deleteAgent,
           addAgentState = addAgentState,
+          actions =
+            AgentContentActions(
+              onAgentNameChange = viewModel::onAgentNameChanged,
+              onSave = viewModel::addAgent,
+              onDelete = viewModel::deleteAgent,
+            ),
           modifier = Modifier.fillMaxSize(),
         )
     }
 
-    SnackbarHost(
-      hostState = snackbarHostState,
-      modifier =
-        Modifier.align(Alignment.BottomCenter)
-          .padding(16.dp)
-          .testTag(AgentSemantics.SNACKBAR)
-          .semantics {
-            contentDescription = snackbarContentDescription
-            liveRegion = LiveRegionMode.Polite
-      },
-      snackbar = { snackbarData ->
-        val colorScheme = MaterialTheme.colorScheme
-        Snackbar(
-          snackbarData = snackbarData,
-          containerColor = colorScheme.inverseSurface,
-          contentColor = colorScheme.inverseOnSurface,
-          actionColor = colorScheme.inverseOnSurface,
-          dismissActionContentColor = colorScheme.inverseOnSurface,
-        )
-      },
-    )
+    AgentSnackbarHost(snackbarHostState, snackbarContentDescription)
   }
 }
 
 private val AgentGridMinCellWidth = 280.dp
+
+@Composable
+private fun BoxScope.AgentSnackbarHost(
+  snackbarHostState: SnackbarHostState,
+  snackbarContentDescription: String,
+) {
+  SnackbarHost(
+    hostState = snackbarHostState,
+    modifier =
+      Modifier.align(Alignment.BottomCenter)
+        .padding(16.dp)
+        .testTag(AgentSemantics.SNACKBAR)
+        .semantics {
+          contentDescription = snackbarContentDescription
+          liveRegion = LiveRegionMode.Polite
+        },
+    snackbar = { snackbarData ->
+      val colorScheme = MaterialTheme.colorScheme
+      Snackbar(
+        snackbarData = snackbarData,
+        containerColor = colorScheme.inverseSurface,
+        contentColor = colorScheme.inverseOnSurface,
+        actionColor = colorScheme.inverseOnSurface,
+        dismissActionContentColor = colorScheme.inverseOnSurface,
+      )
+    },
+  )
+}
+
+internal data class AgentContentActions(
+  val onAgentNameChange: (String) -> Unit,
+  val onSave: () -> Unit,
+  val onDelete: (uid: Int, name: String) -> Unit,
+)
 
 @Composable
 private fun AgentEventHandler(
@@ -224,10 +242,8 @@ private fun ErrorContent(
 internal fun AgentContent(
   items: List<AgentRecord>,
   agentName: String,
-  onAgentNameChange: (String) -> Unit,
-  onSave: () -> Unit,
-  onDelete: (uid: Int, name: String) -> Unit,
   addAgentState: AddAgentState,
+  actions: AgentContentActions,
   modifier: Modifier = Modifier,
 ) {
   val formContentDescription = stringResource(R.string.agent_form_content_description)
@@ -245,14 +261,14 @@ internal fun AgentContent(
     AddAgentForm(
       nameAgent = agentName,
       addAgentState = addAgentState,
-      onNameChange = onAgentNameChange,
-      onSave = onSave,
+      onNameChange = actions.onAgentNameChange,
+      onSave = actions.onSave,
     )
 
     if (items.isEmpty()) {
       EmptyAgents()
     } else {
-      AgentList(items, onDelete)
+      AgentList(items, actions.onDelete)
     }
   }
 }
@@ -318,7 +334,7 @@ private fun AgentListItem(
     modifier =
       Modifier.fillMaxWidth().semantics {
         contentDescription = itemContentDescription
-    },
+      },
     shape = RoundedCornerShape(8.dp),
     color = colorScheme.surfaceVariant,
     contentColor = colorScheme.onSurface,
@@ -346,26 +362,39 @@ private fun AgentListItem(
             },
         style = typography.bodyLarge,
       )
-      TextButton(
-        modifier =
-          Modifier.testTag(AgentSemantics.deleteButton(item.uid)).semantics {
-            role = Role.Button
-            contentDescription = deleteContentDescription
-          },
-        onClick = { onDelete(item.uid, item.name) },
-        shape = RoundedCornerShape(8.dp),
-        colors =
-          ButtonDefaults.textButtonColors(
-            contentColor = colorScheme.primary,
-            disabledContentColor = colorScheme.onSurfaceVariant,
-          ),
-      ) {
-        Text(
-          deleteLabel,
-          color = colorScheme.primary,
-          style = typography.labelLarge,
-        )
-      }
+      AgentDeleteButton(item, deleteLabel, deleteContentDescription, onDelete)
     }
+  }
+}
+
+@Composable
+private fun AgentDeleteButton(
+  item: AgentRecord,
+  deleteLabel: String,
+  deleteContentDescription: String,
+  onDelete: (uid: Int, name: String) -> Unit,
+) {
+  val colorScheme = MaterialTheme.colorScheme
+  val typography = MaterialTheme.typography
+
+  TextButton(
+    modifier =
+      Modifier.testTag(AgentSemantics.deleteButton(item.uid)).semantics {
+        role = Role.Button
+        contentDescription = deleteContentDescription
+      },
+    onClick = { onDelete(item.uid, item.name) },
+    shape = RoundedCornerShape(8.dp),
+    colors =
+      ButtonDefaults.textButtonColors(
+        contentColor = colorScheme.primary,
+        disabledContentColor = colorScheme.onSurfaceVariant,
+      ),
+  ) {
+    Text(
+      deleteLabel,
+      color = colorScheme.primary,
+      style = typography.labelLarge,
+    )
   }
 }

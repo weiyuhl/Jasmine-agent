@@ -6,7 +6,7 @@ complexity:
   active: true
   CyclomaticComplexMethod:
     active: true
-    allowedComplexity: 15
+    threshold: 15
     ignoreSingleWhenExpression: true
   LabeledExpression:
     active: true
@@ -14,17 +14,17 @@ complexity:
     active: true
   LongMethod:
     active: true
-    allowedLines: 60
+    threshold: 60
   LongParameterList:
     active: true
-    allowedFunctionParameters: 6
-    allowedConstructorParameters: 7
+    functionThreshold: 6
+    constructorThreshold: 7
     ignoreDefaultParameters: true
   NamedArguments:
     active: false
   NestedBlockDepth:
     active: true
-    allowedDepth: 4
+    threshold: 4
   ReplaceSafeCallChainWithRun:
     active: true
   StringLiteralDuplication:
@@ -70,8 +70,6 @@ empty-blocks:
   EmptyIfBlock:
     active: true
   EmptyInitBlock:
-    active: true
-  EmptyKotlinFile:
     active: true
   EmptySecondaryConstructor:
     active: true
@@ -238,7 +236,7 @@ style:
     maxLineLength: 140
     excludePackageStatements: true
     excludeImportStatements: true
-  MayBeConstant:
+  MayBeConst:
     active: true
   ModifierOrder:
     active: true
@@ -264,8 +262,6 @@ style:
     active: true
     max: 3
     excludeGuardClauses: true
-  SpacingAfterPackageAndImports:
-    active: true
   ThrowsCount:
     active: true
     max: 2
@@ -281,15 +277,13 @@ style:
     active: true
   UnnecessaryLet:
     active: true
-  RangeUntilInsteadOfRangeTo:
-    active: true
-  UnusedImport:
+  UnusedImports:
     active: true
   UnusedParameter:
     active: true
   UnusedPrivateClass:
     active: true
-  UnusedPrivateFunction:
+  UnusedPrivateMember:
     active: true
   UnusedPrivateProperty:
     active: true

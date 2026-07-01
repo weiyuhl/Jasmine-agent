@@ -47,7 +47,8 @@ tasks.register("checkApiDocs") {
 }
 
 subprojects {
-    if (name in documentedProjects) {
+    val projectPath = path.removePrefix(":")
+    if (projectPath in documentedProjects) {
         apply(plugin = "org.jetbrains.dokka")
     }
 

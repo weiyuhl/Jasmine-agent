@@ -60,15 +60,18 @@ dependencies {
 }
 
 tasks.withType<Test>().configureEach {
-  dependsOn(":core-rust:buildRustHost")
+  dependsOn(":native:bridge:buildRustHost")
   systemProperty(
     "jna.library.path",
-    rootProject.layout.projectDirectory.dir("core-rust/build/rustHost/release").asFile.absolutePath,
+    rootProject.layout.projectDirectory
+      .dir("native/bridge/build/rustHost/release")
+      .asFile
+      .absolutePath,
   )
   systemProperty(
     "uniffi.component.jasmine_core.libraryOverride",
     rootProject.layout.projectDirectory
-      .file("core-rust/build/rustHost/release/$rustHostLibraryName")
+      .file("native/bridge/build/rustHost/release/$rustHostLibraryName")
       .asFile
       .absolutePath,
   )

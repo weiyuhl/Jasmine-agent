@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -101,25 +102,7 @@ fun MainNavigation(deepLinkUri: String? = null) {
   val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
   val selectedDestination = appDestinations[pagerState.currentPage]
 
-  // Handle deep links on first composition
-  LaunchedEffect(deepLinkUri) {
-    when (deepLinkUri) {
-      BlankOne.DEEP_LINK -> {
-        val page = appDestinations.indexOfFirst { it.key == BlankOne }
-        if (page >= 0) pagerState.animateScrollToPage(page)
-      }
-      BlankTwo.DEEP_LINK -> {
-        val page = appDestinations.indexOfFirst { it.key == BlankTwo }
-        if (page >= 0) pagerState.animateScrollToPage(page)
-      }
-    }
-  }
-
-  LaunchedEffect(selectedDestination.key) {
-    if (selectedDestination.key != Main) {
-      drawerState.close()
-    }
-  }
+  HandleNavigationEffects(deepLinkUri, pagerState, drawerState, selectedDestination)
 
   Scaffold(
     topBar = {
@@ -166,6 +149,38 @@ fun MainNavigation(deepLinkUri: String? = null) {
 }
 
 @Composable
+private fun HandleNavigationEffects(
+  deepLinkUri: String?,
+  pagerState: PagerState,
+  drawerState: DrawerState,
+  selectedDestination: AppDestination,
+) {
+  LaunchedEffect(deepLinkUri) {
+    val deepLinkedPage = deepLinkUri?.let(::pageForDeepLink)
+    if (deepLinkedPage != null) {
+      pagerState.animateScrollToPage(deepLinkedPage)
+    }
+  }
+
+  LaunchedEffect(selectedDestination.key) {
+    if (selectedDestination.key != Main) {
+      drawerState.close()
+    }
+  }
+}
+
+private fun pageForDeepLink(deepLinkUri: String): Int? {
+  val page =
+    when (deepLinkUri) {
+      BlankOne.DEEP_LINK -> appDestinations.indexOfFirst { it.key == BlankOne }
+      BlankTwo.DEEP_LINK -> appDestinations.indexOfFirst { it.key == BlankTwo }
+      else -> return null
+    }
+
+  return page.takeIf { it >= 0 }
+}
+
+@Composable
 private fun AgentBottomNavigation(
   selectedDestination: AppDestination,
   onDestinationSelected: (AppDestination) -> Unit,
@@ -198,9 +213,7 @@ private fun DestinationPage(
       drawerState = drawerState,
       gesturesEnabled = drawerState.isOpen,
       drawerContent = {
-        DismissibleDrawerSheet(
-          modifier = Modifier.testTag(NavigationSemantics.DRAWER),
-        ) {
+        DismissibleDrawerSheet(modifier = Modifier.testTag(NavigationSemantics.DRAWER)) {
           Column(Modifier.verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(DrawerTopPadding))
             appDestinations.forEach { drawerDestination ->

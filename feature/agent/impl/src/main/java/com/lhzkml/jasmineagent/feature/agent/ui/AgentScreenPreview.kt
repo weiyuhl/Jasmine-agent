@@ -1,3 +1,5 @@
+@file:Suppress("UnusedPrivateMember")
+
 package com.lhzkml.jasmineagent.feature.agent.ui
 
 import androidx.compose.runtime.Composable
@@ -20,10 +22,8 @@ private fun DefaultPreview() {
     AgentContent(
       items = previewAgents("Compose", "Room", "Kotlin"),
       agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      onDelete = { _, _ -> },
       addAgentState = AddAgentState.Idle,
+      actions = PreviewActions,
     )
   }
 }
@@ -35,10 +35,8 @@ private fun EmptyStatePreview() {
     AgentContent(
       items = emptyList(),
       agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      onDelete = { _, _ -> },
       addAgentState = AddAgentState.Idle,
+      actions = PreviewActions,
     )
   }
 }
@@ -50,13 +48,18 @@ private fun ErrorStatePreview() {
     AgentContent(
       items = previewAgents("Compose"),
       agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      onDelete = { _, _ -> },
       addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
+      actions = PreviewActions,
     )
   }
 }
+
+private val PreviewActions =
+  AgentContentActions(
+    onAgentNameChange = {},
+    onSave = {},
+    onDelete = { _, _ -> },
+  )
 
 private fun previewAgents(vararg names: String): List<AgentRecord> =
   names.mapIndexed { index, name ->

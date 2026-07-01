@@ -46,10 +46,8 @@ class AgentScreenTest {
         AgentContent(
           items = FAKE_DATA,
           agentName = "",
-          onAgentNameChange = {},
-          onSave = {},
-          onDelete = { _, _ -> },
           addAgentState = AddAgentState.Idle,
+          actions = NoOpActions,
         )
       }
     }
@@ -100,10 +98,8 @@ class AgentScreenTest {
         AgentContent(
           items = FAKE_DATA,
           agentName = "",
-          onAgentNameChange = {},
-          onSave = {},
-          onDelete = { uid, name -> deleted.set(uid to name) },
           addAgentState = AddAgentState.Idle,
+          actions = NoOpActions.copy(onDelete = { uid, name -> deleted.set(uid to name) }),
         )
       }
     }
@@ -122,10 +118,8 @@ class AgentScreenTest {
         AgentContent(
           items = emptyList(),
           agentName = "",
-          onAgentNameChange = {},
-          onSave = {},
-          onDelete = { _, _ -> },
           addAgentState = AddAgentState.Idle,
+          actions = NoOpActions,
         )
       }
     }
@@ -143,10 +137,8 @@ class AgentScreenTest {
         AgentContent(
           items = FAKE_DATA,
           agentName = "",
-          onAgentNameChange = {},
-          onSave = {},
-          onDelete = { _, _ -> },
           addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
+          actions = NoOpActions,
         )
       }
     }
@@ -165,10 +157,8 @@ class AgentScreenTest {
           AgentContent(
             items = FAKE_DATA,
             agentName = "",
-            onAgentNameChange = {},
-            onSave = {},
-            onDelete = { _, _ -> },
             addAgentState = AddAgentState.Idle,
+            actions = NoOpActions,
           )
         }
       }
@@ -189,10 +179,8 @@ class AgentScreenTest {
             AgentContent(
               items = FAKE_DATA,
               agentName = "",
-              onAgentNameChange = {},
-              onSave = {},
-              onDelete = { _, _ -> },
               addAgentState = AddAgentState.Idle,
+              actions = NoOpActions,
             )
           }
         }
@@ -211,6 +199,13 @@ private val FAKE_DATA =
     agentRecord(1, "Compose"),
     agentRecord(2, "Room"),
     agentRecord(3, "Kotlin"),
+  )
+
+private val NoOpActions =
+  AgentContentActions(
+    onAgentNameChange = {},
+    onSave = {},
+    onDelete = { _, _ -> },
   )
 
 private fun agentRecord(uid: Int, name: String): AgentRecord =

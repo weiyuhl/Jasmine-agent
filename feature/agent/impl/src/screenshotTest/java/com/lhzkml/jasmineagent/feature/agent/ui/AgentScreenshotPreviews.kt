@@ -22,10 +22,8 @@ private fun AgentContentDefaultScreenshot() {
     AgentContent(
       items = screenshotAgents("Compose", "Room", "Kotlin"),
       agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      onDelete = { _, _ -> },
       addAgentState = AddAgentState.Idle,
+      actions = ScreenshotActions,
     )
   }
 }
@@ -38,10 +36,8 @@ private fun AgentContentEmptyScreenshot() {
     AgentContent(
       items = emptyList(),
       agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      onDelete = { _, _ -> },
       addAgentState = AddAgentState.Idle,
+      actions = ScreenshotActions,
     )
   }
 }
@@ -54,13 +50,18 @@ private fun AgentContentErrorLargeFontScreenshot() {
     AgentContent(
       items = screenshotAgents("Compose"),
       agentName = "",
-      onAgentNameChange = {},
-      onSave = {},
-      onDelete = { _, _ -> },
       addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
+      actions = ScreenshotActions,
     )
   }
 }
+
+private val ScreenshotActions =
+  AgentContentActions(
+    onAgentNameChange = {},
+    onSave = {},
+    onDelete = { _, _ -> },
+  )
 
 private fun screenshotAgents(vararg names: String): List<AgentRecord> =
   names.mapIndexed { index, name ->

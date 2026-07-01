@@ -135,13 +135,10 @@ private fun SaveAgentButton(
 
   Button(
     modifier =
-      modifier
-        .width(96.dp)
-        .testTag(AgentSemantics.SAVE_BUTTON)
-        .semantics {
-          role = Role.Button
-          contentDescription = saveLabel
-        },
+      modifier.width(96.dp).testTag(AgentSemantics.SAVE_BUTTON).semantics {
+        role = Role.Button
+        contentDescription = saveLabel
+      },
     onClick = onSave,
     enabled = enabled,
     contentPadding = PaddingValues(0.dp),

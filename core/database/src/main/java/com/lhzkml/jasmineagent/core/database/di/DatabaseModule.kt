@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.room.Room
+import androidx.room.migration.Migration
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.lhzkml.jasmineagent.core.database.AgentDao
 import com.lhzkml.jasmineagent.core.database.AppDatabase
 import dagger.Module
@@ -40,6 +42,7 @@ class DatabaseModule {
     val factory = SupportOpenHelperFactory(passphrase)
     return Room.databaseBuilder(appContext, AppDatabase::class.java, "Agent")
       .openHelperFactory(factory)
+      .addMigrations(MIGRATION_1_2)
       .build()
   }
 
@@ -91,6 +94,18 @@ class DatabaseModule {
   private fun ByteArray.toHex(): String = joinToString(separator = "") { "%02x".format(it) }
 
   private companion object {
+    val MIGRATION_1_2 =
+      object : Migration(1, 2) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+          db.execSQL("ALTER TABLE agent ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0")
+          db.execSQL("ALTER TABLE agent ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0")
+          db.execSQL("ALTER TABLE agent ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE'")
+          db.execSQL("ALTER TABLE agent ADD COLUMN description TEXT")
+          db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_agent_name ON agent(name)")
+          db.execSQL("CREATE INDEX IF NOT EXISTS index_agent_created_at ON agent(created_at)")
+        }
+      }
+
     const val PASSPHRASE_SALT_KEY = "db_passphrase_salt"
     const val PASSPHRASE_SECRET_KEY = "db_passphrase_secret"
     const val SECRET_BYTES = 32
