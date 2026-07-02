@@ -15,6 +15,7 @@ Compatibility target:
 
 Current modules:
 
+- `:platform:background` owns WorkManager scheduling, foreground-work info, cancellation, and observation.
 - `:platform:os` exposes runtime/device information.
 - `:platform:permissions` checks runtime permission state and rationale metadata.
 - `:platform:files` owns app file roots, scoped file resolution, FileProvider URIs, and URI text IO.

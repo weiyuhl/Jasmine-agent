@@ -109,6 +109,7 @@ dependencies {
   implementation(project(":core:navigation"))
   implementation(project(":feature:home:api"))
   implementation(project(":feature:home:impl"))
+  implementation(project(":platform:background"))
   implementation(project(":platform:files"))
   implementation(project(":platform:notifications"))
   implementation(project(":platform:os"))
@@ -150,7 +151,6 @@ dependencies {
   implementation(libs.profileinstaller)
   implementation(libs.startup.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
-  implementation(libs.androidx.work.runtime.ktx)
 
   // Instrumented tests
   androidTestImplementation(composeBom)

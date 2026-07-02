@@ -31,6 +31,7 @@ val documentedProjects =
         "feature:home:api",
         "feature:home:impl",
         "native:bridge",
+        "platform:background",
         "platform:files",
         "platform:notifications",
         "platform:os",
