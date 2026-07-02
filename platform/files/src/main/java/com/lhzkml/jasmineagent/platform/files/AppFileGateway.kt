@@ -1,7 +1,9 @@
 package com.lhzkml.jasmineagent.platform.files
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import androidx.core.content.FileProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
@@ -13,6 +15,13 @@ enum class PlatformFileScope {
   NoBackup,
   ExternalFiles,
   ExternalCache,
+}
+
+object PlatformUriPermissionFlags {
+  const val Read = Intent.FLAG_GRANT_READ_URI_PERMISSION
+  const val Write = Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+  const val Persistable = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+  const val ReadWrite = Read or Write
 }
 
 interface AppFileGateway {
@@ -31,6 +40,16 @@ interface AppFileGateway {
   fun readText(uri: Uri): String
 
   fun writeText(uri: Uri, text: String, mode: String = "w")
+
+  fun persistUriPermission(uri: Uri, modeFlags: Int = PlatformUriPermissionFlags.Read)
+
+  fun releasePersistedUriPermission(uri: Uri, modeFlags: Int = PlatformUriPermissionFlags.Read)
+
+  fun persistedUriPermissions(): List<Uri>
+
+  fun isExternalStorageReadable(): Boolean
+
+  fun isExternalStorageWritable(): Boolean
 }
 
 class AndroidAppFileGateway @Inject constructor(@ApplicationContext private val context: Context) :
@@ -62,7 +81,28 @@ class AndroidAppFileGateway @Inject constructor(@ApplicationContext private val 
     context.contentResolver.openOutputStream(uri, mode)?.bufferedWriter()?.use { it.write(text) }
       ?: error("Unable to open output stream for $uri")
   }
+
+  override fun persistUriPermission(uri: Uri, modeFlags: Int) {
+    context.contentResolver.takePersistableUriPermission(uri, modeFlags and PersistableModeMask)
+  }
+
+  override fun releasePersistedUriPermission(uri: Uri, modeFlags: Int) {
+    context.contentResolver.releasePersistableUriPermission(uri, modeFlags and PersistableModeMask)
+  }
+
+  override fun persistedUriPermissions(): List<Uri> =
+    context.contentResolver.persistedUriPermissions.map { it.uri }
+
+  override fun isExternalStorageReadable(): Boolean =
+    Environment.getExternalStorageState() in
+      setOf(Environment.MEDIA_MOUNTED, Environment.MEDIA_MOUNTED_READ_ONLY)
+
+  override fun isExternalStorageWritable(): Boolean =
+    Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
 }
+
+private const val PersistableModeMask =
+  Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 
 private fun File.resolveInside(relativePath: String): File {
   val candidate = File(this, relativePath).canonicalFile

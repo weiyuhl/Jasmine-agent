@@ -7,16 +7,49 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.lhzkml.jasmineagent.platform.os.AndroidApiLevel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-enum class PlatformPermission(val manifestName: String, val minSdk: Int = 1) {
-  PostNotifications(Manifest.permission.POST_NOTIFICATIONS, Build.VERSION_CODES.TIRAMISU),
+private const val ACCESS_LOCAL_NETWORK_PERMISSION = "android.permission.ACCESS_LOCAL_NETWORK"
+
+enum class PlatformPermission(
+  val manifestName: String,
+  val minSdk: Int = 1,
+  val maxSdk: Int = Int.MAX_VALUE,
+) {
+  PostNotifications(Manifest.permission.POST_NOTIFICATIONS, AndroidApiLevel.ANDROID_13),
+  LocalNetwork(ACCESS_LOCAL_NETWORK_PERMISSION, AndroidApiLevel.ANDROID_17),
+  NearbyWifiDevices(Manifest.permission.NEARBY_WIFI_DEVICES, AndroidApiLevel.ANDROID_13),
   Camera(Manifest.permission.CAMERA),
   RecordAudio(Manifest.permission.RECORD_AUDIO),
-  ReadMediaImages(Manifest.permission.READ_MEDIA_IMAGES, Build.VERSION_CODES.TIRAMISU),
-  ReadMediaVideo(Manifest.permission.READ_MEDIA_VIDEO, Build.VERSION_CODES.TIRAMISU),
-  ReadMediaAudio(Manifest.permission.READ_MEDIA_AUDIO, Build.VERSION_CODES.TIRAMISU),
+  AccessCoarseLocation(Manifest.permission.ACCESS_COARSE_LOCATION),
+  AccessFineLocation(Manifest.permission.ACCESS_FINE_LOCATION),
+  ReadExternalStorage(
+    Manifest.permission.READ_EXTERNAL_STORAGE,
+    maxSdk = AndroidApiLevel.ANDROID_12L,
+  ),
+  WriteExternalStorage(
+    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    maxSdk = AndroidApiLevel.ANDROID_9,
+  ),
+  ReadMediaImages(Manifest.permission.READ_MEDIA_IMAGES, AndroidApiLevel.ANDROID_13),
+  ReadMediaVideo(Manifest.permission.READ_MEDIA_VIDEO, AndroidApiLevel.ANDROID_13),
+  ReadMediaAudio(Manifest.permission.READ_MEDIA_AUDIO, AndroidApiLevel.ANDROID_13),
+  ReadMediaVisualUserSelected(
+    Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+    AndroidApiLevel.ANDROID_14,
+  );
+
+  fun appliesTo(sdkInt: Int): Boolean = sdkInt in minSdk..maxSdk
+}
+
+enum class PlatformMediaAccess {
+  Images,
+  Video,
+  Audio,
+  ImagesAndVideo,
+  VisualUserSelected,
 }
 
 enum class PermissionGrantState {
@@ -42,6 +75,13 @@ interface PermissionGateway {
   fun isGranted(permission: PlatformPermission): Boolean
 
   fun missingPermissions(permissions: Collection<PlatformPermission>): List<PlatformPermission>
+
+  fun mediaReadPermissionsFor(
+    access: PlatformMediaAccess,
+    sdkInt: Int = Build.VERSION.SDK_INT,
+  ): List<PlatformPermission>
+
+  fun localNetworkPermissionsFor(sdkInt: Int = Build.VERSION.SDK_INT): List<PlatformPermission>
 }
 
 class AndroidPermissionGateway
@@ -49,7 +89,7 @@ class AndroidPermissionGateway
 constructor(@ApplicationContext private val context: Context) : PermissionGateway {
 
   override fun state(permission: PlatformPermission, activity: Activity?): PermissionState {
-    if (Build.VERSION.SDK_INT < permission.minSdk) {
+    if (!permission.appliesTo(Build.VERSION.SDK_INT)) {
       return PermissionState(
         permission,
         PermissionGrantState.NotRequired,
@@ -82,4 +122,41 @@ constructor(@ApplicationContext private val context: Context) : PermissionGatewa
   ): List<PlatformPermission> = permissions.filter {
     state(it).grantState == PermissionGrantState.Denied
   }
+
+  override fun mediaReadPermissionsFor(
+    access: PlatformMediaAccess,
+    sdkInt: Int,
+  ): List<PlatformPermission> = mediaReadPermissionsForSdk(access = access, sdkInt = sdkInt)
+
+  override fun localNetworkPermissionsFor(sdkInt: Int): List<PlatformPermission> =
+    when {
+      sdkInt >= AndroidApiLevel.ANDROID_17 -> listOf(PlatformPermission.LocalNetwork)
+      sdkInt >= AndroidApiLevel.ANDROID_16 -> listOf(PlatformPermission.NearbyWifiDevices)
+      else -> emptyList()
+    }
 }
+
+fun mediaReadPermissionsForSdk(
+  access: PlatformMediaAccess,
+  sdkInt: Int = Build.VERSION.SDK_INT,
+): List<PlatformPermission> =
+  when {
+    sdkInt >= AndroidApiLevel.ANDROID_14 && access == PlatformMediaAccess.VisualUserSelected ->
+      listOf(
+        PlatformPermission.ReadMediaImages,
+        PlatformPermission.ReadMediaVideo,
+        PlatformPermission.ReadMediaVisualUserSelected,
+      )
+    sdkInt >= AndroidApiLevel.ANDROID_13 -> granularMediaPermissions(access)
+    else -> listOf(PlatformPermission.ReadExternalStorage)
+  }.filter { it.appliesTo(sdkInt) }
+
+private fun granularMediaPermissions(access: PlatformMediaAccess): List<PlatformPermission> =
+  when (access) {
+    PlatformMediaAccess.Images -> listOf(PlatformPermission.ReadMediaImages)
+    PlatformMediaAccess.Video -> listOf(PlatformPermission.ReadMediaVideo)
+    PlatformMediaAccess.Audio -> listOf(PlatformPermission.ReadMediaAudio)
+    PlatformMediaAccess.ImagesAndVideo,
+    PlatformMediaAccess.VisualUserSelected ->
+      listOf(PlatformPermission.ReadMediaImages, PlatformPermission.ReadMediaVideo)
+  }

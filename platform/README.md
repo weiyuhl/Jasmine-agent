@@ -4,6 +4,15 @@ Android OS adapters live here: permissions, notifications, file access, telemetr
 
 Keep platform APIs behind Kotlin interfaces so feature modules and Rust bridge code do not depend directly on Android framework details.
 
+Compatibility target:
+
+- The project compiles and targets Android 17 / API 37.
+- The current Gradle `minSdk` remains Android 8 / API 26, which includes Android 9 devices.
+- Platform code keeps Android 9 / API 28 behavior explicit for permission, file, notification, and
+  foreground-service boundaries.
+- Newer dangerous permissions are exposed as requestable capabilities, but broad permissions should
+  only be declared by features that actually need them.
+
 Current modules:
 
 - `:platform:os` exposes runtime/device information.
