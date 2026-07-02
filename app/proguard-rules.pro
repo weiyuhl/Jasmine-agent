@@ -3,6 +3,9 @@
     public <init>(...);
 }
 
+# Local crash reports should keep their own frame names in release builds.
+-keep class com.lhzkml.jasmineagent.diagnostics.CrashReporter { *; }
+
 # Kotlin metadata and serialization annotations used by Navigation 3 keys.
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt

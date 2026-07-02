@@ -4,6 +4,8 @@ import android.database.sqlite.SQLiteException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryException
 import com.lhzkml.jasmineagent.core.domain.repository.AgentRepositoryFailure
 import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
+import javax.inject.Provider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -36,7 +38,7 @@ class DefaultAgentRepositoryTest {
   @Test
   fun agents_newItemSaved_itemIsReturned() =
     runTest(testDispatcher) {
-      val repository = DefaultAgentRepository(FakeAgentDao())
+      val repository = repository()
 
       repository.add("Repository")
 
@@ -46,7 +48,7 @@ class DefaultAgentRepositoryTest {
   @Test
   fun getAgents_returnsLimitedAgentModels() =
     runTest(testDispatcher) {
-      val repository = DefaultAgentRepository(FakeAgentDao())
+      val repository = repository()
 
       repository.add("First")
       repository.add("Second")
@@ -57,7 +59,7 @@ class DefaultAgentRepositoryTest {
   @Test
   fun delete_removesAgentFromActiveNames() =
     runTest(testDispatcher) {
-      val repository = DefaultAgentRepository(FakeAgentDao())
+      val repository = repository()
 
       repository.add("Disposable")
       val agent = repository.getByName("Disposable")
@@ -69,7 +71,7 @@ class DefaultAgentRepositoryTest {
   @Test
   fun updateStatus_removesInactiveAgentFromActiveNames() =
     runTest(testDispatcher) {
-      val repository = DefaultAgentRepository(FakeAgentDao())
+      val repository = repository()
 
       repository.add("Inactive")
       val agent = repository.getByName("Inactive")
@@ -83,7 +85,7 @@ class DefaultAgentRepositoryTest {
   fun add_whenDuplicateCheckFails_mapsStorageFailure() =
     runTest(testDispatcher) {
       val dao = FakeAgentDao()
-      val repository = DefaultAgentRepository(dao)
+      val repository = repository(dao)
       dao.throwGetByNameError(SQLiteException("query failed"))
 
       val exception = expectRepositoryException { repository.add("Broken") }
@@ -95,12 +97,36 @@ class DefaultAgentRepositoryTest {
   fun agents_whenDaoFlowFails_mapsStorageFailure() =
     runTest(testDispatcher) {
       val dao = FakeAgentDao()
-      val repository = DefaultAgentRepository(dao)
+      val repository = repository(dao)
       dao.throwActiveNamesError(SQLiteException("flow failed"))
 
       val exception = expectRepositoryException { repository.agents.first() }
 
       assertEquals(AgentRepositoryFailure.STORAGE, exception.failure)
+    }
+
+  @Test
+  fun agents_whenDaoProviderFails_mapsStorageFailure() =
+    runTest(testDispatcher) {
+      val repository =
+        DefaultAgentRepository(Provider { throw UnsatisfiedLinkError("sqlcipher failed to load") })
+
+      val exception = expectRepositoryException { repository.agents.first() }
+
+      assertEquals(AgentRepositoryFailure.STORAGE, exception.failure)
+    }
+
+  @Test
+  fun agents_whenDaoProviderIsCancelled_rethrowsCancellation() =
+    runTest(testDispatcher) {
+      val repository = DefaultAgentRepository(Provider { throw CancellationException("cancelled") })
+
+      try {
+        repository.agents.first()
+        fail("Expected CancellationException")
+      } catch (_: CancellationException) {
+        // Expected cancellation should keep structured concurrency semantics.
+      }
     }
 
   private suspend fun expectRepositoryException(
@@ -113,4 +139,7 @@ class DefaultAgentRepositoryTest {
     } catch (e: AgentRepositoryException) {
       e
     }
+
+  private fun repository(dao: FakeAgentDao = FakeAgentDao()): DefaultAgentRepository =
+    DefaultAgentRepository(Provider { dao })
 }

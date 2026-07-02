@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.lhzkml.jasmineagent.core.designsystem.theme.AgentMaterialTheme
 import com.lhzkml.jasmineagent.core.navigation.NavigationEntryRegistrar
+import com.lhzkml.jasmineagent.diagnostics.CrashReporter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -27,12 +28,21 @@ class MainActivity : ComponentActivity() {
 
   /** Deep link URI extracted from the launch intent, if any. */
   private var deepLinkUri by mutableStateOf<String?>(null)
+  private var contentBreadcrumbRecorded = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    CrashReporter.recordBreadcrumb(this, "MainActivity.onCreate:start")
     enableTransparentSystemBars()
+    CrashReporter.recordBreadcrumb(this, "MainActivity.edgeToEdge:applied")
     extractDeepLink(intent)
+    CrashReporter.recordBreadcrumb(this, "MainActivity.deepLink:extracted")
     super.onCreate(savedInstanceState)
+    CrashReporter.recordBreadcrumb(this, "MainActivity.superOnCreate:completed")
     setContent {
+      if (!contentBreadcrumbRecorded) {
+        contentBreadcrumbRecorded = true
+        CrashReporter.recordBreadcrumb(this, "MainActivity.setContent:firstComposition")
+      }
       AgentMaterialTheme {
         Surface(
           modifier = Modifier.fillMaxSize(),
@@ -49,6 +59,7 @@ class MainActivity : ComponentActivity() {
   }
 
   override fun onNewIntent(intent: Intent) {
+    CrashReporter.recordBreadcrumb(this, "MainActivity.onNewIntent")
     super.onNewIntent(intent)
     extractDeepLink(intent)
   }
@@ -58,6 +69,7 @@ class MainActivity : ComponentActivity() {
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
+    CrashReporter.recordBreadcrumb(this, "MainActivity.onConfigurationChanged")
     super.onConfigurationChanged(newConfig)
     enableTransparentSystemBars()
   }

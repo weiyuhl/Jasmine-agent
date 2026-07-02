@@ -108,6 +108,9 @@ subprojects {
                 allRules = false
                 config.setFrom(rootProject.file("detekt-config.yml"))
             }
+            tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+                jvmTarget = "22"
+            }
         }
         if (plugins.hasPlugin("com.diffplug.spotless")) {
             configure<com.diffplug.gradle.spotless.SpotlessExtension> {

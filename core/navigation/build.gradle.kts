@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   alias(libs.plugins.android.library)
+  alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.detekt)
   alias(libs.plugins.spotless)
@@ -17,6 +18,7 @@ android {
   }
 
   buildFeatures {
+    compose = true
     aidl = false
     buildConfig = false
     shaders = false

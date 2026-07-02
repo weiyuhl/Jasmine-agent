@@ -1,0 +1,23 @@
+JasmineAgent Diagnostics
+Generated: 2026-07-02 08:49:16.310
+Package: com.lhzkml.jasmineagent
+Version: 1.0 (1)
+Process: 19933
+Device: Xiaomi Redmi K30 Pro (lmi)
+Android: 12 / API 31
+ABIs: arm64-v8a, armeabi-v7a, armeabi
+
+Previous Process Exit:
+Reason: CRASH (4)
+Timestamp: 2026-07-02 02:59:51.678
+Process: com.lhzkml.jasmineagent
+Pid: 978
+Status: 0
+Importance: 100
+Description: crash
+
+Trace:
+No trace available.
+
+Current Launch Breadcrumbs:
+2026-07-02 08:49:16.296 [main] CrashReporter installed
