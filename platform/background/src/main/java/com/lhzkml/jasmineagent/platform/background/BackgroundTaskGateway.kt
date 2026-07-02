@@ -1,6 +1,8 @@
 package com.lhzkml.jasmineagent.platform.background
 
 import android.content.Context
+import android.content.pm.ServiceInfo
+import android.os.Build
 import androidx.lifecycle.asFlow
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
@@ -134,9 +136,20 @@ interface BackgroundTaskGateway {
 }
 
 interface ForegroundWorkInfoFactory {
+  /**
+   * Builds the [ForegroundInfo] a Worker passes to `setForeground()`.
+   *
+   * [foregroundServiceType] defaults to
+   * [ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC], which this module declares in its manifest
+   * (typed permission + service override). Passing another type requires the app to declare the
+   * matching `FOREGROUND_SERVICE_<TYPE>` permission and extend the
+   * `SystemForegroundService` override. Passing `0` is rejected on Android 14+ where a concrete
+   * type is mandatory ([android.app.MissingForegroundServiceTypeException] would be thrown by the
+   * system otherwise).
+   */
   fun createForegroundInfo(
     notificationSpec: PlatformNotificationSpec,
-    foregroundServiceType: Int = 0,
+    foregroundServiceType: Int = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
   ): ForegroundInfo
 }
 
@@ -145,6 +158,8 @@ class WorkManagerBackgroundTaskGateway @Inject constructor(@ApplicationContext c
   private val workManager = WorkManager.getInstance(context)
 
   override fun enqueueOneTime(spec: OneTimeBackgroundWorkSpec): UUID {
+    requireValidExpeditedSpec(spec)
+
     val request =
       OneTimeWorkRequest.Builder(spec.workerClass.java)
         .applyCommon(
@@ -237,10 +252,30 @@ constructor(private val notificationGateway: NotificationGateway) : ForegroundWo
     val notification = notificationGateway.buildNotification(notificationSpec)
 
     return if (foregroundServiceType == 0) {
+      require(Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        "Android 14+ requires an explicit foregroundServiceType for foreground workers."
+      }
       ForegroundInfo(notificationSpec.id, notification)
     } else {
       ForegroundInfo(notificationSpec.id, notification, foregroundServiceType)
     }
+  }
+}
+
+/**
+ * WorkManager rejects these combinations at `WorkRequest.build()` time with an opaque
+ * [IllegalArgumentException]; validating the spec up front turns "looks legal" data combinations
+ * into an actionable failure at the gateway boundary.
+ */
+internal fun requireValidExpeditedSpec(spec: OneTimeBackgroundWorkSpec) {
+  if (!spec.expedited) return
+  require(spec.initialDelay.isZero) { "Expedited work cannot have an initial delay." }
+  require(
+    !spec.constraints.requiresCharging &&
+      !spec.constraints.requiresDeviceIdle &&
+      !spec.constraints.requiresBatteryNotLow
+  ) {
+    "Expedited work only supports network and storage constraints."
   }
 }
 

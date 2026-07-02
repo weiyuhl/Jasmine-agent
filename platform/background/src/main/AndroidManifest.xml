@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      Android 14+ (API 34) requires a typed foreground-service permission and an explicit
+      foregroundServiceType on the service entry for any Worker that calls setForeground().
+      This module defaults ForegroundWorkInfoFactory to dataSync; apps that need another type
+      must declare the matching FOREGROUND_SERVICE_<TYPE> permission and extend the service
+      override below in their own manifest.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <application>
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+    </application>
+</manifest>

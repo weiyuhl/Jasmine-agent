@@ -17,6 +17,9 @@ import java.io.StringWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
 object CrashReporter {
@@ -26,11 +29,33 @@ object CrashReporter {
   private const val LATEST_CRASH_FILE = "jasmine-crash-latest.txt"
   private const val LATEST_EXIT_FILE = "jasmine-exit-latest.txt"
   private const val LATEST_STARTUP_FILE = "jasmine-startup-latest.txt"
+  private const val LAST_EXIT_MARKER_FILE = "jasmine-exit-last-reported.txt"
+  private const val REPORT_FILE_PREFIX = "JasmineAgent-"
   private const val MAX_BREADCRUMBS = 80
   private const val MAX_EXIT_TRACE_BYTES = 256 * 1024
+  private const val MAX_REPORT_FILES = 20
+  private const val SNAPSHOT_THROTTLE_MS = 1_000L
 
   private val lock = Any()
   private val breadcrumbs = ArrayDeque<String>()
+
+  /**
+   * Diagnostics writes happen off the caller's thread: breadcrumbs are recorded on the app's
+   * hottest startup paths (Application.attachBaseContext, first composition), where synchronous
+   * file I/O causes jank and StrictMode violations.
+   */
+  private val executor =
+    Executors.newSingleThreadScheduledExecutor { runnable ->
+      Thread(runnable, "jasmine-diagnostics").apply { isDaemon = true }
+    }
+  private val snapshotScheduled = AtomicBoolean(false)
+
+  /**
+   * Whether reports are additionally copied to the public Downloads collection. Disabled by
+   * default: crash reports contain stack traces, breadcrumbs, and device details that must not
+   * leave app-private storage without an explicit user action.
+   */
+  @Volatile var exportToPublicDownloads: Boolean = false
 
   @Volatile private var installed = false
 
@@ -46,6 +71,7 @@ object CrashReporter {
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
       try {
         recordBreadcrumb(appContext, "Uncaught exception on ${thread.name}", throwable)
+        // The process is about to die, so this write is intentionally synchronous.
         writeCrashReport(appContext, thread, throwable)
       } catch (reporterError: Throwable) {
         Log.e(TAG, "Failed to write crash report", reporterError)
@@ -59,8 +85,10 @@ object CrashReporter {
     }
 
     recordBreadcrumb(appContext, "CrashReporter installed")
-    runCatching { writePreviousExitReportIfPresent(appContext) }
-      .onFailure { Log.w(TAG, "Failed to inspect previous process exits", it) }
+    executor.execute {
+      runCatching { writePreviousExitReportIfPresent(appContext) }
+        .onFailure { Log.w(TAG, "Failed to inspect previous process exits", it) }
+    }
   }
 
   fun recordBreadcrumb(context: Context, message: String, throwable: Throwable? = null) {
@@ -85,11 +113,31 @@ object CrashReporter {
     }
 
     Log.d(TAG, message, throwable)
-    runCatching { writeStartupSnapshot(appContext) }
+    scheduleStartupSnapshot(appContext)
+  }
+
+  /**
+   * Coalesces bursts of breadcrumbs into a single deferred snapshot write; the snapshot captures
+   * the breadcrumb queue at write time, so no intermediate state is lost.
+   */
+  private fun scheduleStartupSnapshot(context: Context) {
+    if (!snapshotScheduled.compareAndSet(false, true)) return
+    runCatching {
+        executor.schedule(
+          {
+            snapshotScheduled.set(false)
+            runCatching { writeStartupSnapshot(context) }
+              .onFailure { Log.w(TAG, "Failed to write startup snapshot", it) }
+          },
+          SNAPSHOT_THROTTLE_MS,
+          TimeUnit.MILLISECONDS,
+        )
+      }
+      .onFailure { snapshotScheduled.set(false) }
   }
 
   private fun writeCrashReport(context: Context, thread: Thread, throwable: Throwable) {
-    val fileName = "JasmineAgent-crash-${fileTimestamp()}.txt"
+    val fileName = "${REPORT_FILE_PREFIX}crash-${fileTimestamp()}.txt"
     val report = buildString {
       appendHeader(context)
       appendLine("Crashed Thread: ${thread.name}")
@@ -102,7 +150,7 @@ object CrashReporter {
     }
 
     writeAppFiles(context, fileName, report, LATEST_CRASH_FILE)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (exportToPublicDownloads && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       runCatching { writePublicDownloads(context, fileName, report) }
         .onFailure { Log.w(TAG, "Failed to write public crash report", it) }
     }
@@ -127,7 +175,11 @@ object CrashReporter {
         .getSystemService(ActivityManager::class.java)
         ?.getHistoricalProcessExitReasons(context.packageName, 0, 5)
         ?.firstOrNull { it.isReportableExitReason() } ?: return
-    val fileName = "JasmineAgent-exit-${fileTimestamp()}.txt"
+    // Historical exit reasons persist across launches; skip exits that were already reported so
+    // each cold start does not regenerate the same report and grow the diagnostics dir forever.
+    if (exitInfo.timestamp <= readLastReportedExitTimestamp(context)) return
+
+    val fileName = "${REPORT_FILE_PREFIX}exit-${fileTimestamp()}.txt"
     val report = buildString {
       appendHeader(context)
       appendLine("Previous Process Exit:")
@@ -147,11 +199,26 @@ object CrashReporter {
     }
 
     writeAppFiles(context, fileName, report, LATEST_EXIT_FILE)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    writeLastReportedExitTimestamp(context, exitInfo.timestamp)
+    if (exportToPublicDownloads && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       runCatching { writePublicDownloads(context, fileName, report) }
         .onFailure { Log.w(TAG, "Failed to write public previous-exit report", it) }
     }
     recordBreadcrumb(context, "Previous process exit report written:${exitInfo.reasonName()}")
+  }
+
+  private fun readLastReportedExitTimestamp(context: Context): Long =
+    runCatching {
+        File(File(context.filesDir, DIAGNOSTICS_DIR), LAST_EXIT_MARKER_FILE).readText().toLong()
+      }
+      .getOrDefault(Long.MIN_VALUE)
+
+  private fun writeLastReportedExitTimestamp(context: Context, timestamp: Long) {
+    runCatching {
+        val dir = File(context.filesDir, DIAGNOSTICS_DIR).apply { mkdirs() }
+        File(dir, LAST_EXIT_MARKER_FILE).writeText(timestamp.toString())
+      }
+      .onFailure { Log.w(TAG, "Failed to persist exit report marker", it) }
   }
 
   @TargetApi(Build.VERSION_CODES.R)
@@ -241,12 +308,26 @@ object CrashReporter {
     val internalDir = File(context.filesDir, DIAGNOSTICS_DIR).apply { mkdirs() }
     File(internalDir, latestName).writeText(text)
     File(internalDir, fileName).writeText(text)
+    pruneOldReports(internalDir)
 
     context.getExternalFilesDir(null)?.let { baseDir ->
       val externalDir = File(baseDir, DIAGNOSTICS_DIR).apply { mkdirs() }
       File(externalDir, latestName).writeText(text)
       File(externalDir, fileName).writeText(text)
+      pruneOldReports(externalDir)
     }
+  }
+
+  /** Keeps only the newest [MAX_REPORT_FILES] timestamped reports so the dir cannot grow forever. */
+  private fun pruneOldReports(dir: File) {
+    runCatching {
+        dir
+          .listFiles { file -> file.isFile && file.name.startsWith(REPORT_FILE_PREFIX) }
+          ?.sortedByDescending(File::getName)
+          ?.drop(MAX_REPORT_FILES)
+          ?.forEach { it.delete() }
+      }
+      .onFailure { Log.w(TAG, "Failed to prune old diagnostics reports", it) }
   }
 
   private fun writeLatestOnly(context: Context, fileName: String, text: String) {

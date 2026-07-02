@@ -4,7 +4,6 @@ package com.lhzkml.jasmineagent.core.database.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.core.content.edit
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -20,8 +19,16 @@ import dagger.hilt.components.SingletonComponent
 import java.security.SecureRandom
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
+import javax.inject.Qualifier
 import javax.inject.Singleton
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+
+/**
+ * Qualifies the [SharedPreferences] instance that stores SQLCipher passphrase material. Without a
+ * qualifier this binding would satisfy every unqualified `SharedPreferences` injection in the app,
+ * exposing the key store to unrelated consumers and colliding with future bindings.
+ */
+@Qualifier @Retention(AnnotationRetention.BINARY) annotation class DatabaseSecrets
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,7 +42,7 @@ class DatabaseModule {
   @Singleton
   fun provideAppDatabase(
     @ApplicationContext appContext: Context,
-    encryptedPreferences: SharedPreferences,
+    @DatabaseSecrets encryptedPreferences: SharedPreferences,
   ): AppDatabase {
     System.loadLibrary("sqlcipher")
     val passphrase = DatabasePassphrase.generate(appContext.packageName, encryptedPreferences)
@@ -48,6 +55,7 @@ class DatabaseModule {
 
   @Provides
   @Singleton
+  @DatabaseSecrets
   fun provideEncryptedPreferences(@ApplicationContext appContext: Context): SharedPreferences {
     val masterKey =
       MasterKey.Builder(appContext).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
@@ -77,8 +85,7 @@ class DatabaseModule {
 
 internal object DatabasePassphrase {
   fun generate(packageName: String, encryptedPreferences: SharedPreferences): ByteArray {
-    val salt = getOrCreateSecret(encryptedPreferences, PASSPHRASE_SALT_KEY)
-    val secret = getOrCreateSecret(encryptedPreferences, PASSPHRASE_SECRET_KEY)
+    val (salt, secret) = getOrCreateSecrets(encryptedPreferences)
     val password = "$packageName:${secret.toHex()}".toCharArray()
     val spec = PBEKeySpec(password, salt, PBKDF2_ITERATIONS, PASSPHRASE_BITS)
 
@@ -91,12 +98,32 @@ internal object DatabasePassphrase {
     return secretKey.encoded
   }
 
-  private fun getOrCreateSecret(encryptedPreferences: SharedPreferences, key: String): ByteArray =
-    encryptedPreferences.getString(key, null)?.hexToByteArray()
-      ?: ByteArray(SECRET_BYTES).apply {
-        SecureRandom().nextBytes(this)
-        encryptedPreferences.edit { putString(key, toHex()) }
-      }
+  /**
+   * Returns the stored salt and secret, generating and persisting any missing entries in a single
+   * synchronous commit. A synchronous commit is required here: with an asynchronous apply(), the
+   * process could die before the key material reaches disk, and the next launch would derive a
+   * different passphrase, permanently locking the SQLCipher database.
+   */
+  private fun getOrCreateSecrets(
+    encryptedPreferences: SharedPreferences
+  ): Pair<ByteArray, ByteArray> {
+    val storedSalt =
+      encryptedPreferences.getString(PASSPHRASE_SALT_KEY, null)?.hexToByteArray()
+    val storedSecret =
+      encryptedPreferences.getString(PASSPHRASE_SECRET_KEY, null)?.hexToByteArray()
+    if (storedSalt != null && storedSecret != null) {
+      return storedSalt to storedSecret
+    }
+
+    val random = SecureRandom()
+    val salt = storedSalt ?: ByteArray(SECRET_BYTES).also(random::nextBytes)
+    val secret = storedSecret ?: ByteArray(SECRET_BYTES).also(random::nextBytes)
+    val editor = encryptedPreferences.edit()
+    if (storedSalt == null) editor.putString(PASSPHRASE_SALT_KEY, salt.toHex())
+    if (storedSecret == null) editor.putString(PASSPHRASE_SECRET_KEY, secret.toHex())
+    check(editor.commit()) { "Failed to persist database passphrase material" }
+    return salt to secret
+  }
 
   private fun String.hexToByteArray(): ByteArray =
     chunked(HEX_BYTE_LENGTH).map { it.toInt(HEX_RADIX).toByte() }.toByteArray()

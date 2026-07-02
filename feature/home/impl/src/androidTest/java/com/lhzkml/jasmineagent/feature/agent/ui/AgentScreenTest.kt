@@ -26,7 +26,6 @@ import com.lhzkml.jasmineagent.core.model.AgentRecordStatus
 import com.lhzkml.jasmineagent.feature.agent.R
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,15 +38,20 @@ class AgentScreenTest {
   private val context
     get() = composeTestRule.activity
 
-  @Before
-  fun setup() {
+  // The compose test rule only allows a single setContent call per test, so content is set
+  // explicitly by each test instead of in a @Before hook.
+  private fun setAgentContent(
+    items: List<AgentRecord> = FAKE_DATA,
+    addAgentState: AddAgentState = AddAgentState.Idle,
+    actions: AgentContentActions = NoOpActions,
+  ) {
     composeTestRule.setContent {
       AgentMaterialTheme {
         AgentContent(
-          items = FAKE_DATA,
+          items = items,
           agentName = "",
-          addAgentState = AddAgentState.Idle,
-          actions = NoOpActions,
+          addAgentState = addAgentState,
+          actions = actions,
         )
       }
     }
@@ -55,11 +59,15 @@ class AgentScreenTest {
 
   @Test
   fun firstItem_exists() {
+    setAgentContent()
+
     composeTestRule.onNodeWithText(FAKE_DATA.first().name).assertExists()
   }
 
   @Test
   fun form_exposesTalkBackSemantics() {
+    setAgentContent()
+
     composeTestRule
       .onNodeWithTag(AgentSemantics.FORM)
       .assertContentDescriptionEquals(context.getString(R.string.agent_form_content_description))
@@ -93,16 +101,7 @@ class AgentScreenTest {
   fun deleteButton_invokesDeleteAction() {
     val deleted = AtomicReference<Pair<Int, String>?>()
 
-    composeTestRule.setContent {
-      AgentMaterialTheme {
-        AgentContent(
-          items = FAKE_DATA,
-          agentName = "",
-          addAgentState = AddAgentState.Idle,
-          actions = NoOpActions.copy(onDelete = { uid, name -> deleted.set(uid to name) }),
-        )
-      }
-    }
+    setAgentContent(actions = NoOpActions.copy(onDelete = { uid, name -> deleted.set(uid to name) }))
 
     composeTestRule.onNodeWithTag(AgentSemantics.deleteButton(FAKE_DATA.first().uid)).performClick()
 
@@ -113,16 +112,7 @@ class AgentScreenTest {
   fun emptyState_exposesTalkBackSemantics() {
     val emptyMessage = context.getString(R.string.agent_empty_message)
 
-    composeTestRule.setContent {
-      AgentMaterialTheme {
-        AgentContent(
-          items = emptyList(),
-          agentName = "",
-          addAgentState = AddAgentState.Idle,
-          actions = NoOpActions,
-        )
-      }
-    }
+    setAgentContent(items = emptyList())
 
     composeTestRule.onNodeWithContentDescription(emptyMessage).assertExists()
     composeTestRule.onNodeWithTag(AgentSemantics.EMPTY_STATE).assertExists()
@@ -132,16 +122,7 @@ class AgentScreenTest {
   fun validationError_exposesTalkBackErrorSemantics() {
     val errorMessage = context.getString(R.string.agent_error_empty_name)
 
-    composeTestRule.setContent {
-      AgentMaterialTheme {
-        AgentContent(
-          items = FAKE_DATA,
-          agentName = "",
-          addAgentState = AddAgentState.Error(AddAgentError.EmptyName),
-          actions = NoOpActions,
-        )
-      }
-    }
+    setAgentContent(addAgentState = AddAgentState.Error(AddAgentError.EmptyName))
 
     composeTestRule.onNodeWithText(errorMessage).assertExists()
     composeTestRule
