@@ -31,6 +31,11 @@ val documentedProjects =
         "feature:home:api",
         "feature:home:impl",
         "native:bridge",
+        "platform:files",
+        "platform:notifications",
+        "platform:os",
+        "platform:permissions",
+        "platform:telemetry",
         "benchmark",
         "test-app",
     )

@@ -109,6 +109,11 @@ dependencies {
   implementation(project(":core:navigation"))
   implementation(project(":feature:home:api"))
   implementation(project(":feature:home:impl"))
+  implementation(project(":platform:files"))
+  implementation(project(":platform:notifications"))
+  implementation(project(":platform:os"))
+  implementation(project(":platform:permissions"))
+  implementation(project(":platform:telemetry"))
 
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)
