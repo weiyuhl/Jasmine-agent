@@ -475,7 +475,7 @@ Unit Tests (Database)     7个 ← 新增安全测试
 - **加密**: Security-Crypto + PBKDF2 + 随机secret
 
 ### 质量工具
-- **静态分析**: Detekt 2.0.0-alpha.4
+- **静态分析**: Detekt 2.0.0-alpha.5
 - **格式化**: Spotless 8.6.0 (Google Style)
 - **Lint**: Android Lint (warningsAsErrors=true)
 - **混淆**: R8 + ProGuard

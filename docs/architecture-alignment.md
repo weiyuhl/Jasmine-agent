@@ -105,12 +105,14 @@
 | Coroutines | `1.11.0` |
 | SQLCipher Android | `4.16.0` |
 | Jetpack Security Crypto | `1.1.0` |
-| UniFFI | `0.31.2` |
+| UniFFI | `0.32.0` |
 | JNA | `5.19.1` |
-| Detekt | `1.23.8` |
+| Detekt | `2.0.0-alpha.5` |
 | Dokka | `2.2.0` |
 | Spotless | `8.8.0` |
 | Compose Preview Screenshot Testing | `0.0.1-alpha15`（官方暂无稳定版） |
+
+说明：Detekt `2.0.0-alpha.5` 仍是官方标记的 alpha 版本，但当前项目使用 Kotlin `2.4.0`、AGP `9.2.1`，该 Detekt 版本是为这条工具链准备的版本；后续 Detekt 2.0 稳定版发布后应优先升级到稳定版。
 
 ## 验证命令
 

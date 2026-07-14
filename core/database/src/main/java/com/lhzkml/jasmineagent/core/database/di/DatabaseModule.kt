@@ -4,6 +4,7 @@ package com.lhzkml.jasmineagent.core.database.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -107,10 +108,8 @@ internal object DatabasePassphrase {
   private fun getOrCreateSecrets(
     encryptedPreferences: SharedPreferences
   ): Pair<ByteArray, ByteArray> {
-    val storedSalt =
-      encryptedPreferences.getString(PASSPHRASE_SALT_KEY, null)?.hexToByteArray()
-    val storedSecret =
-      encryptedPreferences.getString(PASSPHRASE_SECRET_KEY, null)?.hexToByteArray()
+    val storedSalt = encryptedPreferences.getString(PASSPHRASE_SALT_KEY, null)?.hexToByteArray()
+    val storedSecret = encryptedPreferences.getString(PASSPHRASE_SECRET_KEY, null)?.hexToByteArray()
     if (storedSalt != null && storedSecret != null) {
       return storedSalt to storedSecret
     }
@@ -118,10 +117,10 @@ internal object DatabasePassphrase {
     val random = SecureRandom()
     val salt = storedSalt ?: ByteArray(SECRET_BYTES).also(random::nextBytes)
     val secret = storedSecret ?: ByteArray(SECRET_BYTES).also(random::nextBytes)
-    val editor = encryptedPreferences.edit()
-    if (storedSalt == null) editor.putString(PASSPHRASE_SALT_KEY, salt.toHex())
-    if (storedSecret == null) editor.putString(PASSPHRASE_SECRET_KEY, secret.toHex())
-    check(editor.commit()) { "Failed to persist database passphrase material" }
+    encryptedPreferences.edit(commit = true) {
+      if (storedSalt == null) putString(PASSPHRASE_SALT_KEY, salt.toHex())
+      if (storedSecret == null) putString(PASSPHRASE_SECRET_KEY, secret.toHex())
+    }
     return salt to secret
   }
 

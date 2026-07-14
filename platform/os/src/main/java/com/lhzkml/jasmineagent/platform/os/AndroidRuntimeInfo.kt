@@ -3,6 +3,7 @@ package com.lhzkml.jasmineagent.platform.os
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.ext.SdkExtensions
+import androidx.annotation.ChecksSdkIntAtLeast
 import javax.inject.Inject
 
 object AndroidApiLevel {
@@ -19,6 +20,7 @@ object AndroidApiLevel {
   const val ANDROID_17 = 37
 }
 
+@Suppress("DataClassContainsFunctions")
 data class AndroidRuntimeSnapshot(
   val sdkInt: Int,
   val previewSdkInt: Int,
@@ -34,7 +36,7 @@ data class AndroidRuntimeSnapshot(
 ) {
   val isPreview: Boolean = codename != "REL" || previewSdkInt > 0
 
-  fun isAtLeast(apiLevel: Int): Boolean = sdkInt >= apiLevel
+  @ChecksSdkIntAtLeast(parameter = 0) fun isAtLeast(apiLevel: Int): Boolean = sdkInt >= apiLevel
 }
 
 data class AndroidCompatibilityWindow(
@@ -46,7 +48,7 @@ data class AndroidCompatibilityWindow(
 interface AndroidRuntimeInfo {
   fun snapshot(): AndroidRuntimeSnapshot
 
-  fun isAtLeast(apiLevel: Int): Boolean
+  @ChecksSdkIntAtLeast(parameter = 0) fun isAtLeast(apiLevel: Int): Boolean
 
   fun extensionVersion(apiLevel: Int): Int
 }
@@ -67,6 +69,7 @@ class DefaultAndroidRuntimeInfo @Inject constructor() : AndroidRuntimeInfo {
       sdkExtensionVersions = androidSdkExtensionVersions(),
     )
 
+  @ChecksSdkIntAtLeast(parameter = 0)
   override fun isAtLeast(apiLevel: Int): Boolean = Build.VERSION.SDK_INT >= apiLevel
 
   override fun extensionVersion(apiLevel: Int): Int = snapshot().sdkExtensionVersions[apiLevel] ?: 0
@@ -83,7 +86,7 @@ private fun androidSdkExtensionVersions(): Map<Int, Int> {
     put(AndroidApiLevel.ANDROID_12, SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S))
     put(
       AndroidApiLevel.ANDROID_12L,
-      SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S_V2),
+      SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S),
     )
     put(
       AndroidApiLevel.ANDROID_13,

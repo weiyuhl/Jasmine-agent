@@ -6,9 +6,13 @@ edition = "2024"
 [lib]
 crate-type = ["cdylib", "lib"]
 
+[features]
+uniffi-cli = ["uniffi/cli"]
+
 [[bin]]
 name = "uniffi-bindgen"
 path = "uniffi-bindgen.rs"
+required-features = ["uniffi-cli"]
 
 [dependencies]
 uniffi = "0.32.0"

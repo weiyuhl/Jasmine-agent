@@ -1,11 +1,6 @@
 import java.util.Properties
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-plugins {
-  alias(libs.plugins.android.library)
-  alias(libs.plugins.detekt)
-  alias(libs.plugins.spotless)
-}
+plugins { id("jasmine.android.library") }
 
 val rustWorkspaceDir = rootProject.layout.projectDirectory.dir("rust")
 val ffiEntryCrateDir = rustWorkspaceDir.dir("crates/ffi_entry")
@@ -47,43 +42,11 @@ fun androidNdkDir(): File {
 
 android {
   namespace = "com.lhzkml.jasmineagent.core.rust"
-  compileSdk = 37
-
-  defaultConfig {
-    minSdk = 26
-    consumerProguardFiles("consumer-rules.pro")
-  }
-
-  buildFeatures {
-    aidl = false
-    buildConfig = false
-    shaders = false
-  }
 
   sourceSets {
     getByName("main") {
       jniLibs.directories.add(generatedJniLibsDir.get().asFile.absolutePath)
     }
-  }
-
-  lint {
-    abortOnError = true
-    warningsAsErrors = true
-    disable.add("OldTargetApi")
-    disable.add("GradleDependency")
-    disable.add("Aligned16KB")
-  }
-
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_26
-    targetCompatibility = JavaVersion.VERSION_26
-  }
-}
-
-kotlin {
-  compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_26)
-    moduleName.set("jasmineagent_core_rust")
   }
 }
 
@@ -129,7 +92,7 @@ val generateUniFfiKotlin =
       "run",
       "--manifest-path",
       ffiEntryCargoManifest.asFile.absolutePath,
-      "--features=uniffi/cli",
+      "--features=uniffi-cli",
       "--bin",
       "uniffi-bindgen",
       "--",

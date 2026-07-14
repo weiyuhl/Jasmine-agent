@@ -1,6 +1,5 @@
 package com.lhzkml.jasmineagent.platform.notifications
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -16,6 +15,8 @@ import androidx.core.content.ContextCompat
 import com.lhzkml.jasmineagent.platform.os.AndroidApiLevel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+
+private const val PostNotificationsPermission = "android.permission.POST_NOTIFICATIONS"
 
 data class PlatformNotificationChannel(
   val id: String,
@@ -93,10 +94,6 @@ constructor(@ApplicationContext private val context: Context) : NotificationGate
   private val notificationManagerCompat = NotificationManagerCompat.from(context)
 
   override fun ensureChannels(channels: Collection<PlatformNotificationChannel>) {
-    if (Build.VERSION.SDK_INT < AndroidApiLevel.ANDROID_8) {
-      return
-    }
-
     val notificationManager = context.getSystemService(NotificationManager::class.java)
     notificationManager.createNotificationChannels(
       channels.map { channel ->
@@ -114,12 +111,12 @@ constructor(@ApplicationContext private val context: Context) : NotificationGate
   override fun notificationsEnabled(): Boolean =
     notificationManagerCompat.areNotificationsEnabled() &&
       (Build.VERSION.SDK_INT < AndroidApiLevel.ANDROID_13 ||
-        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+        ContextCompat.checkSelfPermission(context, PostNotificationsPermission) ==
           PackageManager.PERMISSION_GRANTED)
 
   override fun settingsIntent(channelId: String?): Intent {
     val intent =
-      if (Build.VERSION.SDK_INT >= AndroidApiLevel.ANDROID_8 && channelId != null) {
+      if (channelId != null) {
         Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
           .putExtra(Settings.EXTRA_CHANNEL_ID, channelId)
       } else {

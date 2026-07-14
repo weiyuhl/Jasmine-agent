@@ -15,10 +15,12 @@ import java.security.GeneralSecurityException
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
 class DefaultAgentRepository @Inject constructor(private val agentDaoProvider: Provider<AgentDao>) :
@@ -28,11 +30,21 @@ class DefaultAgentRepository @Inject constructor(private val agentDaoProvider: P
     get() = agentDaoProvider.get()
 
   override val agents: Flow<List<String>> =
-    flow { emitAll(agentDao.getActiveAgentNames(AgentRepository.DEFAULT_AGENT_LIMIT)) }
+    flow {
+        // Database initialization (loadLibrary, EncryptedSharedPreferences, PBKDF2) happens on
+        // first DAO access. Provider.get() executes on the caller's thread, so this explicit
+        // flowOn ensures the heavyweight first-open happens on IO rather than Main (where
+        // AgentViewModel.agents collection would otherwise trigger it).
+        emitAll(agentDaoProvider.get().getActiveAgentNames(AgentRepository.DEFAULT_AGENT_LIMIT))
+      }
+      .flowOn(Dispatchers.IO)
       .mapStorageFailures()
 
   override fun getAgents(limit: Int): Flow<List<AgentRecord>> =
-    flow { emitAll(agentDao.getAgents(limit)) }.mapAgents().mapStorageFailures()
+    flow { emitAll(agentDaoProvider.get().getAgents(limit)) }
+      .flowOn(Dispatchers.IO)
+      .mapAgents()
+      .mapStorageFailures()
 
   override suspend fun getById(uid: Int): AgentRecord? = runStorageOperation {
     agentDao.getAgentById(uid)?.toRecord()
@@ -51,8 +63,18 @@ class DefaultAgentRepository @Inject constructor(private val agentDaoProvider: P
       agentDao.insertAgent(Agent(name = name))
     } catch (e: SQLiteConstraintException) {
       duplicateName(e)
-    } catch (e: Throwable) {
-      e.toStorageFailure()
+    } catch (e: CancellationException) {
+      throw e
+    } catch (e: AgentRepositoryException) {
+      throw e
+    } catch (e: SQLiteException) {
+      storageFailure(e)
+    } catch (e: GeneralSecurityException) {
+      storageFailure(e)
+    } catch (e: IOException) {
+      storageFailure(e)
+    } catch (e: LinkageError) {
+      storageFailure(e)
     }
   }
 
@@ -76,34 +98,37 @@ private fun storageFailure(cause: Throwable): Nothing =
   throw AgentRepositoryException(AgentRepositoryFailure.STORAGE, cause)
 
 private fun <T> Flow<T>.mapStorageFailures(): Flow<T> = catch { cause ->
-  cause.toStorageFailure()
+  throw cause.asRepositoryExceptionOrSelf()
 }
 
 private suspend inline fun <T> runStorageOperation(crossinline block: suspend () -> T): T =
   try {
     block()
-  } catch (cause: Throwable) {
-    cause.toStorageFailure()
+  } catch (cause: CancellationException) {
+    throw cause
+  } catch (cause: AgentRepositoryException) {
+    throw cause
+  } catch (cause: SQLiteException) {
+    storageFailure(cause)
+  } catch (cause: GeneralSecurityException) {
+    storageFailure(cause)
+  } catch (cause: IOException) {
+    storageFailure(cause)
+  } catch (cause: LinkageError) {
+    storageFailure(cause)
   }
 
-private fun Throwable.toStorageFailure(): Nothing {
-  if (this is CancellationException) {
-    throw this
-  }
-  if (this is AgentRepositoryException) {
-    throw this
-  }
+private fun Throwable.asRepositoryExceptionOrSelf(): Throwable =
   if (isStorageInitializationFailure()) {
-    storageFailure(this)
+    AgentRepositoryException(AgentRepositoryFailure.STORAGE, this)
+  } else {
+    this
   }
-  throw this
-}
 
 private fun Throwable.isStorageInitializationFailure(): Boolean =
   this is SQLiteException ||
     this is GeneralSecurityException ||
     this is IOException ||
-    this is RuntimeException ||
     this is LinkageError
 
 private fun Flow<List<Agent>>.mapAgents(): Flow<List<AgentRecord>> = map { agents ->

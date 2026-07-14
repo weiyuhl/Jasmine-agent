@@ -8,8 +8,8 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka)
     alias(libs.plugins.hilt.gradle) apply false
-    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.screenshot) apply false
     alias(libs.plugins.spotless) apply false
 }
@@ -45,7 +45,7 @@ val kotlinVersion = libs.versions.kotlin.get()
 
 dependencies {
     documentedProjects.forEach { moduleName ->
-        dokka(dependencies.project(path = ":$moduleName"))
+        dokka(dependencyFactory.createProjectDependency(":$moduleName"))
     }
 }
 
@@ -67,72 +67,11 @@ subprojects {
         apply(plugin = "org.jetbrains.dokka")
     }
 
-    apply(plugin = "jacoco")
-
-    pluginManager.withPlugin("com.android.application") {
-        configure<com.android.build.api.dsl.ApplicationExtension> {
-            buildTypes {
-                getByName("debug") {
-                    enableUnitTestCoverage = true
-                    enableAndroidTestCoverage = true
-                }
-            }
-        }
-    }
-
-    pluginManager.withPlugin("com.android.library") {
-        configure<com.android.build.api.dsl.LibraryExtension> {
-            buildTypes {
-                getByName("debug") {
-                    enableUnitTestCoverage = true
-                    enableAndroidTestCoverage = true
-                }
-            }
-        }
-    }
-
-    tasks.withType<Test> {
-        configure<JacocoTaskExtension> {
-            isIncludeNoLocationClasses = true
-            excludes = listOf("jdk.internal.*")
-        }
-    }
-
     configurations.configureEach {
         resolutionStrategy.eachDependency {
             if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
                 useVersion(kotlinVersion)
                 because("Keep kotlin-metadata-jvm aligned so annotation processors can read Kotlin 2.4 metadata.")
-            }
-        }
-    }
-
-    afterEvaluate {
-        if (plugins.hasPlugin("io.gitlab.arturbosch.detekt")) {
-            configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
-                buildUponDefaultConfig = true
-                allRules = false
-                config.setFrom(rootProject.file("detekt-config.yml"))
-            }
-            tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-                jvmTarget = "22"
-            }
-        }
-        if (plugins.hasPlugin("com.diffplug.spotless")) {
-            configure<com.diffplug.gradle.spotless.SpotlessExtension> {
-                kotlin {
-                    target("src/**/*.kt")
-                    targetExclude("**/build/**")
-                    ktfmt("0.63").googleStyle()
-                    trimTrailingWhitespace()
-                    endWithNewline()
-                }
-                kotlinGradle {
-                    target("*.kts")
-                    ktfmt("0.63").googleStyle()
-                    trimTrailingWhitespace()
-                    endWithNewline()
-                }
             }
         }
     }

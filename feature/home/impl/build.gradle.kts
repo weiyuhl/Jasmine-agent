@@ -1,109 +1,61 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-  alias(libs.plugins.android.library)
-  alias(libs.plugins.ksp)
-  alias(libs.plugins.compose.compiler)
-  alias(libs.plugins.kotlin.serialization)
+  id("jasmine.android.library")
+  id("jasmine.android.compose")
+  id("jasmine.android.hilt")
+  id("jasmine.android.serialization")
   alias(libs.plugins.screenshot)
-
-  alias(libs.plugins.detekt)
-  alias(libs.plugins.spotless)
 }
 
 android {
   namespace = "com.lhzkml.jasmineagent.feature.agent"
-  compileSdk = 37
   experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
   defaultConfig {
-    minSdk = 26
-
     testInstrumentationRunner = "com.lhzkml.jasmineagent.core.testing.HiltTestRunner"
-    consumerProguardFiles("consumer-rules.pro")
-  }
-
-  buildFeatures {
-    compose = true
-    aidl = false
-    buildConfig = false
-    shaders = false
-  }
-
-  lint {
-    abortOnError = true
-    warningsAsErrors = true
-    disable.add("OldTargetApi")
-    disable.add("GradleDependency")
-    disable.add("Aligned16KB")
-  }
-
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_26
-    targetCompatibility = JavaVersion.VERSION_26
-  }
-}
-
-kotlin {
-  compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_26)
-    moduleName.set("jasmineagent_feature_home")
   }
 }
 
 dependencies {
-  implementation(project(":data:agent"))
-  implementation(project(":core:domain"))
-  implementation(project(":core:designsystem"))
-  implementation(project(":core:navigation"))
+  implementation(dependencyFactory.createProjectDependency(":data:agent"))
+  implementation(dependencyFactory.createProjectDependency(":core:domain"))
+  implementation(dependencyFactory.createProjectDependency(":core:designsystem"))
+  implementation(dependencyFactory.createProjectDependency(":core:navigation"))
+  implementation(dependencyFactory.createProjectDependency(":feature:home:api"))
+
   val composeBom = platform(libs.androidx.compose.bom)
   implementation(composeBom)
   androidTestImplementation(composeBom)
-  implementation(project(":feature:home:api"))
 
-  androidTestImplementation(project(":core:testing"))
+  androidTestImplementation(dependencyFactory.createProjectDependency(":core:testing"))
 
-  // Core Android dependencies
   implementation(libs.androidx.activity.compose)
 
-  // Arch Components
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
-  // Compose
   implementation(libs.androidx.compose.foundation)
   implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
 
-  // Navigation
   implementation(libs.androidx.navigation3.runtime)
 
-  // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)
   screenshotTestImplementation(libs.androidx.compose.ui.tooling)
   screenshotTestImplementation(libs.screenshot.validation.api)
-  // Instrumented tests
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-  // Hilt Dependency Injection
-  implementation(libs.hilt.android)
-  ksp(libs.hilt.compiler)
-  // Hilt and instrumented tests.
   androidTestImplementation(libs.hilt.android.testing)
   kspAndroidTest(libs.hilt.compiler)
-  // Hilt and Robolectric tests.
   testImplementation(libs.hilt.android.testing)
   kspTest(libs.hilt.compiler)
 
-  // Local tests: jUnit, coroutines, Android runner
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
 
-  // Instrumented tests: jUnit rules and runners
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.rules)

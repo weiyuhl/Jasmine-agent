@@ -1,38 +1,11 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-plugins {
-  alias(libs.plugins.android.test)
-  alias(libs.plugins.detekt)
-  alias(libs.plugins.spotless)
-}
+plugins { id("jasmine.android.test") }
 
 android {
   namespace = "com.lhzkml.jasmineagent.benchmark"
-  compileSdk = 37
   targetProjectPath = ":app"
 
   defaultConfig {
-    minSdk = 26
-    targetSdk = 37
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-  }
-
-  buildFeatures {
-    aidl = false
-    buildConfig = false
-    shaders = false
-  }
-
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_26
-    targetCompatibility = JavaVersion.VERSION_26
-  }
-}
-
-kotlin {
-  compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_26)
-    moduleName.set("jasmineagent_benchmark")
   }
 }
 

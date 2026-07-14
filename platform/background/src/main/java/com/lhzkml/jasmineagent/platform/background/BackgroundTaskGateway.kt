@@ -1,7 +1,6 @@
 package com.lhzkml.jasmineagent.platform.background
 
 import android.content.Context
-import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.lifecycle.asFlow
 import androidx.work.BackoffPolicy
@@ -52,7 +51,7 @@ enum class BackgroundBackoffKind {
 
 data class BackgroundBackoffPolicy(
   val kind: BackgroundBackoffKind = BackgroundBackoffKind.Exponential,
-  val delay: Duration = Duration.ofSeconds(30),
+  val delay: Duration = Duration.ofSeconds(DefaultBackoffDelaySeconds),
 )
 
 enum class BackgroundExistingWorkPolicy {
@@ -139,17 +138,16 @@ interface ForegroundWorkInfoFactory {
   /**
    * Builds the [ForegroundInfo] a Worker passes to `setForeground()`.
    *
-   * [foregroundServiceType] defaults to
-   * [ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC], which this module declares in its manifest
-   * (typed permission + service override). Passing another type requires the app to declare the
-   * matching `FOREGROUND_SERVICE_<TYPE>` permission and extend the
-   * `SystemForegroundService` override. Passing `0` is rejected on Android 14+ where a concrete
+   * [foregroundServiceType] defaults to Android's `FOREGROUND_SERVICE_TYPE_DATA_SYNC` value, which
+   * this module declares in its manifest (typed permission + service override). Passing another
+   * type requires the app to declare the matching `FOREGROUND_SERVICE_<TYPE>` permission and extend
+   * the `SystemForegroundService` override. Passing `0` is rejected on Android 14+ where a concrete
    * type is mandatory ([android.app.MissingForegroundServiceTypeException] would be thrown by the
    * system otherwise).
    */
   fun createForegroundInfo(
     notificationSpec: PlatformNotificationSpec,
-    foregroundServiceType: Int = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+    foregroundServiceType: Int = ForegroundServiceTypeDataSync,
   ): ForegroundInfo
 }
 
@@ -203,15 +201,8 @@ class WorkManagerBackgroundTaskGateway @Inject constructor(@ApplicationContext c
         )
         .build()
 
-    if (spec.uniqueName == null) {
-      workManager.enqueue(request)
-    } else {
-      workManager.enqueueUniquePeriodicWork(
-        spec.uniqueName,
-        spec.uniquePolicy.toWorkPolicy(),
-        request,
-      )
-    }
+    val uniqueName = spec.uniqueName ?: "${spec.workerClass.java.name}:periodic"
+    workManager.enqueueUniquePeriodicWork(uniqueName, spec.uniquePolicy.toWorkPolicy(), request)
 
     return request.id
   }
@@ -370,3 +361,9 @@ private fun WorkInfo.State.toBackgroundWorkState(): BackgroundWorkState =
     WorkInfo.State.BLOCKED -> BackgroundWorkState.Blocked
     WorkInfo.State.CANCELLED -> BackgroundWorkState.Cancelled
   }
+
+private const val DefaultBackoffDelaySeconds = 30L
+
+// Value of ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC. Kept local so minSdk 26 builds do not
+// reference an API 29 field directly.
+private const val ForegroundServiceTypeDataSync = 1

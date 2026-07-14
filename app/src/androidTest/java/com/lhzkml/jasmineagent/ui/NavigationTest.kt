@@ -1,5 +1,6 @@
 package com.lhzkml.jasmineagent.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
@@ -104,6 +105,20 @@ class NavigationTest {
   }
 
   @Test
+  fun deepLink_opensMatchingTab() {
+    composeTestRule.setContent {
+      AgentMaterialTheme {
+        MainNavigation(
+          navigationEntryRegistrars = setOf(TestNavigationEntryRegistrar()),
+          deepLinkUri = BlankOne.DEEP_LINK,
+        )
+      }
+    }
+
+    composeTestRule.onNodeWithTag(BlankDestinationSemantics.BLANK_ONE).assertExists()
+  }
+
+  @Test
   fun expandedWidth_keepsBottomNavigation() {
     composeTestRule.setContent {
       Box(Modifier.requiredSize(900.dp, 700.dp)) {
@@ -118,6 +133,7 @@ class NavigationTest {
 }
 
 private class TestNavigationEntryRegistrar : NavigationEntryRegistrar {
+  @SuppressLint("ComposableNaming")
   @Composable
   override fun EntryProviderScope<NavKey>.registerEntries() {
     entry<Main> { Box(Modifier.fillMaxSize()) }

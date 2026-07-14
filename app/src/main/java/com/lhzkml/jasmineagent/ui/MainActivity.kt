@@ -23,6 +23,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+  @Suppress("LateinitUsage")
   @Inject
   lateinit var navigationEntryRegistrars: Set<@JvmSuppressWildcards NavigationEntryRegistrar>
 

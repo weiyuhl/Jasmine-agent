@@ -101,7 +101,9 @@ class AgentScreenTest {
   fun deleteButton_invokesDeleteAction() {
     val deleted = AtomicReference<Pair<Int, String>?>()
 
-    setAgentContent(actions = NoOpActions.copy(onDelete = { uid, name -> deleted.set(uid to name) }))
+    setAgentContent(
+      actions = NoOpActions.copy(onDelete = { uid, name -> deleted.set(uid to name) })
+    )
 
     composeTestRule.onNodeWithTag(AgentSemantics.deleteButton(FAKE_DATA.first().uid)).performClick()
 

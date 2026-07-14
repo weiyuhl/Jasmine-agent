@@ -8,10 +8,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data object BlankOne : NavKey {
-  const val DEEP_LINK = "jasmine://blank/one"
+  const val DEEP_LINK = "jasmineagent://blank/one"
 }
 
 @Serializable
 data object BlankTwo : NavKey {
-  const val DEEP_LINK = "jasmine://blank/two"
+  const val DEEP_LINK = "jasmineagent://blank/two"
 }

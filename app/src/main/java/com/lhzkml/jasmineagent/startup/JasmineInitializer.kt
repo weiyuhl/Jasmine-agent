@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit
 
 class JasmineInitializer : Initializer<Unit> {
 
+  @Suppress("TooGenericExceptionCaught")
   override fun create(context: Context) {
     CrashReporter.recordBreadcrumb(context, "JasmineInitializer.create:start")
     val executor = profileExecutor()
@@ -30,10 +31,10 @@ class JasmineInitializer : Initializer<Unit> {
         },
       )
       CrashReporter.recordBreadcrumb(context, "JasmineInitializer.create:scheduled")
-    } catch (throwable: Throwable) {
-      CrashReporter.recordBreadcrumb(context, "JasmineInitializer.create:failed", throwable)
+    } catch (exception: Exception) {
+      CrashReporter.recordBreadcrumb(context, "JasmineInitializer.create:failed", exception)
       executor.shutdown()
-      throw throwable
+      throw exception
     }
   }
 

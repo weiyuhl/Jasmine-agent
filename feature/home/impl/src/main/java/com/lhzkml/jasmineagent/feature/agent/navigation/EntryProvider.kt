@@ -1,5 +1,6 @@
 package com.lhzkml.jasmineagent.feature.agent.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ object BlankDestinationSemantics {
 }
 
 class HomeNavigationEntryRegistrar @Inject constructor() : NavigationEntryRegistrar {
+  @SuppressLint("ComposableNaming")
   @Composable
   override fun EntryProviderScope<NavKey>.registerEntries() {
     AgentEntryProvider()

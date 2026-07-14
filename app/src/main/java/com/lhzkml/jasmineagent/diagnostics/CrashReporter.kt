@@ -1,6 +1,5 @@
 package com.lhzkml.jasmineagent.diagnostics
 
-import android.annotation.TargetApi
 import android.app.ActivityManager
 import android.app.ApplicationExitInfo
 import android.content.ContentValues
@@ -10,6 +9,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintWriter
@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
+@Suppress("TooManyFunctions")
 object CrashReporter {
   private const val TAG = "JasmineCrashReporter"
   private const val DIAGNOSTICS_DIR = "diagnostics"
@@ -35,6 +36,7 @@ object CrashReporter {
   private const val MAX_EXIT_TRACE_BYTES = 256 * 1024
   private const val MAX_REPORT_FILES = 20
   private const val SNAPSHOT_THROTTLE_MS = 1_000L
+  private const val FALLBACK_CRASH_EXIT_CODE = 10
 
   private val lock = Any()
   private val breadcrumbs = ArrayDeque<String>()
@@ -44,10 +46,9 @@ object CrashReporter {
    * hottest startup paths (Application.attachBaseContext, first composition), where synchronous
    * file I/O causes jank and StrictMode violations.
    */
-  private val executor =
-    Executors.newSingleThreadScheduledExecutor { runnable ->
-      Thread(runnable, "jasmine-diagnostics").apply { isDaemon = true }
-    }
+  private val executor = Executors.newSingleThreadScheduledExecutor { runnable ->
+    Thread(runnable, "jasmine-diagnostics").apply { isDaemon = true }
+  }
   private val snapshotScheduled = AtomicBoolean(false)
 
   /**
@@ -59,6 +60,7 @@ object CrashReporter {
 
   @Volatile private var installed = false
 
+  @Suppress("TooGenericExceptionCaught")
   fun install(context: Context) {
     val appContext = context.applicationContext ?: context
     val previousHandler =
@@ -79,14 +81,18 @@ object CrashReporter {
         previousHandler?.uncaughtException(thread, throwable)
           ?: run {
             android.os.Process.killProcess(android.os.Process.myPid())
-            exitProcess(10)
+            exitProcess(FALLBACK_CRASH_EXIT_CODE)
           }
       }
     }
 
     recordBreadcrumb(appContext, "CrashReporter installed")
     executor.execute {
-      runCatching { writePreviousExitReportIfPresent(appContext) }
+      runCatching {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            writePreviousExitReportIfPresent(appContext)
+          }
+        }
         .onFailure { Log.w(TAG, "Failed to inspect previous process exits", it) }
     }
   }
@@ -166,10 +172,8 @@ object CrashReporter {
     writeLatestOnly(context, LATEST_STARTUP_FILE, report)
   }
 
-  @TargetApi(Build.VERSION_CODES.R)
+  @RequiresApi(Build.VERSION_CODES.R)
   private fun writePreviousExitReportIfPresent(context: Context) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
-
     val exitInfo =
       context
         .getSystemService(ActivityManager::class.java)
@@ -200,7 +204,7 @@ object CrashReporter {
 
     writeAppFiles(context, fileName, report, LATEST_EXIT_FILE)
     writeLastReportedExitTimestamp(context, exitInfo.timestamp)
-    if (exportToPublicDownloads && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (exportToPublicDownloads) {
       runCatching { writePublicDownloads(context, fileName, report) }
         .onFailure { Log.w(TAG, "Failed to write public previous-exit report", it) }
     }
@@ -221,14 +225,14 @@ object CrashReporter {
       .onFailure { Log.w(TAG, "Failed to persist exit report marker", it) }
   }
 
-  @TargetApi(Build.VERSION_CODES.R)
+  @RequiresApi(Build.VERSION_CODES.R)
   private fun ApplicationExitInfo.isReportableExitReason(): Boolean =
     reason == ApplicationExitInfo.REASON_CRASH ||
       reason == ApplicationExitInfo.REASON_CRASH_NATIVE ||
       reason == ApplicationExitInfo.REASON_ANR ||
       reason == ApplicationExitInfo.REASON_INITIALIZATION_FAILURE
 
-  @TargetApi(Build.VERSION_CODES.R)
+  @RequiresApi(Build.VERSION_CODES.R)
   private fun ApplicationExitInfo.reasonName(): String =
     when (reason) {
       ApplicationExitInfo.REASON_CRASH -> "CRASH"
@@ -238,7 +242,7 @@ object CrashReporter {
       else -> "REASON_$reason"
     }
 
-  @TargetApi(Build.VERSION_CODES.R)
+  @RequiresApi(Build.VERSION_CODES.R)
   private fun ApplicationExitInfo.traceText(): String =
     runCatching {
         traceInputStream?.use { inputStream ->
@@ -318,7 +322,9 @@ object CrashReporter {
     }
   }
 
-  /** Keeps only the newest [MAX_REPORT_FILES] timestamped reports so the dir cannot grow forever. */
+  /**
+   * Keeps only the newest [MAX_REPORT_FILES] timestamped reports so the dir cannot grow forever.
+   */
   private fun pruneOldReports(dir: File) {
     runCatching {
         dir
@@ -340,6 +346,8 @@ object CrashReporter {
     }
   }
 
+  @Suppress("TooGenericExceptionCaught")
+  @RequiresApi(Build.VERSION_CODES.Q)
   private fun writePublicDownloads(context: Context, fileName: String, text: String) {
     val values =
       ContentValues().apply {

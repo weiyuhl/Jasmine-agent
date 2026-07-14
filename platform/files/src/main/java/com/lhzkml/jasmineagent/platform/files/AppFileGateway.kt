@@ -62,7 +62,7 @@ class AndroidAppFileGateway @Inject constructor(@ApplicationContext private val 
       PlatformFileScope.NoBackup -> context.noBackupFilesDir
       PlatformFileScope.ExternalFiles -> context.getExternalFilesDir(null) ?: context.filesDir
       PlatformFileScope.ExternalCache -> context.externalCacheDir ?: context.cacheDir
-    }.also { it.mkdirs() }
+    }.apply { mkdirs() }
 
   override fun resolve(scope: PlatformFileScope, relativePath: String): File =
     directory(scope).resolveInside(relativePath)

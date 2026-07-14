@@ -11,16 +11,23 @@ import com.lhzkml.jasmineagent.platform.os.AndroidApiLevel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-private const val ACCESS_LOCAL_NETWORK_PERMISSION = "android.permission.ACCESS_LOCAL_NETWORK"
+private const val AccessLocalNetworkPermission = "android.permission.ACCESS_LOCAL_NETWORK"
+private const val NearbyWifiDevicesPermission = "android.permission.NEARBY_WIFI_DEVICES"
+private const val PostNotificationsPermission = "android.permission.POST_NOTIFICATIONS"
+private const val ReadMediaAudioPermission = "android.permission.READ_MEDIA_AUDIO"
+private const val ReadMediaImagesPermission = "android.permission.READ_MEDIA_IMAGES"
+private const val ReadMediaVideoPermission = "android.permission.READ_MEDIA_VIDEO"
+private const val ReadMediaVisualUserSelectedPermission =
+  "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
 
 enum class PlatformPermission(
   val manifestName: String,
   val minSdk: Int = 1,
   val maxSdk: Int = Int.MAX_VALUE,
 ) {
-  PostNotifications(Manifest.permission.POST_NOTIFICATIONS, AndroidApiLevel.ANDROID_13),
-  LocalNetwork(ACCESS_LOCAL_NETWORK_PERMISSION, AndroidApiLevel.ANDROID_17),
-  NearbyWifiDevices(Manifest.permission.NEARBY_WIFI_DEVICES, AndroidApiLevel.ANDROID_13),
+  PostNotifications(PostNotificationsPermission, AndroidApiLevel.ANDROID_13),
+  LocalNetwork(AccessLocalNetworkPermission, AndroidApiLevel.ANDROID_17),
+  NearbyWifiDevices(NearbyWifiDevicesPermission, AndroidApiLevel.ANDROID_13),
   Camera(Manifest.permission.CAMERA),
   RecordAudio(Manifest.permission.RECORD_AUDIO),
   AccessCoarseLocation(Manifest.permission.ACCESS_COARSE_LOCATION),
@@ -33,11 +40,11 @@ enum class PlatformPermission(
     Manifest.permission.WRITE_EXTERNAL_STORAGE,
     maxSdk = AndroidApiLevel.ANDROID_9,
   ),
-  ReadMediaImages(Manifest.permission.READ_MEDIA_IMAGES, AndroidApiLevel.ANDROID_13),
-  ReadMediaVideo(Manifest.permission.READ_MEDIA_VIDEO, AndroidApiLevel.ANDROID_13),
-  ReadMediaAudio(Manifest.permission.READ_MEDIA_AUDIO, AndroidApiLevel.ANDROID_13),
+  ReadMediaImages(ReadMediaImagesPermission, AndroidApiLevel.ANDROID_13),
+  ReadMediaVideo(ReadMediaVideoPermission, AndroidApiLevel.ANDROID_13),
+  ReadMediaAudio(ReadMediaAudioPermission, AndroidApiLevel.ANDROID_13),
   ReadMediaVisualUserSelected(
-    Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+    ReadMediaVisualUserSelectedPermission,
     AndroidApiLevel.ANDROID_14,
   );
 

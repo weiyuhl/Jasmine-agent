@@ -1,61 +1,23 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-  alias(libs.plugins.android.library)
-  alias(libs.plugins.ksp)
-  alias(libs.plugins.detekt)
-  alias(libs.plugins.spotless)
+  id("jasmine.android.library")
+  id("jasmine.android.hilt")
 }
 
 android {
   namespace = "com.lhzkml.jasmineagent.core.data"
-  compileSdk = 37
-
-  defaultConfig {
-    minSdk = 26
-    consumerProguardFiles("consumer-rules.pro")
-  }
-
-  buildFeatures {
-    aidl = false
-    buildConfig = false
-    shaders = false
-  }
 
   testFixtures { enable = true }
-
-  lint {
-    abortOnError = true
-    warningsAsErrors = true
-    disable.add("OldTargetApi")
-    disable.add("GradleDependency")
-    disable.add("Aligned16KB")
-  }
-
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_26
-    targetCompatibility = JavaVersion.VERSION_26
-  }
-}
-
-kotlin {
-  compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_26)
-    moduleName.set("jasmineagent_core_data")
-  }
 }
 
 dependencies {
-  implementation(project(":core:domain"))
-  implementation(project(":core:database"))
-  implementation(project(":native:bridge"))
-  implementation(libs.hilt.android)
-  ksp(libs.hilt.compiler)
+  implementation(dependencyFactory.createProjectDependency(":core:domain"))
+  implementation(dependencyFactory.createProjectDependency(":core:database"))
+  implementation(dependencyFactory.createProjectDependency(":native:bridge"))
   implementation(libs.kotlinx.coroutines.android)
 
-  testImplementation(project(":core:domain"))
-  testFixturesApi(project(":core:database"))
-  testFixturesApi(project(":core:domain"))
+  testImplementation(dependencyFactory.createProjectDependency(":core:domain"))
+  testFixturesApi(dependencyFactory.createProjectDependency(":core:database"))
+  testFixturesApi(dependencyFactory.createProjectDependency(":core:domain"))
   testFixturesApi(libs.hilt.android)
   testFixturesApi(libs.kotlinx.coroutines.android)
 

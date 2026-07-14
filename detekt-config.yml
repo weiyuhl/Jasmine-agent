@@ -6,7 +6,7 @@ complexity:
   active: true
   CyclomaticComplexMethod:
     active: true
-    threshold: 15
+    allowedComplexity: 15
     ignoreSingleWhenExpression: true
   LabeledExpression:
     active: true
@@ -14,17 +14,17 @@ complexity:
     active: true
   LongMethod:
     active: true
-    threshold: 60
+    allowedLines: 60
   LongParameterList:
     active: true
-    functionThreshold: 6
-    constructorThreshold: 7
+    allowedFunctionParameters: 6
+    allowedConstructorParameters: 7
     ignoreDefaultParameters: true
   NamedArguments:
     active: false
   NestedBlockDepth:
     active: true
-    threshold: 4
+    allowedDepth: 4
   ReplaceSafeCallChainWithRun:
     active: true
   StringLiteralDuplication:
@@ -236,7 +236,7 @@ style:
     maxLineLength: 140
     excludePackageStatements: true
     excludeImportStatements: true
-  MayBeConst:
+  MayBeConstant:
     active: true
   ModifierOrder:
     active: true
@@ -277,13 +277,13 @@ style:
     active: true
   UnnecessaryLet:
     active: true
-  UnusedImports:
+  UnusedImport:
     active: true
   UnusedParameter:
     active: true
   UnusedPrivateClass:
     active: true
-  UnusedPrivateMember:
+  UnusedPrivateFunction:
     active: true
   UnusedPrivateProperty:
     active: true

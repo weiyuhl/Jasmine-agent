@@ -186,9 +186,9 @@ flowchart TD
 
 ### 版本表
 
-下表把“**当前已查证的稳定版本**”与“**生产落地建议**”分开写，目的是降低升级链断裂的风险。对大多数 Android 项目而言，真正要追求的是“**整套组合稳定**”，而不是“每个组件都取到自己最新”。本轮版本校验日期为 **2026-07-01**；表中“当前已查证稳定版本”优先取官方稳定/GA，不把 alpha、beta、RC 当作生产稳定。
+下表把“**当前已查证版本**”与“**生产落地建议**”分开写，目的是降低升级链断裂的风险。对大多数 Android 项目而言，真正要追求的是“**整套组合稳定**”，而不是“每个组件都取到自己最新”。本轮版本校验日期为 **2026-07-14**；表中版本优先取官方稳定/GA。若项目实际版本高于旧文档且已用于当前工具链，则以项目版本目录为准，并在说明中标出稳定性状态。
 
-| 组件 | 当前已查证稳定版本 | 生产落地建议 | 替代选项 | 说明 |
+| 组件 | 当前已查证版本 | 生产落地建议 | 替代选项 | 说明 |
 |---|---:|---|---|---|
 | JDK | 26（当前最高稳定 feature），25（最新 LTS） | 26 | 25 LTS 保守替代；17 仅作为 AGP 默认最低运行基线回退；暂不使用 27 | 本项目不以最低 JDK 为目标；采用 JDK 26。Gradle 9.6.1 可运行在 JVM 17-26，JDK 27 当前未支持；AGP 9.2 兼容矩阵默认 JDK 17，但这不是本项目的推荐锁定值。 |
 | Android Gradle Plugin | 9.2.1 | 9.2.1 | 9.1.1 保守回退 | 9.2.0 页面已列出 9.2.1 修复；Android Studio 同步发布 9.2.1。 |
@@ -213,7 +213,7 @@ flowchart TD
 | Benchmark / Macrobenchmark | 1.4.1 | 1.4.1 | 仅自建 trace 脚本 | 1.4.1 是更合理的现行稳定线；1.5.x 仍是 alpha。 |
 | Compose Preview Screenshot Testing | 无稳定版；官方最新为 0.0.1-alpha15 | 仅作为实验性视觉回归能力，生产门禁不应强依赖 | Paparazzi / Shot | 官方 Maven 元数据目前只有 alpha 版本，不能替换成稳定版。 |
 | ProfileInstaller | 1.4.1 | 1.4.1 | — | Baseline Profile 落地的稳定搭档。 |
-| Detekt | 1.23.8 | 1.23.8 | Android Lint / ktlint | Detekt 2.x 插件线仍为 alpha；生产锁定使用 1.23.8 稳定插件坐标。 |
+| Detekt | 2.0.0-alpha.5 | 2.0.0-alpha.5；Detekt 2.0 稳定版发布后优先升级 | Android Lint / ktlint | 项目版本目录已锁定到 2.0.0-alpha.5，用于当前 Kotlin 2.4.0 / AGP 9.2.1 工具链；该版本官方仍标记为 alpha。 |
 | Dokka | 2.2.0 | 2.2.0 | 人工 KDoc 导出 | API 文档生成工具。 |
 | Spotless | 8.8.0 | 8.8.0 | ktlint Gradle 插件 | 代码格式化与格式检查。 |
 | Retrofit | 3.0.0 | 3.0.0 | Ktor Client 3.5.1 | 生态成熟、上手成本低，适合传统 REST。 |
@@ -222,7 +222,7 @@ flowchart TD
 | Rust toolchain | 1.96.1 | 跟稳定版；UniFFI 升级前先做 ABI 回归 | 旧稳定版冻结 | Rust 官方最新稳定点版本，包含 Cargo HTTP 与 libssh2 CVE 修复。 |
 | UniFFI | 0.32.0 | 0.32.0，且绑定生成应纳入 CI | `jni-rs` 手写绑定 | 官方 Kotlin 支持成熟，但仍是 0.x 线，需控制升级节奏。 |
 
-项目当前已将版本目录与上述表格对齐：Hilt、Spotless、Gradle Wrapper、UniFFI 均升级到表内版本；同时新增 `:core:datastore`、`:core:network`、`:benchmark` 模块承载 DataStore、Retrofit/Ktor、Macrobenchmark 等报告组件。Android 模块的 `minSdk`、Java `sourceCompatibility/targetCompatibility` 与 Kotlin `jvmTarget` 均以 **26** 为目标。
+项目当前已将版本目录与上述表格对齐：Hilt、Spotless、Gradle Wrapper、UniFFI、Detekt 均升级到表内版本；同时新增 `:core:datastore`、`:core:network`、`:benchmark` 模块承载 DataStore、Retrofit/Ktor、Macrobenchmark 等报告组件。Android 模块的 `minSdk`、Java `sourceCompatibility/targetCompatibility` 与 Kotlin `jvmTarget` 均以 **26** 为目标。
 
 ### 默认推荐与替代关系
 
